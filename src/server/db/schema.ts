@@ -27,3 +27,21 @@ export const posts = createTable(
 	}),
 	(t) => [index("name_idx").on(t.name)],
 );
+
+export const users = createTable(
+	"user",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		email: d.text({ length: 255 }).notNull().unique(),
+		passwordHash: d.text({ length: 255 }).notNull(),
+		createdAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+	}),
+	(t) => [index("user_email_idx").on(t.email)],
+);

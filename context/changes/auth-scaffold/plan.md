@@ -421,23 +421,23 @@ F-02 (device-schema) runs in parallel and also modifies `src/server/db/schema.ts
 
 #### Automated
 
-- [x] 1.1 `npm run dev` starts without env validation errors
-- [x] 1.2 `npm run typecheck` passes
+- [x] 1.1 `npm run dev` starts without env validation errors — ebdd1cd
+- [x] 1.2 `npm run typecheck` passes — ebdd1cd
 
 #### Manual
 
-- [x] 1.3 Server console shows no Zod env validation warnings on startup
+- [x] 1.3 Server console shows no Zod env validation warnings on startup — ebdd1cd
 
 ### Phase 2: Users Table Schema
 
 #### Automated
 
-- [ ] 2.1 `npm run db:push` exits 0
-- [ ] 2.2 `npm run typecheck` passes
+- [x] 2.1 `npm run db:push` exits 0
+- [x] 2.2 `npm run typecheck` passes
 
 #### Manual
 
-- [ ] 2.3 `tuya_device_dashboard_user` table visible in db.sqlite with correct columns
+- [x] 2.3 `tuya_device_dashboard_user` table visible in db.sqlite with correct columns
 
 ### Phase 3: Auth.js v5 Core Configuration
 
