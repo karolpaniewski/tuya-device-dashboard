@@ -455,26 +455,26 @@ F-02 (device-schema) runs in parallel and also modifies `src/server/db/schema.ts
 
 #### Automated
 
-- [x] 4.1 `npm run typecheck` passes
+- [x] 4.1 `npm run typecheck` passes — 4c25bb9
 
 #### Manual
 
-- [x] 4.2 `http://localhost:3000/` redirects to `/login`
-- [x] 4.3 `/login` renders form with email + password fields
-- [x] 4.4 Empty / wrong submit shows inline error, no crash
+- [x] 4.2 `http://localhost:3000/` redirects to `/login` — 4c25bb9
+- [x] 4.3 `/login` renders form with email + password fields — 4c25bb9
+- [x] 4.4 Empty / wrong submit shows inline error, no crash — 4c25bb9
 
 ### Phase 5: Admin Seed Script + End-to-End Login
 
 #### Automated
 
-- [ ] 5.1 `npm run db:seed` exits 0 with success log
+- [x] 5.1 `npm run db:seed` exits 0 with success log
 
 #### Manual
 
-- [ ] 5.2 Admin row visible in db.sqlite
-- [ ] 5.3 Login with admin credentials succeeds, redirected to `/`
-- [ ] 5.4 `authjs.session-token` cookie present in DevTools (HttpOnly)
-- [ ] 5.5 callbackUrl redirect works (visit `/devices` → login → back to `/devices`)
+- [x] 5.2 Admin row visible in db.sqlite
+- [x] 5.3 Login with admin credentials succeeds, redirected to `/`
+- [x] 5.4 `authjs.session-token` cookie present in DevTools (HttpOnly)
+- [x] 5.5 callbackUrl redirect works (visit `/devices` → login → back to `/devices`)
 
 ### Phase 6: tRPC Protected Procedure
 
