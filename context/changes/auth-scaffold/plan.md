@@ -480,10 +480,10 @@ F-02 (device-schema) runs in parallel and also modifies `src/server/db/schema.ts
 
 #### Automated
 
-- [x] 6.1 `npm run typecheck` passes
-- [x] 6.2 `npm run dev` starts without runtime errors
+- [x] 6.1 `npm run typecheck` passes — 9d420e9
+- [x] 6.2 `npm run dev` starts without runtime errors — 9d420e9
 
 #### Manual
 
-- [x] 6.3 Logged-in: home page with `post.getLatest` still loads without errors
-- [x] 6.4 No-cookie state: home page redirects to `/login`
+- [x] 6.3 Logged-in: home page with `post.getLatest` still loads without errors — 9d420e9
+- [x] 6.4 No-cookie state: home page redirects to `/login` — 9d420e9
