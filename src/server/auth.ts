@@ -1,12 +1,11 @@
 import bcryptjs from "bcryptjs";
+import { eq } from "drizzle-orm";
 import NextAuth, { type DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
-
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema";
 import { authConfig } from "./auth.config";
-import { eq } from "drizzle-orm";
 
 declare module "next-auth" {
 	interface Session {
@@ -18,12 +17,23 @@ declare module "next-auth" {
 
 const credentialsSchema = z.object({
 	email: z.string().email(),
-	password: z.string(),
+	password: z.string().min(1),
 });
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
 	...authConfig,
 	session: { strategy: "jwt" },
+	callbacks: {
+		...authConfig.callbacks,
+		jwt({ token, user }) {
+			if (user?.id) token.sub = user.id;
+			return token;
+		},
+		session({ session, token }) {
+			if (token.sub) session.user.id = token.sub;
+			return session;
+		},
+	},
 	providers: [
 		Credentials({
 			async authorize(credentials) {

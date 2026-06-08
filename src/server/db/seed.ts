@@ -24,16 +24,22 @@ if (!dbUrl) {
 const client = createClient({ url: dbUrl });
 const db = drizzle(client);
 
-const passwordHash = await bcryptjs.hash(password, 12);
+try {
+	const passwordHash = await bcryptjs.hash(password, 12);
 
-await db
-	.insert(users)
-	.values({ id: crypto.randomUUID(), email, passwordHash })
-	.onConflictDoUpdate({
-		target: users.email,
-		set: { passwordHash, updatedAt: new Date() },
-	});
+	await db
+		.insert(users)
+		.values({ id: crypto.randomUUID(), email, passwordHash })
+		.onConflictDoUpdate({
+			target: users.email,
+			set: { passwordHash, updatedAt: new Date() },
+		});
 
-console.log(`✓ Seeded admin user: ${email}`);
-client.close();
+	console.log(`✓ Seeded admin user: ${email}`);
+} catch (err) {
+	console.error("Seed failed:", err);
+	process.exit(1);
+} finally {
+	client.close();
+}
 process.exit(0);
