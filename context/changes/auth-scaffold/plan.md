@@ -432,24 +432,24 @@ F-02 (device-schema) runs in parallel and also modifies `src/server/db/schema.ts
 
 #### Automated
 
-- [x] 2.1 `npm run db:push` exits 0
-- [x] 2.2 `npm run typecheck` passes
+- [x] 2.1 `npm run db:push` exits 0 — c6bd643
+- [x] 2.2 `npm run typecheck` passes — c6bd643
 
 #### Manual
 
-- [x] 2.3 `tuya_device_dashboard_user` table visible in db.sqlite with correct columns
+- [x] 2.3 `tuya_device_dashboard_user` table visible in db.sqlite with correct columns — c6bd643
 
 ### Phase 3: Auth.js v5 Core Configuration
 
 #### Automated
 
-- [ ] 3.1 `npm run typecheck` passes
-- [ ] 3.2 `npm run dev` starts without runtime errors
-- [ ] 3.3 `GET /api/auth/providers` returns JSON with credentials provider
+- [x] 3.1 `npm run typecheck` passes
+- [x] 3.2 `npm run dev` starts without runtime errors
+- [x] 3.3 `GET /api/auth/providers` returns JSON with credentials provider
 
 #### Manual
 
-- [ ] 3.4 `/api/auth/providers` in browser shows credentials provider
+- [x] 3.4 `/api/auth/providers` in browser shows credentials provider
 
 ### Phase 4: Middleware + Login Page
 
