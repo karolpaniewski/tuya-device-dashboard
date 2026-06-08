@@ -467,23 +467,23 @@ F-02 (device-schema) runs in parallel and also modifies `src/server/db/schema.ts
 
 #### Automated
 
-- [x] 5.1 `npm run db:seed` exits 0 with success log
+- [x] 5.1 `npm run db:seed` exits 0 with success log — fd57af3
 
 #### Manual
 
-- [x] 5.2 Admin row visible in db.sqlite
-- [x] 5.3 Login with admin credentials succeeds, redirected to `/`
-- [x] 5.4 `authjs.session-token` cookie present in DevTools (HttpOnly)
-- [x] 5.5 callbackUrl redirect works (visit `/devices` → login → back to `/devices`)
+- [x] 5.2 Admin row visible in db.sqlite — fd57af3
+- [x] 5.3 Login with admin credentials succeeds, redirected to `/` — fd57af3
+- [x] 5.4 `authjs.session-token` cookie present in DevTools (HttpOnly) — fd57af3
+- [x] 5.5 callbackUrl redirect works (visit `/devices` → login → back to `/devices`) — fd57af3
 
 ### Phase 6: tRPC Protected Procedure
 
 #### Automated
 
-- [ ] 6.1 `npm run typecheck` passes
-- [ ] 6.2 `npm run dev` starts without runtime errors
+- [x] 6.1 `npm run typecheck` passes
+- [x] 6.2 `npm run dev` starts without runtime errors
 
 #### Manual
 
-- [ ] 6.3 Logged-in: home page with `post.getLatest` still loads without errors
-- [ ] 6.4 No-cookie state: home page redirects to `/login`
+- [x] 6.3 Logged-in: home page with `post.getLatest` still loads without errors
+- [x] 6.4 No-cookie state: home page redirects to `/login`
