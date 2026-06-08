@@ -443,25 +443,25 @@ F-02 (device-schema) runs in parallel and also modifies `src/server/db/schema.ts
 
 #### Automated
 
-- [x] 3.1 `npm run typecheck` passes
-- [x] 3.2 `npm run dev` starts without runtime errors
-- [x] 3.3 `GET /api/auth/providers` returns JSON with credentials provider
+- [x] 3.1 `npm run typecheck` passes — 9abc38d
+- [x] 3.2 `npm run dev` starts without runtime errors — 9abc38d
+- [x] 3.3 `GET /api/auth/providers` returns JSON with credentials provider — 9abc38d
 
 #### Manual
 
-- [x] 3.4 `/api/auth/providers` in browser shows credentials provider
+- [x] 3.4 `/api/auth/providers` in browser shows credentials provider — 9abc38d
 
 ### Phase 4: Middleware + Login Page
 
 #### Automated
 
-- [ ] 4.1 `npm run typecheck` passes
+- [x] 4.1 `npm run typecheck` passes
 
 #### Manual
 
-- [ ] 4.2 `http://localhost:3000/` redirects to `/login`
-- [ ] 4.3 `/login` renders form with email + password fields
-- [ ] 4.4 Empty / wrong submit shows inline error, no crash
+- [x] 4.2 `http://localhost:3000/` redirects to `/login`
+- [x] 4.3 `/login` renders form with email + password fields
+- [x] 4.4 Empty / wrong submit shows inline error, no crash
 
 ### Phase 5: Admin Seed Script + End-to-End Login
 
