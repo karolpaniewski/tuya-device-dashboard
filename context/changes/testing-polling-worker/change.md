@@ -1,7 +1,7 @@
 ---
 change_id: testing-polling-worker
 title: Testing polling worker integrity
-status: implementing
+status: implemented
 created: 2026-06-09
 updated: 2026-06-09
 archived_at: null

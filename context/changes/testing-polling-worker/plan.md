@@ -355,10 +355,10 @@ No schema changes. No new tables. `isStale` is a derived field computed from `la
 
 #### Automated
 
-- [x] 3.1 `npm test` — all three stale detection test cases pass (fresh, stale, never-polled)
-- [x] 3.2 `npm run typecheck` passes
-- [x] 3.3 `npm run check` passes
+- [x] 3.1 `npm test` — all three stale detection test cases pass (fresh, stale, never-polled) — 90c49c4
+- [x] 3.2 `npm run typecheck` passes — 90c49c4
+- [x] 3.3 `npm run check` passes — 90c49c4
 
 #### Manual
 
-- [x] 3.4 `test-plan.md §6.3` is filled in with no TBD lines
+- [x] 3.4 `test-plan.md §6.3` is filled in with no TBD lines — 90c49c4
