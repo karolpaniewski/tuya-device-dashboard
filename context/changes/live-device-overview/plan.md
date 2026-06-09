@@ -416,23 +416,23 @@ No schema changes. All new tables (`gateways`, `devices`) were created in F-02. 
 
 #### Automated
 
-- [x] 2.1 `npm run typecheck` passes
-- [x] 2.2 `npm run check` passes
+- [x] 2.1 `npm run typecheck` passes — a67f54f
+- [x] 2.2 `npm run check` passes — a67f54f
 
 #### Manual
 
-- [x] 2.3 `npm run dev` starts without errors and console shows polling log
+- [x] 2.3 `npm run dev` starts without errors and console shows polling log — a67f54f
 
 ### Phase 3: tRPC Device Router
 
 #### Automated
 
-- [ ] 3.1 `npm run typecheck` passes (validates @ts-expect-error removed, types resolve)
-- [ ] 3.2 `npm run check` passes
+- [x] 3.1 `npm run typecheck` passes (validates @ts-expect-error removed, types resolve)
+- [x] 3.2 `npm run check` passes
 
 #### Manual
 
-- [ ] 3.3 No manual verification for this phase (no UI yet)
+- [x] 3.3 No manual verification for this phase (no UI yet)
 
 ### Phase 4: Seed Extension
 

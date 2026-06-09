@@ -25,7 +25,6 @@ const getQueryClient = cache(createQueryClient);
 const caller = createCaller(createContext);
 
 export const { trpc: api, HydrateClient } = createHydrationHelpers<AppRouter>(
-	// @ts-expect-error -- empty router makes AnyRouter extends AppRouter evaluate to true; resolves in S-01
 	caller,
 	getQueryClient,
 );
