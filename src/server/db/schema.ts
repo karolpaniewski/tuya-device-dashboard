@@ -1,31 +1,12 @@
-// Example model schema from the Drizzle docs
-// https://orm.drizzle.team/docs/sql-schema-declaration
-
 import { sql } from "drizzle-orm";
-import { index, sqliteTableCreator } from "drizzle-orm/sqlite-core";
+import { check, index, sqliteTableCreator } from "drizzle-orm/sqlite-core";
 
 /**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
+ * Multi-project schema — all tables share the `.bootstrap-scaffold_` prefix.
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
 export const createTable = sqliteTableCreator(
 	(name) => `.bootstrap-scaffold_${name}`,
-);
-
-export const posts = createTable(
-	"post",
-	(d) => ({
-		id: d.integer({ mode: "number" }).primaryKey({ autoIncrement: true }),
-		name: d.text({ length: 256 }),
-		createdAt: d
-			.integer({ mode: "timestamp" })
-			.default(sql`(unixepoch())`)
-			.notNull(),
-		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
-	}),
-	(t) => [index("name_idx").on(t.name)],
 );
 
 export const users = createTable(
@@ -45,3 +26,107 @@ export const users = createTable(
 	}),
 	(t) => [index("user_email_idx").on(t.email)],
 );
+
+export const gateways = createTable("gateway", (d) => ({
+	id: d
+		.text({ length: 255 })
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	tuyaGatewayId: d.text("tuya_gateway_id", { length: 255 }).notNull().unique(),
+	name: d.text({ length: 255 }).notNull(),
+	ipAddress: d.text("ip_address", { length: 45 }),
+	localKey: d.text("local_key", { length: 255 }),
+	createdAt: d
+		.integer({ mode: "timestamp" })
+		.notNull()
+		.default(sql`(unixepoch())`),
+	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+}));
+
+export const rooms = createTable("room", (d) => ({
+	id: d
+		.text({ length: 255 })
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	name: d.text({ length: 255 }).notNull(),
+	createdAt: d
+		.integer({ mode: "timestamp" })
+		.notNull()
+		.default(sql`(unixepoch())`),
+	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+}));
+
+export const devices = createTable(
+	"device",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		tuyaDeviceId: d.text("tuya_device_id", { length: 255 }).notNull().unique(),
+		gatewayId: d
+			.text("gateway_id", { length: 255 })
+			.references(() => gateways.id, { onDelete: "set null" }),
+		name: d.text({ length: 255 }).notNull(),
+		deviceType: d.text("device_type", { length: 10 }).notNull(),
+		ipAddress: d.text("ip_address", { length: 45 }),
+		localKey: d.text("local_key", { length: 255 }),
+		productKey: d.text("product_key", { length: 255 }),
+		createdAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+	}),
+	(t) => [
+		check(
+			"device_type_check",
+			sql`${t.deviceType} IN ('sensor', 'valve', 'plug')`,
+		),
+		index("device_gateway_idx").on(t.gatewayId),
+	],
+);
+
+export const deviceRoomAssignments = createTable(
+	"device_room_assignment",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		deviceId: d
+			.text("device_id", { length: 255 })
+			.notNull()
+			.unique()
+			.references(() => devices.id, { onDelete: "cascade" }),
+		roomId: d
+			.text("room_id", { length: 255 })
+			.notNull()
+			.references(() => rooms.id, { onDelete: "cascade" }),
+		assignedAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+	}),
+	(t) => [index("assignment_room_idx").on(t.roomId)],
+);
+
+export const roomThresholds = createTable("room_threshold", (d) => ({
+	id: d
+		.text({ length: 255 })
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	roomId: d
+		.text("room_id", { length: 255 })
+		.notNull()
+		.unique()
+		.references(() => rooms.id, { onDelete: "cascade" }),
+	minTempC: d.real("min_temp_c"),
+	maxTempC: d.real("max_temp_c"),
+	anomalyGapC: d.real("anomaly_gap_c"),
+	createdAt: d
+		.integer({ mode: "timestamp" })
+		.notNull()
+		.default(sql`(unixepoch())`),
+	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+}));
