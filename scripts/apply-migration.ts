@@ -1,5 +1,5 @@
-import { createClient } from "@libsql/client";
 import { readFileSync } from "node:fs";
+import { createClient } from "@libsql/client";
 
 const dbUrl = process.env.DATABASE_URL;
 if (!dbUrl) {

@@ -1,6 +1,11 @@
 import { createClient } from "@libsql/client";
 
-const c = createClient({ url: process.env.DATABASE_URL! });
+const dbUrl = process.env.DATABASE_URL;
+if (!dbUrl) {
+	console.error("Missing DATABASE_URL");
+	process.exit(1);
+}
+const c = createClient({ url: dbUrl });
 const gw = await c.execute(
 	'SELECT id, tuya_gateway_id, name FROM ".bootstrap-scaffold_gateway"',
 );

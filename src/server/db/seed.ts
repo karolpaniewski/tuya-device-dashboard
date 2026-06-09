@@ -53,13 +53,30 @@ try {
 		})
 		.returning({ id: gateways.id });
 
-	const gatewayId = gateway!.id;
+	if (!gateway) throw new Error("Gateway insert returned no row");
+	const gatewayId = gateway.id;
 
 	const stubDevices = [
-		{ tuyaDeviceId: "stub-dev-001", name: "Sensor A (Room 1)", deviceType: "sensor" },
-		{ tuyaDeviceId: "stub-dev-002", name: "Sensor B (Room 2)", deviceType: "sensor" },
-		{ tuyaDeviceId: "stub-dev-003", name: "Valve A (Room 1)", deviceType: "valve" },
-		{ tuyaDeviceId: "stub-dev-004", name: "Valve B (Room 2)", deviceType: "valve" },
+		{
+			tuyaDeviceId: "stub-dev-001",
+			name: "Sensor A (Room 1)",
+			deviceType: "sensor",
+		},
+		{
+			tuyaDeviceId: "stub-dev-002",
+			name: "Sensor B (Room 2)",
+			deviceType: "sensor",
+		},
+		{
+			tuyaDeviceId: "stub-dev-003",
+			name: "Valve A (Room 1)",
+			deviceType: "valve",
+		},
+		{
+			tuyaDeviceId: "stub-dev-004",
+			name: "Valve B (Room 2)",
+			deviceType: "valve",
+		},
 		{ tuyaDeviceId: "stub-dev-005", name: "Smart Plug 1", deviceType: "plug" },
 	] as const;
 

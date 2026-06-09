@@ -438,22 +438,22 @@ No schema changes. All new tables (`gateways`, `devices`) were created in F-02. 
 
 #### Automated
 
-- [x] 4.1 `npm run db:seed` exits with code 0
+- [x] 4.1 `npm run db:seed` exits with code 0 — 7000533
 
 #### Manual
 
-- [x] 4.2 Drizzle Studio shows 1 gateway + 5 device rows
+- [x] 4.2 Drizzle Studio shows 1 gateway + 5 device rows — 7000533
 
 ### Phase 5: Frontend Overview Page
 
 #### Automated
 
-- [ ] 5.1 `npm run typecheck` passes
-- [ ] 5.2 `npm run check` passes
-- [ ] 5.3 `npm run dev` starts without runtime errors
+- [x] 5.1 `npm run typecheck` passes
+- [x] 5.2 `npm run check` passes
+- [x] 5.3 `npm run dev` starts without runtime errors
 
 #### Manual
 
-- [ ] 5.4 Device overview renders with 5 cards in "Unassigned" group after db:seed
-- [ ] 5.5 Card temperatures match stub fixtures; online/offline badges correct
-- [ ] 5.6 Auto-refresh fires after 30 seconds (last-polled time resets)
+- [x] 5.4 Device overview renders with 5 cards in "Unassigned" group after db:seed
+- [x] 5.5 Card temperatures match stub fixtures; online/offline badges correct
+- [x] 5.6 Auto-refresh fires after 30 seconds (last-polled time resets)
