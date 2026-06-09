@@ -404,24 +404,24 @@ No schema changes. All new tables (`gateways`, `devices`) were created in F-02. 
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes
-- [x] 1.2 `npm run check` passes
-- [x] 1.3 `ls node_modules/tuyapi` confirms package installed
+- [x] 1.1 `npm run typecheck` passes — bb95a97
+- [x] 1.2 `npm run check` passes — bb95a97
+- [x] 1.3 `ls node_modules/tuyapi` confirms package installed — bb95a97
 
 #### Manual
 
-- [x] 1.4 No manual verification for this phase (infrastructure only)
+- [x] 1.4 No manual verification for this phase (infrastructure only) — bb95a97
 
 ### Phase 2: Polling Worker + instrumentation.ts
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` passes
-- [ ] 2.2 `npm run check` passes
+- [x] 2.1 `npm run typecheck` passes
+- [x] 2.2 `npm run check` passes
 
 #### Manual
 
-- [ ] 2.3 `npm run dev` starts without errors and console shows polling log
+- [x] 2.3 `npm run dev` starts without errors and console shows polling log
 
 ### Phase 3: tRPC Device Router
 
