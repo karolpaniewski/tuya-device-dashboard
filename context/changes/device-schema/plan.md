@@ -183,23 +183,23 @@ Apply the new schema to the dev SQLite database and generate a migration file fo
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes with zero errors
-- [x] 1.2 `npm run check` (Biome lint) passes
-- [x] 1.3 `npm run dev` starts without runtime errors
+- [x] 1.1 `npm run typecheck` passes with zero errors — 56ed1cf
+- [x] 1.2 `npm run check` (Biome lint) passes — 56ed1cf
+- [x] 1.3 `npm run dev` starts without runtime errors — 56ed1cf
 
 #### Manual
 
-- [x] 1.4 Opening `http://localhost:3000` redirects to `/login`
-- [x] 1.5 After login, home page renders placeholder without console errors
+- [x] 1.4 Opening `http://localhost:3000` redirects to `/login` — 56ed1cf
+- [x] 1.5 After login, home page renders placeholder without console errors — 56ed1cf
 
 ### Phase 2: Migration
 
 #### Automated
 
-- [ ] 2.1 `npm run db:push` exits with code 0
-- [ ] 2.2 `npm run db:generate` exits with code 0
-- [ ] 2.3 `drizzle/` directory contains at least one `.sql` file
+- [x] 2.1 `npm run db:push` exits with code 0
+- [x] 2.2 `npm run db:generate` exits with code 0
+- [x] 2.3 `drizzle/` directory contains at least one `.sql` file
 
 #### Manual
 
-- [ ] 2.4 Drizzle Studio shows five new tables, no `posts`, `users` intact
+- [x] 2.4 Drizzle Studio shows five new tables, no `posts`, `users` intact

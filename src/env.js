@@ -14,6 +14,9 @@ export const env = createEnv({
 		AUTH_SECRET: z.string().min(32),
 		AUTH_ADMIN_EMAIL: z.string().email(),
 		AUTH_ADMIN_PASSWORD: z.string().min(8),
+		ENCRYPTION_SECRET: z
+			.string()
+			.regex(/^[0-9a-f]{64}$/, "must be 64 lowercase hex chars (32 bytes)"),
 	},
 
 	/**
@@ -35,6 +38,7 @@ export const env = createEnv({
 		AUTH_SECRET: process.env.AUTH_SECRET,
 		AUTH_ADMIN_EMAIL: process.env.AUTH_ADMIN_EMAIL,
 		AUTH_ADMIN_PASSWORD: process.env.AUTH_ADMIN_PASSWORD,
+		ENCRYPTION_SECRET: process.env.ENCRYPTION_SECRET,
 		// NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 	},
 	/**
