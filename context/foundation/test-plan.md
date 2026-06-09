@@ -152,7 +152,20 @@ the relevant rollout phase ships; before that, it reads "TBD — see §3 Phase N
 
 ### 6.3 Adding a worker / polling test
 
-TBD — see §3 Phase 2 (polling worker lifecycle + stale-state detection pattern).
+**Reference test**: `src/server/workers/tuya-poller.test.ts`  
+**Run**: `npm test`
+
+- **File location**: co-located next to the worker — `src/server/workers/<worker>.test.ts`
+- **Required mocks** (Vitest hoists these before imports):
+  ```ts
+  vi.mock("~/server/db", () => ({ db: { select: vi.fn() } }));
+  vi.mock("~/server/lib/tuya", () => ({ getTuyaClient: vi.fn() }));
+  ```
+- **Store interaction**: import `deviceStateStore` from `~/server/lib/device-state-store` directly. Call `deviceStateStore.clear()` in `beforeEach` to isolate test cases. Pre-seed with `deviceStateStore.set(id, { isOnline, temperatureC, lastPolledAt })` to control starting state.
+- **DB mock shape for `pollOnce`**: `db.select()` returns `{ from: vi.fn().mockResolvedValue([gatewayRows]) }` — two levels only (no `leftJoin`; gateway queries are flat).
+- **Tuya client mock shape**: `vi.mocked(getTuyaClient).mockReturnValue({ fetchGatewayDevices: vi.fn().mockResolvedValue([readings]) })` for success path; `.mockRejectedValue(new Error("..."))` for the error path.
+- **Oracle rule for `lastPolledAt`**: assert `Date.now() - store.get(id)!.lastPolledAt.getTime() < 1000` — do not hardcode a specific timestamp; the oracle is "timestamp is recent", relative to when the test ran.
+- **Stale detection (resolver tests)**: see `src/server/api/routers/device.test.ts` `"stale detection"` describe block. Pre-seed the store with a known `lastPolledAt`, call `caller.device.overview()`, assert `isStale`. Threshold constant: `STALE_THRESHOLD_MS = 60_000` in `device.ts`.
 
 ### 6.4 Adding a command pipeline test
 

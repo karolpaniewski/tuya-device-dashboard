@@ -343,22 +343,22 @@ No schema changes. No new tables. `isStale` is a derived field computed from `la
 
 #### Automated
 
-- [x] 2.1 `npm test` — all three worker test cases pass (happy path, DB error, gateway error)
-- [x] 2.2 `npm run typecheck` passes
-- [x] 2.3 `npm run check` passes
+- [x] 2.1 `npm test` — all three worker test cases pass (happy path, DB error, gateway error) — 87f7c45
+- [x] 2.2 `npm run typecheck` passes — 87f7c45
+- [x] 2.3 `npm run check` passes — 87f7c45
 
 #### Manual
 
-- [x] 2.4 No manual verification for this phase
+- [x] 2.4 No manual verification for this phase — 87f7c45
 
 ### Phase 3: Stale detection tests + §6.3 cookbook
 
 #### Automated
 
-- [ ] 3.1 `npm test` — all three stale detection test cases pass (fresh, stale, never-polled)
-- [ ] 3.2 `npm run typecheck` passes
-- [ ] 3.3 `npm run check` passes
+- [x] 3.1 `npm test` — all three stale detection test cases pass (fresh, stale, never-polled)
+- [x] 3.2 `npm run typecheck` passes
+- [x] 3.3 `npm run check` passes
 
 #### Manual
 
-- [ ] 3.4 `test-plan.md §6.3` is filled in with no TBD lines
+- [x] 3.4 `test-plan.md §6.3` is filled in with no TBD lines
