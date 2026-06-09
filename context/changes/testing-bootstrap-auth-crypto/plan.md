@@ -276,18 +276,18 @@ No schema changes. No database interaction. No changes to application code.
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes with vitest.config.ts and src/test/setup.ts present
+- [x] 1.1 `npm run typecheck` passes with vitest.config.ts and src/test/setup.ts present — db0f112
 
 #### Manual
 
-- [x] 1.2 `npx vitest run --passWithNoTests` exits 0 with no configuration errors
+- [x] 1.2 `npx vitest run --passWithNoTests` exits 0 with no configuration errors — db0f112
 
 ### Phase 2: Crypto Unit Tests
 
 #### Automated
 
-- [ ] 2.1 `npm test` exits 0 with 3 passing tests and 0 failures
-- [ ] 2.2 `npm run typecheck` passes
+- [x] 2.1 `npm test` exits 0 with 3 passing tests and 0 failures
+- [x] 2.2 `npm run typecheck` passes
 
 ### Phase 3: tRPC Auth-gate Integration Test
 
