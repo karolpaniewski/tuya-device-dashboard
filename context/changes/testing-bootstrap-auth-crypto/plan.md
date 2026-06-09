@@ -305,10 +305,10 @@ No schema changes. No database interaction. No changes to application code.
 
 #### Automated
 
-- [x] 4.1 `npm test` still exits 0 (no tests changed)
-- [x] 4.2 `npm run typecheck` still passes
+- [x] 4.1 `npm test` still exits 0 (no tests changed) — 4328232
+- [x] 4.2 `npm run typecheck` still passes — 4328232
 
 #### Manual
 
-- [x] 4.3 §6.1 in test-plan.md reads actual pattern (not "TBD") with location, import, reference test, run command
-- [x] 4.4 §6.2 in test-plan.md reads actual pattern (not "TBD") with location, mock pattern, caller creation, reference test, run command
+- [x] 4.3 §6.1 in test-plan.md reads actual pattern (not "TBD") with location, import, reference test, run command — 4328232
+- [x] 4.4 §6.2 in test-plan.md reads actual pattern (not "TBD") with location, mock pattern, caller creation, reference test, run command — 4328232

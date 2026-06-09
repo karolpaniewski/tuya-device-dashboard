@@ -1,7 +1,7 @@
 ---
 change_id: testing-bootstrap-auth-crypto
 title: Bootstrap Vitest and prove auth-gate regression and decryptLocalKey correctness
-status: implementing
+status: implemented
 created: 2026-06-09
 updated: 2026-06-09
 archived_at: null
