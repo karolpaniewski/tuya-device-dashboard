@@ -41,9 +41,16 @@ export function DeviceCard({ device }: { device: DeviceItem }) {
 						{device.isOnline ? "Online" : "Offline"}
 					</span>
 				</span>
-				<span className="text-gray-400">
-					{secsAgo !== null ? `Updated ${secsAgo}s ago` : "—"}
-				</span>
+				<div className="flex items-center gap-1">
+					{device.isStale && (
+						<span className="rounded bg-yellow-100 px-1 text-xs text-yellow-800">
+							Data may be outdated
+						</span>
+					)}
+					<span className="text-gray-400">
+						{secsAgo !== null ? `Updated ${secsAgo}s ago` : "—"}
+					</span>
+				</div>
 			</div>
 		</div>
 	);

@@ -4,7 +4,7 @@ import { decryptLocalKey } from "~/server/lib/crypto";
 import { deviceStateStore } from "~/server/lib/device-state-store";
 import { getTuyaClient } from "~/server/lib/tuya";
 
-async function pollOnce(): Promise<void> {
+export async function pollOnce(): Promise<void> {
 	let allGateways: (typeof gateways.$inferSelect)[];
 	try {
 		allGateways = await db.select().from(gateways);
@@ -13,9 +13,9 @@ async function pollOnce(): Promise<void> {
 		return;
 	}
 
-	const client = getTuyaClient();
 	for (const gateway of allGateways) {
 		try {
+			const client = getTuyaClient();
 			const decryptedKey =
 				gateway.localKey !== null ? decryptLocalKey(gateway.localKey) : null;
 			const readings = await client.fetchGatewayDevices({

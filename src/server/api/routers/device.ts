@@ -4,6 +4,8 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { deviceRoomAssignments, devices, rooms } from "~/server/db/schema";
 import { deviceStateStore } from "~/server/lib/device-state-store";
 
+const STALE_THRESHOLD_MS = 60_000;
+
 export const deviceRouter = createTRPCRouter({
 	overview: protectedProcedure.query(async ({ ctx }) => {
 		const rows = await ctx.db
@@ -23,6 +25,9 @@ export const deviceRouter = createTRPCRouter({
 
 		for (const row of rows) {
 			const state = deviceStateStore.get(row.device.tuyaDeviceId);
+			const isStale = state?.lastPolledAt
+				? Date.now() - state.lastPolledAt.getTime() > STALE_THRESHOLD_MS
+				: false;
 			const item: DeviceItem = {
 				id: row.device.id,
 				tuyaDeviceId: row.device.tuyaDeviceId,
@@ -33,6 +38,7 @@ export const deviceRouter = createTRPCRouter({
 				isOnline: state?.isOnline ?? false,
 				temperatureC: state?.temperatureC ?? null,
 				lastPolledAt: state?.lastPolledAt ?? null,
+				isStale,
 			};
 
 			if (row.room) {
@@ -68,4 +74,5 @@ interface DeviceItem {
 	isOnline: boolean;
 	temperatureC: number | null;
 	lastPolledAt: Date | null;
+	isStale: boolean;
 }
