@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-09 (Phase 1 → change opened)
+> Last updated: 2026-06-09 (Phase 1 → complete)
 
 ---
 
@@ -72,7 +72,7 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|------------|-----------------|---------------|------------|--------|---------------|
-| 1 | Bootstrap + auth-gate + crypto | Wdróż Vitest; udowodnij auth-gate regression i poprawność decryptLocalKey | #1, #3 | unit (crypto), integration (tRPC auth protection) | change opened | context/changes/testing-bootstrap-auth-crypto |
+| 1 | Bootstrap + auth-gate + crypto | Wdróż Vitest; udowodnij auth-gate regression i poprawność decryptLocalKey | #1, #3 | unit (crypto), integration (tRPC auth protection) | complete | context/changes/testing-bootstrap-auth-crypto |
 | 2 | Polling worker integrity | Udowodnij że worker nie serwuje stale state jako live po błędzie | #2 | unit/integration (worker lifecycle + stale detection) | not started | — |
 | 3 | Valve control + threshold scoring | Udowodnij FR-012 command feedback contract i poprawność room scoring | #4, #5 | unit (scoring), integration (command pipeline), smoke z hardware | not started | — |
 | 4 | Quality gates wiring | Zamknij floor: lint + typecheck + Vitest w CI | cross-cutting | gates (naming only, bez YAML) | not started | — |
@@ -122,11 +122,33 @@ the relevant rollout phase ships; before that, it reads "TBD — see §3 Phase N
 
 ### 6.1 Adding a unit test (pure function)
 
-TBD — see §3 Phase 1 (crypto / decryptLocalKey pattern).
+**Reference test**: `src/server/lib/crypto.test.ts`  
+**Run**: `npm test`
+
+- **File location**: co-located next to the module — `src/path/to/module.test.ts`
+- **Imports**: import directly from the module under test; no mocks needed for pure functions
+- **Env setup**: `process.env.ENCRYPTION_SECRET` (and other required vars) are set in `src/test/setup.ts` — no per-test setup needed for crypto helpers
+- **Oracle rule**: the expected value in each assertion must come from an independent source (a plaintext constant, a PRD rule, a spec) — never from inspecting what the function currently returns; use `encryptLocalKey(PLAINTEXT)` → `decryptLocalKey(...)` → compare against `PLAINTEXT`, not against a hardcoded ciphertext snapshot
+- **Error case pattern**: for functions that must throw on bad input, pass a value that is structurally invalid for the format (e.g. a base64 string that decodes to fewer bytes than IV + auth-tag) and assert `.toThrow()` — no need to assert the specific error message
 
 ### 6.2 Adding an integration test (tRPC procedure)
 
-TBD — see §3 Phase 1 (auth-gate pattern: tRPC call bez sesji → UNAUTHORIZED).
+**Reference test**: `src/server/api/routers/device.test.ts`  
+**Run**: `npm test`
+
+- **File location**: co-located next to the router — `src/server/api/routers/<router>.test.ts`
+- **Required mocks** (top of file, Vitest hoists these before imports):
+  ```ts
+  vi.mock("~/server/auth", () => ({ auth: vi.fn() }));
+  vi.mock("~/server/db", () => ({ db: {} }));
+  ```
+  Without these, importing `createCaller` triggers `~/server/auth` and `~/server/db` which fire `~/env` Zod validation and fail outside Next.js.
+- **Caller creation**: import `createCaller` from `~/server/api/root` (NOT from `~/trpc/server` — that file imports `server-only` and `next/headers`); pass an inline context object:
+  ```ts
+  const caller = createCaller({ db: {} as never, session: null, headers: new Headers() });
+  ```
+- **Auth-gate assertion**: `await expect(caller.router.procedure()).rejects.toMatchObject({ code: "UNAUTHORIZED" })`
+- **Note on timing delay**: `protectedProcedure` chains `timingMiddleware` which adds ~500 ms in non-production environments. This is expected and does not affect test correctness.
 
 ### 6.3 Adding a worker / polling test
 

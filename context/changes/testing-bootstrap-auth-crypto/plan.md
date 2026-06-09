@@ -293,22 +293,22 @@ No schema changes. No database interaction. No changes to application code.
 
 #### Automated
 
-- [x] 3.1 `npm test` exits 0 with 4 passing tests (3 crypto + 1 auth-gate) and 0 failures
-- [x] 3.2 `npm run typecheck` passes
+- [x] 3.1 `npm test` exits 0 with 4 passing tests (3 crypto + 1 auth-gate) and 0 failures — 6c63946
+- [x] 3.2 `npm run typecheck` passes — 6c63946
 
 #### Manual
 
-- [x] 3.3 `npm test -- --reporter=verbose` shows 4 named tests matching the plan
-- [x] 3.4 Temporarily use valid session in device test → test fails (assertion is non-vacuous)
+- [x] 3.3 `npm test -- --reporter=verbose` shows 4 named tests matching the plan — 6c63946
+- [x] 3.4 Temporarily use valid session in device test → test fails (assertion is non-vacuous) — 6c63946
 
 ### Phase 4: Cookbook Update
 
 #### Automated
 
-- [ ] 4.1 `npm test` still exits 0 (no tests changed)
-- [ ] 4.2 `npm run typecheck` still passes
+- [x] 4.1 `npm test` still exits 0 (no tests changed)
+- [x] 4.2 `npm run typecheck` still passes
 
 #### Manual
 
-- [ ] 4.3 §6.1 in test-plan.md reads actual pattern (not "TBD") with location, import, reference test, run command
-- [ ] 4.4 §6.2 in test-plan.md reads actual pattern (not "TBD") with location, mock pattern, caller creation, reference test, run command
+- [x] 4.3 §6.1 in test-plan.md reads actual pattern (not "TBD") with location, import, reference test, run command
+- [x] 4.4 §6.2 in test-plan.md reads actual pattern (not "TBD") with location, mock pattern, caller creation, reference test, run command
