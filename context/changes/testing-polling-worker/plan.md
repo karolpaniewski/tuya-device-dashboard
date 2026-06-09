@@ -331,8 +331,8 @@ No schema changes. No new tables. `isStale` is a derived field computed from `la
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes (isStale through DeviceItem → RouterOutputs → device-card.tsx)
-- [x] 1.2 `npm run check` passes
+- [x] 1.1 `npm run typecheck` passes (isStale through DeviceItem → RouterOutputs → device-card.tsx) — 132ffe4
+- [x] 1.2 `npm run check` passes — 132ffe4
 
 #### Manual
 
@@ -343,13 +343,13 @@ No schema changes. No new tables. `isStale` is a derived field computed from `la
 
 #### Automated
 
-- [ ] 2.1 `npm test` — all three worker test cases pass (happy path, DB error, gateway error)
-- [ ] 2.2 `npm run typecheck` passes
-- [ ] 2.3 `npm run check` passes
+- [x] 2.1 `npm test` — all three worker test cases pass (happy path, DB error, gateway error)
+- [x] 2.2 `npm run typecheck` passes
+- [x] 2.3 `npm run check` passes
 
 #### Manual
 
-- [ ] 2.4 No manual verification for this phase
+- [x] 2.4 No manual verification for this phase
 
 ### Phase 3: Stale detection tests + §6.3 cookbook
 
