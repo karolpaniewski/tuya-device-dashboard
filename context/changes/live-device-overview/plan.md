@@ -448,12 +448,12 @@ No schema changes. All new tables (`gateways`, `devices`) were created in F-02. 
 
 #### Automated
 
-- [x] 5.1 `npm run typecheck` passes
-- [x] 5.2 `npm run check` passes
-- [x] 5.3 `npm run dev` starts without runtime errors
+- [x] 5.1 `npm run typecheck` passes — 197fb0f
+- [x] 5.2 `npm run check` passes — 197fb0f
+- [x] 5.3 `npm run dev` starts without runtime errors — 197fb0f
 
 #### Manual
 
-- [x] 5.4 Device overview renders with 5 cards in "Unassigned" group after db:seed
-- [x] 5.5 Card temperatures match stub fixtures; online/offline badges correct
-- [x] 5.6 Auto-refresh fires after 30 seconds (last-polled time resets)
+- [x] 5.4 Device overview renders with 5 cards in "Unassigned" group after db:seed — 197fb0f
+- [x] 5.5 Card temperatures match stub fixtures; online/offline badges correct — 197fb0f
+- [x] 5.6 Auto-refresh fires after 30 seconds (last-polled time resets) — 197fb0f
