@@ -73,7 +73,7 @@ orchestrator updates Status as artifacts appear on disk.
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|------------|-----------------|---------------|------------|--------|---------------|
 | 1 | Bootstrap + auth-gate + crypto | Wdróż Vitest; udowodnij auth-gate regression i poprawność decryptLocalKey | #1, #3 | unit (crypto), integration (tRPC auth protection) | complete | context/changes/testing-bootstrap-auth-crypto |
-| 2 | Polling worker integrity | Udowodnij że worker nie serwuje stale state jako live po błędzie | #2 | unit/integration (worker lifecycle + stale detection) | planned | context/changes/testing-polling-worker |
+| 2 | Polling worker integrity | Udowodnij że worker nie serwuje stale state jako live po błędzie | #2 | unit/integration (worker lifecycle + stale detection) | complete | context/changes/testing-polling-worker |
 | 3 | Valve control + threshold scoring | Udowodnij FR-012 command feedback contract i poprawność room scoring | #4, #5 | unit (scoring), integration (command pipeline), smoke z hardware | not started | — |
 | 4 | Quality gates wiring | Zamknij floor: lint + typecheck + Vitest w CI | cross-cutting | gates (naming only, bez YAML) | not started | — |
 
