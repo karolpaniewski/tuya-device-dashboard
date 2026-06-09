@@ -2,7 +2,8 @@ import { createClient } from "@libsql/client";
 import bcryptjs from "bcryptjs";
 import { drizzle } from "drizzle-orm/libsql";
 
-import { users } from "./schema";
+import { encryptLocalKey } from "../lib/crypto";
+import { devices, gateways, users } from "./schema";
 
 const email = process.env.AUTH_ADMIN_EMAIL;
 const password = process.env.AUTH_ADMIN_PASSWORD;
@@ -36,6 +37,43 @@ try {
 		});
 
 	console.log(`✓ Seeded admin user: ${email}`);
+
+	const [gateway] = await db
+		.insert(gateways)
+		.values({
+			id: crypto.randomUUID(),
+			tuyaGatewayId: "stub-gw-001",
+			name: "Main Gateway (stub)",
+			ipAddress: "192.168.1.100",
+			localKey: encryptLocalKey("stub-local-key-0000000000000000"),
+		})
+		.onConflictDoUpdate({
+			target: gateways.tuyaGatewayId,
+			set: { name: "Main Gateway (stub)", ipAddress: "192.168.1.100" },
+		})
+		.returning({ id: gateways.id });
+
+	const gatewayId = gateway!.id;
+
+	const stubDevices = [
+		{ tuyaDeviceId: "stub-dev-001", name: "Sensor A (Room 1)", deviceType: "sensor" },
+		{ tuyaDeviceId: "stub-dev-002", name: "Sensor B (Room 2)", deviceType: "sensor" },
+		{ tuyaDeviceId: "stub-dev-003", name: "Valve A (Room 1)", deviceType: "valve" },
+		{ tuyaDeviceId: "stub-dev-004", name: "Valve B (Room 2)", deviceType: "valve" },
+		{ tuyaDeviceId: "stub-dev-005", name: "Smart Plug 1", deviceType: "plug" },
+	] as const;
+
+	for (const dev of stubDevices) {
+		await db
+			.insert(devices)
+			.values({ id: crypto.randomUUID(), gatewayId, ...dev })
+			.onConflictDoUpdate({
+				target: devices.tuyaDeviceId,
+				set: { name: dev.name, gatewayId },
+			});
+	}
+
+	console.log("✓ Seeded fixture gateway + 5 devices");
 } catch (err) {
 	console.error("Seed failed:", err);
 	process.exit(1);

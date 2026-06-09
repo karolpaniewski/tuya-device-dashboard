@@ -427,22 +427,22 @@ No schema changes. All new tables (`gateways`, `devices`) were created in F-02. 
 
 #### Automated
 
-- [x] 3.1 `npm run typecheck` passes (validates @ts-expect-error removed, types resolve)
-- [x] 3.2 `npm run check` passes
+- [x] 3.1 `npm run typecheck` passes (validates @ts-expect-error removed, types resolve) — b5f285c
+- [x] 3.2 `npm run check` passes — b5f285c
 
 #### Manual
 
-- [x] 3.3 No manual verification for this phase (no UI yet)
+- [x] 3.3 No manual verification for this phase (no UI yet) — b5f285c
 
 ### Phase 4: Seed Extension
 
 #### Automated
 
-- [ ] 4.1 `npm run db:seed` exits with code 0
+- [x] 4.1 `npm run db:seed` exits with code 0
 
 #### Manual
 
-- [ ] 4.2 Drizzle Studio shows 1 gateway + 5 device rows
+- [x] 4.2 Drizzle Studio shows 1 gateway + 5 device rows
 
 ### Phase 5: Frontend Overview Page
 
