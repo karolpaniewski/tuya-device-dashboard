@@ -286,20 +286,20 @@ No schema changes. No database interaction. No changes to application code.
 
 #### Automated
 
-- [x] 2.1 `npm test` exits 0 with 3 passing tests and 0 failures
-- [x] 2.2 `npm run typecheck` passes
+- [x] 2.1 `npm test` exits 0 with 3 passing tests and 0 failures — 2ad7364
+- [x] 2.2 `npm run typecheck` passes — 2ad7364
 
 ### Phase 3: tRPC Auth-gate Integration Test
 
 #### Automated
 
-- [ ] 3.1 `npm test` exits 0 with 4 passing tests (3 crypto + 1 auth-gate) and 0 failures
-- [ ] 3.2 `npm run typecheck` passes
+- [x] 3.1 `npm test` exits 0 with 4 passing tests (3 crypto + 1 auth-gate) and 0 failures
+- [x] 3.2 `npm run typecheck` passes
 
 #### Manual
 
-- [ ] 3.3 `npm test -- --reporter=verbose` shows 4 named tests matching the plan
-- [ ] 3.4 Temporarily use valid session in device test → test fails (assertion is non-vacuous)
+- [x] 3.3 `npm test -- --reporter=verbose` shows 4 named tests matching the plan
+- [x] 3.4 Temporarily use valid session in device test → test fails (assertion is non-vacuous)
 
 ### Phase 4: Cookbook Update
 
