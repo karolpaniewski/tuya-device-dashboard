@@ -17,6 +17,7 @@ export const env = createEnv({
 		ENCRYPTION_SECRET: z
 			.string()
 			.regex(/^[0-9a-f]{64}$/, "must be 64 lowercase hex chars (32 bytes)"),
+		TUYA_STUB: z.string().optional(),
 	},
 
 	/**
@@ -39,6 +40,7 @@ export const env = createEnv({
 		AUTH_ADMIN_EMAIL: process.env.AUTH_ADMIN_EMAIL,
 		AUTH_ADMIN_PASSWORD: process.env.AUTH_ADMIN_PASSWORD,
 		ENCRYPTION_SECRET: process.env.ENCRYPTION_SECRET,
+		TUYA_STUB: process.env.TUYA_STUB,
 		// NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 	},
 	/**
