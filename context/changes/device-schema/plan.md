@@ -196,10 +196,10 @@ Apply the new schema to the dev SQLite database and generate a migration file fo
 
 #### Automated
 
-- [x] 2.1 `npm run db:push` exits with code 0
-- [x] 2.2 `npm run db:generate` exits with code 0
-- [x] 2.3 `drizzle/` directory contains at least one `.sql` file
+- [x] 2.1 `npm run db:push` exits with code 0 — 1dc4e4c
+- [x] 2.2 `npm run db:generate` exits with code 0 — 1dc4e4c
+- [x] 2.3 `drizzle/` directory contains at least one `.sql` file — 1dc4e4c
 
 #### Manual
 
-- [x] 2.4 Drizzle Studio shows five new tables, no `posts`, `users` intact
+- [x] 2.4 Drizzle Studio shows five new tables, no `posts`, `users` intact — 1dc4e4c
