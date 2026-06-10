@@ -38,13 +38,20 @@ describe("device.overview — stale detection", () => {
 
 	function makeCallerWithRow() {
 		const mockDb = {
-			select: vi.fn().mockReturnValue({
-				from: vi.fn().mockReturnValue({
-					leftJoin: vi.fn().mockReturnValue({
-						leftJoin: vi.fn().mockResolvedValue([syntheticRow]),
+			select: vi
+				.fn()
+				// First call: main devices+rooms query
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							leftJoin: vi.fn().mockResolvedValue([syntheticRow]),
+						}),
 					}),
+				})
+				// Second call: roomThresholds query — no rooms assigned, returns []
+				.mockReturnValueOnce({
+					from: vi.fn().mockResolvedValue([]),
 				}),
-			}),
 		};
 		return createCaller({
 			db: mockDb as never,
@@ -82,5 +89,58 @@ describe("device.overview — stale detection", () => {
 		expect(device.isStale).toBe(false);
 		expect(device.isOnline).toBe(false);
 		expect(device.lastPolledAt).toBeNull();
+	});
+});
+
+describe("device.overview — room scoring", () => {
+	afterEach(() => deviceStateStore.clear());
+
+	const sensorRow = {
+		device: {
+			id: "d1",
+			tuyaDeviceId: "tuya-d1",
+			name: "Sensor 1",
+			deviceType: "sensor",
+		},
+		room: { id: "r1", name: "Living Room" },
+	};
+
+	it("badge Too Cold and anomaly false when temp below min, setpoint null (PRD §FR-012)", async () => {
+		deviceStateStore.set("tuya-d1", {
+			isOnline: true,
+			temperatureC: 15,
+			setpointC: null,
+			lastPolledAt: new Date(),
+		});
+
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							leftJoin: vi.fn().mockResolvedValue([sensorRow]),
+						}),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi
+						.fn()
+						.mockResolvedValue([
+							{ roomId: "r1", minTempC: 18, maxTempC: 24, anomalyGapC: 3 },
+						]),
+				}),
+		};
+
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+
+		const result = await caller.device.overview();
+		// Oracle: 15 < minTempC(18) → "Too Cold"; setpointC null → anomaly false
+		expect(result.rooms[0]?.badge).toBe("Too Cold");
+		expect(result.rooms[0]?.anomaly).toBe(false);
 	});
 });

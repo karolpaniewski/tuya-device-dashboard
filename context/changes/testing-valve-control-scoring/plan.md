@@ -594,25 +594,25 @@ pattern established by `scoring.test.ts`:
 
 #### Automated
 
-- [x] 3.3.1 `npm test` passes — all `device.setpoint.test.ts` cases green
-- [x] 3.3.2 `npm run typecheck` passes
-- [x] 3.3.3 `npm run lint` passes
+- [x] 3.3.1 `npm test` passes — all `device.setpoint.test.ts` cases green — 29ea756
+- [x] 3.3.2 `npm run typecheck` passes — 29ea756
+- [x] 3.3.3 `npm run lint` passes — 29ea756
 
 #### Manual
 
-- [x] 3.3.4 BAD_REQUEST test asserts `sendSetpoint` NOT called — verify assertion is present and meaningful
+- [x] 3.3.4 BAD_REQUEST test asserts `sendSetpoint` NOT called — verify assertion is present and meaningful — 29ea756
 
 ### Phase 3.4: Extend DeviceState read path + wire scoreRoom
 
 #### Automated
 
-- [ ] 3.4.1 `npm test` passes — stale-detection tests still green; new scoring test green
-- [ ] 3.4.2 `npm run typecheck` passes — room type includes `badge`, `anomaly`, `suggestion`
-- [ ] 3.4.3 `npm run lint` passes
+- [x] 3.4.1 `npm test` passes — stale-detection tests still green; new scoring test green
+- [x] 3.4.2 `npm run typecheck` passes — room type includes `badge`, `anomaly`, `suggestion`
+- [x] 3.4.3 `npm run lint` passes
 
 #### Manual
 
-- [ ] 3.4.4 Dev server: `device.overview` response in Network tab includes `badge`, `anomaly`, `suggestion` on room objects
+- [x] 3.4.4 Dev server: `device.overview` response in Network tab includes `badge`, `anomaly`, `suggestion` on room objects
 
 ### Phase 3.5: §6 cookbook update
 

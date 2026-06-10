@@ -8,9 +8,11 @@ import {
 	devices,
 	gateways,
 	rooms,
+	roomThresholds,
 } from "~/server/db/schema";
 import { decryptLocalKey } from "~/server/lib/crypto";
 import { deviceStateStore } from "~/server/lib/device-state-store";
+import { type RoomBadge, scoreRoom } from "~/server/lib/scoring";
 import { getTuyaClient } from "~/server/lib/tuya";
 import { DP_CODE_MAP } from "~/server/lib/tuya/dp-codes";
 
@@ -116,6 +118,7 @@ export const deviceRouter = createTRPCRouter({
 				roomName: row.room?.name ?? null,
 				isOnline: state?.isOnline ?? false,
 				temperatureC: state?.temperatureC ?? null,
+				setpointC: state?.setpointC ?? null,
 				lastPolledAt: state?.lastPolledAt ?? null,
 				isStale,
 			};
@@ -136,10 +139,41 @@ export const deviceRouter = createTRPCRouter({
 			}
 		}
 
-		return {
-			rooms: Array.from(roomsMap.values()),
-			unassigned,
-		};
+		// Separate query to avoid deepening the existing mock chain in tests
+		const thresholdRows = await ctx.db.select().from(roomThresholds);
+		const thresholdMap = new Map(
+			thresholdRows.map((t) => [
+				t.roomId,
+				{
+					minTempC: t.minTempC ?? null,
+					maxTempC: t.maxTempC ?? null,
+					anomalyGapC: t.anomalyGapC ?? null,
+				},
+			]),
+		);
+
+		const scoredRooms = Array.from(roomsMap.values()).map((room) => {
+			const sensor = room.devices.find(
+				(d) => d.deviceType === "sensor" && d.temperatureC !== null,
+			);
+			const valve = room.devices.find((d) => d.deviceType === "valve");
+			const valveSetpointC = valve
+				? (deviceStateStore.get(valve.tuyaDeviceId)?.setpointC ?? null)
+				: null;
+			const thresholds = thresholdMap.get(room.roomId) ?? {
+				minTempC: null,
+				maxTempC: null,
+				anomalyGapC: null,
+			};
+			const score = scoreRoom(
+				sensor?.temperatureC ?? null,
+				valveSetpointC,
+				thresholds,
+			);
+			return { ...room, ...score };
+		});
+
+		return { rooms: scoredRooms, unassigned };
 	}),
 });
 
@@ -152,6 +186,10 @@ interface DeviceItem {
 	roomName: string | null;
 	isOnline: boolean;
 	temperatureC: number | null;
+	setpointC: number | null;
 	lastPolledAt: Date | null;
 	isStale: boolean;
 }
+
+// Re-export so the return type of device.overview is fully typed on the client.
+export type { RoomBadge };
