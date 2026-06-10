@@ -618,9 +618,9 @@ pattern established by `scoring.test.ts`:
 
 #### Automated
 
-- [x] 3.5.1 `npm test` passes — no regressions
+- [x] 3.5.1 `npm test` passes — no regressions — d5af044
 
 #### Manual
 
-- [x] 3.5.2 §6.4 and §6.5 are no longer placeholder stubs — contain reference test, file location, mock pattern, and anti-pattern warning
-- [x] 3.5.3 §6.4 and §6.5 are self-contained: a developer unfamiliar with this plan can add a new test from the cookbook alone
+- [x] 3.5.2 §6.4 and §6.5 are no longer placeholder stubs — contain reference test, file location, mock pattern, and anti-pattern warning — d5af044
+- [x] 3.5.3 §6.4 and §6.5 are self-contained: a developer unfamiliar with this plan can add a new test from the cookbook alone — d5af044
