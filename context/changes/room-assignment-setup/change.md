@@ -1,7 +1,7 @@
 ---
 id: room-assignment-setup
 title: Room Assignment Setup
-status: implementing
+status: implemented
 created: 2026-06-10
 updated: 2026-06-10
 roadmap_id: S-02

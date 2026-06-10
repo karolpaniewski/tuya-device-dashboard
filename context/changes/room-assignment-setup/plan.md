@@ -310,10 +310,10 @@ Add `afterEach(() => vi.resetAllMocks())` to prevent mock state leaking between 
 
 #### Automated
 
-- [x] 3.1 `npm test` passes — all room.test.ts cases green
-- [x] 3.2 `npm run typecheck` passes
-- [x] 3.3 `npm run check` passes
+- [x] 3.1 `npm test` passes — all room.test.ts cases green — 1a9825e
+- [x] 3.2 `npm run typecheck` passes — 1a9825e
+- [x] 3.3 `npm run check` passes — 1a9825e
 
 #### Manual
 
-- [x] 3.4 No regressions in existing test files (device, crypto, scoring, tuya-poller)
+- [x] 3.4 No regressions in existing test files (device, crypto, scoring, tuya-poller) — 1a9825e
