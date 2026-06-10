@@ -1,6 +1,9 @@
 "use client";
 
+import { Pencil, Settings, X } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { ErrorMessage } from "~/components/ui/error-message";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { RoomThresholdForm } from "./room-threshold-form";
 
@@ -26,6 +29,7 @@ export function RoomManager({ rooms, utils }: Props) {
 	const createMutation = api.room.create.useMutation({
 		onError: (e) => setError(e.message),
 		onSuccess: () => {
+			toast.success("Room created");
 			setNewName("");
 			invalidate();
 		},
@@ -34,6 +38,7 @@ export function RoomManager({ rooms, utils }: Props) {
 	const renameMutation = api.room.rename.useMutation({
 		onError: (e) => setError(e.message),
 		onSuccess: () => {
+			toast.success("Room renamed");
 			setEditingId(null);
 			invalidate();
 		},
@@ -41,7 +46,10 @@ export function RoomManager({ rooms, utils }: Props) {
 
 	const deleteMutation = api.room.delete.useMutation({
 		onError: (e) => setError(e.message),
-		onSuccess: invalidate,
+		onSuccess: () => {
+			toast.success("Room deleted");
+			invalidate();
+		},
 	});
 
 	function startRename(room: RoomItem) {
@@ -64,9 +72,9 @@ export function RoomManager({ rooms, utils }: Props) {
 		<section>
 			<h2 className="mb-4 font-semibold text-lg text-white">Rooms</h2>
 			{error && (
-				<p className="mb-3 rounded bg-red-900 px-3 py-2 text-red-200 text-sm">
-					{error}
-				</p>
+				<div className="mb-3">
+					<ErrorMessage message={error} variant="banner" />
+				</div>
 			)}
 			<ul className="flex flex-col gap-2">
 				{rooms.map((room) => (
@@ -108,7 +116,7 @@ export function RoomManager({ rooms, utils }: Props) {
 								title="Thresholds"
 								type="button"
 							>
-								⚙
+								<Settings size={14} />
 							</button>
 							<button
 								className="text-gray-400 text-sm hover:text-white"
@@ -116,7 +124,7 @@ export function RoomManager({ rooms, utils }: Props) {
 								title="Rename"
 								type="button"
 							>
-								✎
+								<Pencil size={14} />
 							</button>
 							<button
 								className="text-gray-400 text-sm hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40"
@@ -132,7 +140,7 @@ export function RoomManager({ rooms, utils }: Props) {
 								}
 								type="button"
 							>
-								✕
+								<X size={14} />
 							</button>
 						</div>
 						{thresholdRoomId === room.id && (

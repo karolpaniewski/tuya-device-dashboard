@@ -1,6 +1,9 @@
 "use client";
 
+import { Layers } from "lucide-react";
 import { useState } from "react";
+import { ErrorMessage } from "~/components/ui/error-message";
+import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
 import { FilterBar, type FilterState } from "./filter-bar";
 import { RoomGroup } from "./room-group";
@@ -34,14 +37,29 @@ export function DeviceOverview() {
 	const [nameSearch, setNameSearch] = useState("");
 
 	if (isLoading) {
-		return <p className="text-gray-400 text-sm">Loading devices…</p>;
+		return (
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				{Array.from({ length: 6 }).map((_, i) => (
+					<div
+						className="flex h-32 flex-col gap-3 rounded-lg border border-gray-700 bg-gray-800 p-4"
+						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+						key={i}
+					>
+						<Skeleton className="h-4 w-3/4" />
+						<Skeleton className="h-6 w-1/2" />
+						<Skeleton className="h-3 w-1/3" />
+					</div>
+				))}
+			</div>
+		);
 	}
 
 	if (error) {
 		return (
-			<p className="text-red-400 text-sm">
-				Failed to load devices: {error.message}
-			</p>
+			<ErrorMessage
+				message="Failed to load devices. Please try again."
+				variant="inline"
+			/>
 		);
 	}
 
@@ -50,6 +68,23 @@ export function DeviceOverview() {
 		(typeFilter ? 1 : 0) +
 		(statusFilter ? 1 : 0) +
 		(nameSearch ? 1 : 0);
+
+	if (
+		data &&
+		data.rooms.length === 0 &&
+		data.unassigned.length === 0 &&
+		activeFilterCount === 0
+	) {
+		return (
+			<div className="flex flex-col items-center justify-center py-16 text-center">
+				<Layers className="mx-auto mb-4 text-gray-600" size={48} />
+				<p className="font-semibold text-white">No devices discovered yet</p>
+				<p className="mt-1 text-gray-400 text-sm">
+					The polling worker will surface devices as they respond on the LAN.
+				</p>
+			</div>
+		);
+	}
 
 	function clearFilters() {
 		setRoomFilter("");

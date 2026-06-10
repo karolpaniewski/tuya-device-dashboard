@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { ErrorMessage } from "~/components/ui/error-message";
 import { api } from "~/trpc/react";
 
 interface Props {
@@ -36,6 +38,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 	const mutation = api.room.setThreshold.useMutation({
 		onError: (e) => setFormError(e.message),
 		onSuccess: () => {
+			toast.success("Thresholds saved");
 			void utils.device.overview.invalidate();
 			onClose();
 		},
@@ -98,7 +101,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 					/>
 				</label>
 			</div>
-			{formError && <p className="text-red-400 text-sm">{formError}</p>}
+			<ErrorMessage message={formError} variant="inline" />
 			<div className="flex gap-2">
 				<button
 					className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"

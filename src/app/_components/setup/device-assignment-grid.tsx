@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ErrorMessage } from "~/components/ui/error-message";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 type DeviceItem =
@@ -79,9 +80,7 @@ export function DeviceAssignmentGrid({ devices, rooms, utils }: Props) {
 						{savingById[device.id] && (
 							<p className="text-gray-400 text-xs">Saving…</p>
 						)}
-						{errorById[device.id] && (
-							<p className="text-red-400 text-xs">{errorById[device.id]}</p>
-						)}
+						<ErrorMessage message={errorById[device.id]} variant="inline" />
 					</div>
 				))}
 				{devices.length === 0 && (

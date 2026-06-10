@@ -463,11 +463,11 @@ No database changes. No API changes. The `cn()` utility from `src/lib/utils.ts` 
 
 #### Automated
 
-- [x] 1.1 `npm run ci` passes after init and all installs
-- [x] 1.2 `src/components/ui/button.tsx`, `input.tsx`, `select.tsx`, `skeleton.tsx`, `badge.tsx`, `sonner.tsx` all exist
-- [x] 1.3 `src/lib/utils.ts` exists with `cn()` export
-- [x] 1.4 `components.json` exists at project root
-- [x] 1.5 `globals.css` contains `:root { --background:` (shadcn color variables)
+- [x] 1.1 `npm run ci` passes after init and all installs — a9e00cc
+- [x] 1.2 `src/components/ui/button.tsx`, `input.tsx`, `select.tsx`, `skeleton.tsx`, `badge.tsx`, `sonner.tsx` all exist — a9e00cc
+- [x] 1.3 `src/lib/utils.ts` exists with `cn()` export — a9e00cc
+- [x] 1.4 `components.json` exists at project root — a9e00cc
+- [x] 1.5 `globals.css` contains `:root { --background:` (shadcn color variables) — a9e00cc
 
 #### Manual
 
@@ -478,23 +478,23 @@ No database changes. No API changes. The `cn()` utility from `src/lib/utils.ts` 
 
 #### Automated
 
-- [ ] 2.1 `npm run ci` passes after all Phase 2 changes
-- [ ] 2.2 TypeScript: no errors on `ErrorMessage` import sites
-- [ ] 2.3 `src/components/ui/error-message.tsx` exists
-- [ ] 2.4 `src/app/error.tsx` exists with `"use client"` on line 1
+- [x] 2.1 `npm run ci` passes after all Phase 2 changes
+- [x] 2.2 TypeScript: no errors on `ErrorMessage` import sites
+- [x] 2.3 `src/components/ui/error-message.tsx` exists
+- [x] 2.4 `src/app/error.tsx` exists with `"use client"` on line 1
 
 #### Manual
 
-- [ ] 2.5 Skeleton device grid visible on hard reload of dashboard
-- [ ] 2.6 Skeleton setup rows visible on hard reload of /setup
-- [ ] 2.7 Room create → toast "Room created" bottom-right
-- [ ] 2.8 Room rename → toast "Room renamed"
-- [ ] 2.9 Room delete → toast "Room deleted"
-- [ ] 2.10 Threshold save → toast "Thresholds saved"
-- [ ] 2.11 Device assign: no toast (only inline "Saving…" text)
-- [ ] 2.12 DeviceOverview query error renders `ErrorMessage` — no raw error.message
-- [ ] 2.13 Zero-device dashboard shows `Layers` icon empty state
-- [ ] 2.14 room-manager shows lucide icons (no emoji)
+- [x] 2.5 Skeleton device grid visible on hard reload of dashboard
+- [x] 2.6 Skeleton setup rows visible on hard reload of /setup
+- [x] 2.7 Room create → toast "Room created" bottom-right
+- [x] 2.8 Room rename → toast "Room renamed"
+- [x] 2.9 Room delete → toast "Room deleted"
+- [x] 2.10 Threshold save → toast "Thresholds saved"
+- [x] 2.11 Device assign: no toast (only inline "Saving…" text)
+- [x] 2.12 DeviceOverview query error renders `ErrorMessage` — no raw error.message
+- [x] 2.13 Zero-device dashboard shows `Layers` icon empty state
+- [x] 2.14 room-manager shows lucide icons (no emoji)
 
 ### Phase 3: Component Unification
 
