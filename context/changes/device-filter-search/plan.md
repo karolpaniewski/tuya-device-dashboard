@@ -213,19 +213,19 @@ No automated tests for this slice (user confirmed: logic is trivial, manual veri
 
 #### Automated
 
-- [x] 2.1 `npm run typecheck` passes with zero errors
-- [x] 2.2 `npm run check` (Biome lint) passes
-- [x] 2.3 `npm run dev` starts without runtime errors
+- [x] 2.1 `npm run typecheck` passes with zero errors — 4b976d4
+- [x] 2.2 `npm run check` (Biome lint) passes — 4b976d4
+- [x] 2.3 `npm run dev` starts without runtime errors — 4b976d4
 
 #### Manual
 
-- [x] 2.4 Filter bar appears below the dashboard header with all four controls visible
-- [x] 2.5 Room dropdown lists all rooms + "All Rooms"; selecting a room shows only that group
-- [x] 2.6 Type chips filter devices within groups; "All" restores them
-- [x] 2.7 Status chips filter to Online/Offline only; "All" restores
-- [x] 2.8 Name search narrows devices as you type (case-insensitive)
-- [x] 2.9 Combined filters apply AND logic
-- [x] 2.10 Zero-results state shows "No devices match" + working "Clear filters"
-- [x] 2.11 Room groups with 0 matches after filter are hidden
-- [x] 2.12 Unassigned group hidden when room filter is active; participates in other filters otherwise
-- [x] 2.13 30-second auto-refresh continues; filter state persists across re-fetches
+- [x] 2.4 Filter bar appears below the dashboard header with all four controls visible — 4b976d4
+- [x] 2.5 Room dropdown lists all rooms + "All Rooms"; selecting a room shows only that group — 4b976d4
+- [x] 2.6 Type chips filter devices within groups; "All" restores them — 4b976d4
+- [x] 2.7 Status chips filter to Online/Offline only; "All" restores — 4b976d4
+- [x] 2.8 Name search narrows devices as you type (case-insensitive) — 4b976d4
+- [x] 2.9 Combined filters apply AND logic — 4b976d4
+- [x] 2.10 Zero-results state shows "No devices match" + working "Clear filters" — 4b976d4
+- [x] 2.11 Room groups with 0 matches after filter are hidden — 4b976d4
+- [x] 2.12 Unassigned group hidden when room filter is active; participates in other filters otherwise — 4b976d4
+- [x] 2.13 30-second auto-refresh continues; filter state persists across re-fetches — 4b976d4
