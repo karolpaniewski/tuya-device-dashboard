@@ -306,27 +306,27 @@ No automated tests — user confirmed manual verification is sufficient for this
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes with zero errors
-- [x] 1.2 `npm run check` (Biome lint) passes
+- [x] 1.1 `npm run typecheck` passes with zero errors — 82c646f
+- [x] 1.2 `npm run check` (Biome lint) passes — 82c646f
 
 #### Manual
 
-- [x] 1.3 `npm run dev` starts without runtime errors
-- [ ] 1.4 Dashboard room headers show badge even for rooms with no threshold record (18–24 °C defaults)
+- [x] 1.3 `npm run dev` starts without runtime errors — 82c646f
+- [x] 1.4 Dashboard room headers show badge even for rooms with no threshold record (18–24 °C defaults)
 
 ### Phase 2: Dashboard Badge Display
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` passes with zero errors
-- [ ] 2.2 `npm run check` (Biome lint) passes
+- [x] 2.1 `npm run typecheck` passes with zero errors
+- [x] 2.2 `npm run check` (Biome lint) passes
 
 #### Manual
 
-- [ ] 2.3 Room headers show colored badge chips (OK green / Too Cold blue / Too Hot red)
-- [ ] 2.4 Rooms without sensors or thresholds show no badge
-- [ ] 2.5 Suggestion text appears below room header when anomaly is active
-- [ ] 2.6 Unassigned group shows no badge
+- [x] 2.3 Room headers show colored badge chips (OK green / Too Cold blue / Too Hot red)
+- [x] 2.4 Rooms without sensors or thresholds show no badge
+- [x] 2.5 Suggestion text appears below room header when anomaly is active
+- [x] 2.6 Unassigned group shows no badge
 
 ### Phase 3: Threshold Configuration UI
 

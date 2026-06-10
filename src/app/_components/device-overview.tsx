@@ -114,9 +114,12 @@ export function DeviceOverview() {
 				<>
 					{filteredRooms.map((room) => (
 						<RoomGroup
+							anomaly={room.anomaly}
+							badge={room.badge}
 							devices={room.devices}
 							key={room.roomId}
 							roomName={room.roomName}
+							suggestion={room.suggestion}
 						/>
 					))}
 					{filteredUnassigned.length > 0 && (
