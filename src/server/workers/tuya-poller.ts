@@ -27,6 +27,7 @@ export async function pollOnce(): Promise<void> {
 				deviceStateStore.set(reading.tuyaDeviceId, {
 					isOnline: reading.isOnline,
 					temperatureC: reading.temperatureC,
+					setpointC: reading.setpointC,
 					lastPolledAt: new Date(),
 				});
 			}

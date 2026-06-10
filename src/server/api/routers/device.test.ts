@@ -57,6 +57,7 @@ describe("device.overview — stale detection", () => {
 		deviceStateStore.set("tuya-d1", {
 			isOnline: true,
 			temperatureC: 21,
+			setpointC: null,
 			lastPolledAt: new Date(Date.now() - 10_000),
 		});
 		const result = await makeCallerWithRow().device.overview();
@@ -67,6 +68,7 @@ describe("device.overview — stale detection", () => {
 		deviceStateStore.set("tuya-d1", {
 			isOnline: true,
 			temperatureC: 21,
+			setpointC: null,
 			lastPolledAt: new Date(Date.now() - 61_000),
 		});
 		const result = await makeCallerWithRow().device.overview();

@@ -1,6 +1,7 @@
 export interface DeviceState {
 	isOnline: boolean;
 	temperatureC: number | null;
+	setpointC: number | null;
 	lastPolledAt: Date;
 }
 

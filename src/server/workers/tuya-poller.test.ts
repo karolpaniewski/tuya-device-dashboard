@@ -55,6 +55,7 @@ describe("pollOnce › DB error", () => {
 		deviceStateStore.set("d1", {
 			isOnline: true,
 			temperatureC: 20,
+			setpointC: null,
 			lastPolledAt: oldDate,
 		});
 

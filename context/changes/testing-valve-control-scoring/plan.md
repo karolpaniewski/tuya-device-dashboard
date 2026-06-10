@@ -572,23 +572,23 @@ pattern established by `scoring.test.ts`:
 
 #### Automated
 
-- [x] 3.1.1 `npm test` passes — all `scoring.test.ts` cases green
-- [x] 3.1.2 `npm run typecheck` passes — `RoomScore`, `RoomBadge` exports well-typed
+- [x] 3.1.1 `npm test` passes — all `scoring.test.ts` cases green — 5600a41
+- [x] 3.1.2 `npm run typecheck` passes — `RoomScore`, `RoomBadge` exports well-typed — 5600a41
 
 #### Manual
 
-- [x] 3.1.3 Inspect test file: each `expect` value matches PRD §FR-012 by reading (not by running)
+- [x] 3.1.3 Inspect test file: each `expect` value matches PRD §FR-012 by reading (not by running) — 5600a41
 
 ### Phase 3.2: TuyaGatewayClient extension + dp-codes.ts
 
 #### Automated
 
-- [ ] 3.2.1 `npm run typecheck` passes across `types.ts`, `real-client.ts`, `stub-client.ts`, `device-state-store.ts`, `tuya-poller.ts`, `device.test.ts`
-- [ ] 3.2.2 `npm test` passes — all existing tests green (no regressions)
+- [x] 3.2.1 `npm run typecheck` passes across `types.ts`, `real-client.ts`, `stub-client.ts`, `device-state-store.ts`, `tuya-poller.ts`, `device.test.ts`
+- [x] 3.2.2 `npm test` passes — all existing tests green (no regressions)
 
 #### Manual
 
-- [ ] 3.2.3 `real-client.ts` `sendSetpoint` throws on tuyapi errors (inspect — do not run against hardware)
+- [x] 3.2.3 `real-client.ts` `sendSetpoint` throws on tuyapi errors (inspect — do not run against hardware)
 
 ### Phase 3.3: device.setpoint mutation + integration tests (Risk #4)
 
