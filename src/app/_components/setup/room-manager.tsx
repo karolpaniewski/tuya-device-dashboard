@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { RoomThresholdForm } from "./room-threshold-form";
 
 type RoomItem = RouterOutputs["room"]["list"][number];
 
@@ -14,6 +15,7 @@ export function RoomManager({ rooms, utils }: Props) {
 	const [newName, setNewName] = useState("");
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editingName, setEditingName] = useState("");
+	const [thresholdRoomId, setThresholdRoomId] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
 	const invalidate = () => {
@@ -22,27 +24,28 @@ export function RoomManager({ rooms, utils }: Props) {
 	};
 
 	const createMutation = api.room.create.useMutation({
+		onError: (e) => setError(e.message),
 		onSuccess: () => {
 			setNewName("");
 			invalidate();
 		},
-		onError: (e) => setError(e.message),
 	});
 
 	const renameMutation = api.room.rename.useMutation({
+		onError: (e) => setError(e.message),
 		onSuccess: () => {
 			setEditingId(null);
 			invalidate();
 		},
-		onError: (e) => setError(e.message),
 	});
 
 	const deleteMutation = api.room.delete.useMutation({
-		onSuccess: invalidate,
 		onError: (e) => setError(e.message),
+		onSuccess: invalidate,
 	});
 
 	function startRename(room: RoomItem) {
+		setThresholdRoomId(null);
 		setEditingId(room.id);
 		setEditingName(room.name);
 		setError(null);
@@ -68,52 +71,77 @@ export function RoomManager({ rooms, utils }: Props) {
 			<ul className="flex flex-col gap-2">
 				{rooms.map((room) => (
 					<li
-						className="flex items-center gap-3 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3"
+						className="flex flex-col gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3"
 						key={room.id}
 					>
-						{editingId === room.id ? (
-							<input
-								// biome-ignore lint/a11y/noAutofocus: intentional for inline edit UX
-								autoFocus
-								className="flex-1 rounded border border-gray-600 bg-gray-900 px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-								onBlur={() => commitRename(room.id)}
-								onChange={(e) => setEditingName(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter") commitRename(room.id);
-									if (e.key === "Escape") setEditingId(null);
+						<div className="flex items-center gap-3">
+							{editingId === room.id ? (
+								<input
+									// biome-ignore lint/a11y/noAutofocus: intentional for inline edit UX
+									autoFocus
+									className="flex-1 rounded border border-gray-600 bg-gray-900 px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+									onBlur={() => commitRename(room.id)}
+									onChange={(e) => setEditingName(e.target.value)}
+									onKeyDown={(e) => {
+										if (e.key === "Enter") commitRename(room.id);
+										if (e.key === "Escape") setEditingId(null);
+									}}
+									value={editingName}
+								/>
+							) : (
+								<span className="flex-1 text-white">{room.name}</span>
+							)}
+							<span className="rounded bg-gray-700 px-2 py-0.5 text-gray-400 text-xs">
+								{room.deviceCount}{" "}
+								{room.deviceCount === 1 ? "device" : "devices"}
+							</span>
+							<button
+								className={`text-sm ${thresholdRoomId === room.id ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}
+								onClick={() => {
+									if (thresholdRoomId === room.id) {
+										setThresholdRoomId(null);
+									} else {
+										setEditingId(null);
+										setThresholdRoomId(room.id);
+									}
 								}}
-								value={editingName}
+								title="Thresholds"
+								type="button"
+							>
+								⚙
+							</button>
+							<button
+								className="text-gray-400 text-sm hover:text-white"
+								onClick={() => startRename(room)}
+								title="Rename"
+								type="button"
+							>
+								✎
+							</button>
+							<button
+								className="text-gray-400 text-sm hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40"
+								disabled={room.deviceCount > 0 || deleteMutation.isPending}
+								onClick={() => {
+									setError(null);
+									deleteMutation.mutate({ id: room.id });
+								}}
+								title={
+									room.deviceCount > 0
+										? "Room has assigned devices — reassign them first"
+										: "Delete room"
+								}
+								type="button"
+							>
+								✕
+							</button>
+						</div>
+						{thresholdRoomId === room.id && (
+							<RoomThresholdForm
+								onClose={() => setThresholdRoomId(null)}
+								roomId={room.id}
+								utils={utils}
 							/>
-						) : (
-							<span className="flex-1 text-white">{room.name}</span>
 						)}
-						<span className="rounded bg-gray-700 px-2 py-0.5 text-gray-400 text-xs">
-							{room.deviceCount} {room.deviceCount === 1 ? "device" : "devices"}
-						</span>
-						<button
-							className="text-gray-400 text-sm hover:text-white"
-							onClick={() => startRename(room)}
-							title="Rename"
-							type="button"
-						>
-							✎
-						</button>
-						<button
-							className="text-gray-400 text-sm hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40"
-							disabled={room.deviceCount > 0 || deleteMutation.isPending}
-							onClick={() => {
-								setError(null);
-								deleteMutation.mutate({ id: room.id });
-							}}
-							title={
-								room.deviceCount > 0
-									? "Room has assigned devices — reassign them first"
-									: "Delete room"
-							}
-							type="button"
-						>
-							✕
-						</button>
 					</li>
 				))}
 				{rooms.length === 0 && (

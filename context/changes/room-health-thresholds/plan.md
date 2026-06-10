@@ -318,30 +318,30 @@ No automated tests — user confirmed manual verification is sufficient for this
 
 #### Automated
 
-- [x] 2.1 `npm run typecheck` passes with zero errors
-- [x] 2.2 `npm run check` (Biome lint) passes
+- [x] 2.1 `npm run typecheck` passes with zero errors — ae10f6d
+- [x] 2.2 `npm run check` (Biome lint) passes — ae10f6d
 
 #### Manual
 
-- [x] 2.3 Room headers show colored badge chips (OK green / Too Cold blue / Too Hot red)
-- [x] 2.4 Rooms without sensors or thresholds show no badge
-- [x] 2.5 Suggestion text appears below room header when anomaly is active
-- [x] 2.6 Unassigned group shows no badge
+- [x] 2.3 Room headers show colored badge chips (OK green / Too Cold blue / Too Hot red) — ae10f6d
+- [x] 2.4 Rooms without sensors or thresholds show no badge — ae10f6d
+- [x] 2.5 Suggestion text appears below room header when anomaly is active — ae10f6d
+- [x] 2.6 Unassigned group shows no badge — ae10f6d
 
 ### Phase 3: Threshold Configuration UI
 
 #### Automated
 
-- [ ] 3.1 `npm run typecheck` passes with zero errors
-- [ ] 3.2 `npm run check` (Biome lint) passes
-- [ ] 3.3 `npm run dev` starts without runtime errors
+- [x] 3.1 `npm run typecheck` passes with zero errors
+- [x] 3.2 `npm run check` (Biome lint) passes
+- [x] 3.3 `npm run dev` starts without runtime errors
 
 #### Manual
 
-- [ ] 3.4 ⚙ button appears on each room row in /setup
-- [ ] 3.5 Clicking ⚙ opens threshold form; clicking again closes it (toggle)
-- [ ] 3.6 Form pre-populates with saved values or defaults (18 / 24 / 3)
-- [ ] 3.7 Saving closes form; dashboard badge updates
-- [ ] 3.8 Min ≥ Max shows inline error; mutation not called
-- [ ] 3.9 Cancel closes without saving; re-open shows last saved values
-- [ ] 3.10 Opening rename closes threshold form
+- [x] 3.4 ⚙ button appears on each room row in /setup
+- [x] 3.5 Clicking ⚙ opens threshold form; clicking again closes it (toggle)
+- [x] 3.6 Form pre-populates with saved values or defaults (18 / 24 / 3)
+- [x] 3.7 Saving closes form; dashboard badge updates
+- [x] 3.8 Min ≥ Max shows inline error; mutation not called
+- [x] 3.9 Cancel closes without saving; re-open shows last saved values
+- [x] 3.10 Opening rename closes threshold form
