@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-10 (Phase 3 → complete; §6.4 and §6.5 filled in)
+> Last updated: 2026-06-10 (Phase 4 → complete; §5 status footnotes; §6.6 post-edit hook recipe)
 
 ---
 
@@ -75,7 +75,7 @@ orchestrator updates Status as artifacts appear on disk.
 | 1 | Bootstrap + auth-gate + crypto | Wdróż Vitest; udowodnij auth-gate regression i poprawność decryptLocalKey | #1, #3 | unit (crypto), integration (tRPC auth protection) | complete | context/changes/testing-bootstrap-auth-crypto |
 | 2 | Polling worker integrity | Udowodnij że worker nie serwuje stale state jako live po błędzie | #2 | unit/integration (worker lifecycle + stale detection) | complete | context/changes/testing-polling-worker |
 | 3 | Valve control + threshold scoring | Udowodnij FR-012 command feedback contract i poprawność room scoring | #4, #5 | unit (scoring), integration (command pipeline), smoke z hardware | complete | context/changes/testing-valve-control-scoring |
-| 4 | Quality gates wiring | Zamknij floor: lint + typecheck + Vitest w CI | cross-cutting | gates (naming only, bez YAML) | change opened | context/changes/testing-quality-gates-wiring |
+| 4 | Quality gates wiring | Zamknij floor: lint + typecheck + Vitest w CI | cross-cutting | gates (naming only, bez YAML) | complete | context/changes/testing-quality-gates-wiring |
 
 **Status vocabulary** (parser literals): `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`
 
@@ -106,8 +106,8 @@ The full set of gates that must pass before a change reaches production.
 
 | Gate | Where | Required? | Catches |
 |------|-------|-----------|---------|
-| lint + typecheck | local + CI | required | syntactic / type drift |
-| unit + integration (Vitest) | local + CI | required after §3 Phase 1 | logic regressions (auth, crypto, worker, scoring) |
+| lint + typecheck | local + CI | required — local ✔; CI YAML pending (Module 1 Lesson 5) | syntactic / type drift |
+| unit + integration (Vitest) | local + CI | required — local ✔; CI YAML pending (Module 1 Lesson 5) | logic regressions (auth, crypto, worker, scoring) |
 | hardware smoke (S-04) | manual, on PR | required after §3 Phase 3 | command feedback na real hardware |
 | post-edit hook (Vitest) | local (agent loop) | recommended after §3 Phase 4 | regressions w czasie edycji |
 | e2e | CI | not in scope — see §7 | (wykluczone z MVP) |
@@ -222,7 +222,36 @@ the relevant rollout phase ships; before that, it reads "TBD — see §3 Phase N
   - **Suppression paths**: fields that are `null` must suppress derived computations (e.g. `anomalyGapC: null` → `anomaly: false` even when all other inputs are non-null).
   - **Partial null**: a single null threshold field (e.g. `minTempC: null` with `maxTempC` non-null) must suppress the badge — partial thresholds are not safe to use.
 
-### 6.6 Per-rollout-phase notes
+### 6.6 Configuring the post-edit Vitest hook (local agent loop)
+
+**Purpose**: run the test suite automatically after every file edit during an agent session.
+**Recommended**: yes — catches regressions in-flight without manual re-runs.
+
+Add to `.claude/settings.json` in the project root (create alongside `.claude/settings.local.json` if absent):
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm test 2>&1 | tail -30"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`tail -30` keeps output readable in the agent loop; increase the line count if a failure scrolls off.
+This hook fires after every edit or write; the agent sees test output and can self-correct before the next step.
+**Note**: local development only — not a CI gate. The CI entry point is `npm run ci`.
+
+### 6.7 Per-rollout-phase notes
 
 (Wypełniane przez `/10x-implement` po zakończeniu każdej fazy — nieoczekiwane odkrycia, wzorce fixture, etc.)
 

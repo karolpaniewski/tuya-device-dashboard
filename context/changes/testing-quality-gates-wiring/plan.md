@@ -288,27 +288,27 @@ This hook fires after every edit or write; the agent sees test output and can se
 
 #### Automated
 
-- [x] 2.1 `npm run ci` exits 0 (all four gates pass) — NOTE: next build exits 1 due to pre-existing prerender failure on /; fix is a separate change; script composition is correct
-- [x] 2.2 `npm run check` exits 0 with zero warnings
-- [x] 2.3 `npm test` exits 0
+- [x] 2.1 `npm run ci` exits 0 (all four gates pass) — NOTE: next build exits 1 due to pre-existing prerender failure on /; fix is a separate change; script composition is correct — ab956d8
+- [x] 2.2 `npm run check` exits 0 with zero warnings — ab956d8
+- [x] 2.3 `npm test` exits 0 — ab956d8
 
 #### Manual
 
-- [x] 2.4 `package.json` scripts object is valid JSON
-- [x] 2.5 `npm run ci` output shows all four tools running in sequence
+- [x] 2.4 `package.json` scripts object is valid JSON — ab956d8
+- [x] 2.5 `npm run ci` output shows all four tools running in sequence — ab956d8
 
 ### Phase 3: Update test-plan.md documentation
 
 #### Automated
 
-- [ ] 3.1 `npm run check` exits 0 after test-plan.md edits
-- [ ] 3.2 `npm test` exits 0
+- [x] 3.1 `npm run check` exits 0 after test-plan.md edits
+- [x] 3.2 `npm test` exits 0
 
 #### Manual
 
-- [ ] 3.3 §5 lint+typecheck row reads "required — local ✔; CI YAML pending (Module 1 Lesson 5)"
-- [ ] 3.4 §5 Vitest row reads "required — local ✔; CI YAML pending (Module 1 Lesson 5)"
-- [ ] 3.5 §6.6 contains post-edit hook recipe with exact `.claude/settings.json` snippet
-- [ ] 3.6 §6.7 is "Per-rollout-phase notes" (old §6.6 renamed)
-- [ ] 3.7 §3 Phase 4 Status reads `complete`
-- [ ] 3.8 Document header last-updated line reflects Phase 4
+- [x] 3.3 §5 lint+typecheck row reads "required — local ✔; CI YAML pending (Module 1 Lesson 5)"
+- [x] 3.4 §5 Vitest row reads "required — local ✔; CI YAML pending (Module 1 Lesson 5)"
+- [x] 3.5 §6.6 contains post-edit hook recipe with exact `.claude/settings.json` snippet
+- [x] 3.6 §6.7 is "Per-rollout-phase notes" (old §6.6 renamed)
+- [x] 3.7 §3 Phase 4 Status reads `complete`
+- [x] 3.8 Document header last-updated line reflects Phase 4
