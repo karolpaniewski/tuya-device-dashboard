@@ -606,21 +606,21 @@ pattern established by `scoring.test.ts`:
 
 #### Automated
 
-- [x] 3.4.1 `npm test` passes — stale-detection tests still green; new scoring test green
-- [x] 3.4.2 `npm run typecheck` passes — room type includes `badge`, `anomaly`, `suggestion`
-- [x] 3.4.3 `npm run lint` passes
+- [x] 3.4.1 `npm test` passes — stale-detection tests still green; new scoring test green — 555715c
+- [x] 3.4.2 `npm run typecheck` passes — room type includes `badge`, `anomaly`, `suggestion` — 555715c
+- [x] 3.4.3 `npm run lint` passes — 555715c
 
 #### Manual
 
-- [x] 3.4.4 Dev server: `device.overview` response in Network tab includes `badge`, `anomaly`, `suggestion` on room objects
+- [x] 3.4.4 Dev server: `device.overview` response in Network tab includes `badge`, `anomaly`, `suggestion` on room objects — 555715c
 
 ### Phase 3.5: §6 cookbook update
 
 #### Automated
 
-- [ ] 3.5.1 `npm test` passes — no regressions
+- [x] 3.5.1 `npm test` passes — no regressions
 
 #### Manual
 
-- [ ] 3.5.2 §6.4 and §6.5 are no longer placeholder stubs — contain reference test, file location, mock pattern, and anti-pattern warning
-- [ ] 3.5.3 §6.4 and §6.5 are self-contained: a developer unfamiliar with this plan can add a new test from the cookbook alone
+- [x] 3.5.2 §6.4 and §6.5 are no longer placeholder stubs — contain reference test, file location, mock pattern, and anti-pattern warning
+- [x] 3.5.3 §6.4 and §6.5 are self-contained: a developer unfamiliar with this plan can add a new test from the cookbook alone

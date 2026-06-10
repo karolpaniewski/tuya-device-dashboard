@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-06-09 (Phase 2 → change opened, Handoff A)
+> Last updated: 2026-06-10 (Phase 3 → complete; §6.4 and §6.5 filled in)
 
 ---
 
@@ -74,7 +74,7 @@ orchestrator updates Status as artifacts appear on disk.
 |---|------------|-----------------|---------------|------------|--------|---------------|
 | 1 | Bootstrap + auth-gate + crypto | Wdróż Vitest; udowodnij auth-gate regression i poprawność decryptLocalKey | #1, #3 | unit (crypto), integration (tRPC auth protection) | complete | context/changes/testing-bootstrap-auth-crypto |
 | 2 | Polling worker integrity | Udowodnij że worker nie serwuje stale state jako live po błędzie | #2 | unit/integration (worker lifecycle + stale detection) | complete | context/changes/testing-polling-worker |
-| 3 | Valve control + threshold scoring | Udowodnij FR-012 command feedback contract i poprawność room scoring | #4, #5 | unit (scoring), integration (command pipeline), smoke z hardware | planned | context/changes/testing-valve-control-scoring |
+| 3 | Valve control + threshold scoring | Udowodnij FR-012 command feedback contract i poprawność room scoring | #4, #5 | unit (scoring), integration (command pipeline), smoke z hardware | implementing | context/changes/testing-valve-control-scoring |
 | 4 | Quality gates wiring | Zamknij floor: lint + typecheck + Vitest w CI | cross-cutting | gates (naming only, bez YAML) | not started | — |
 
 **Status vocabulary** (parser literals): `not started` → `change opened` → `researched` → `planned` → `implementing` → `complete`
@@ -169,11 +169,58 @@ the relevant rollout phase ships; before that, it reads "TBD — see §3 Phase N
 
 ### 6.4 Adding a command pipeline test
 
-TBD — see §3 Phase 3 (command feedback contract: FR-012 failure path pattern).
+**Reference test**: `src/server/api/routers/device.setpoint.test.ts`  
+**Run**: `npm test`
+
+- **File location**: co-located next to the router — `src/server/api/routers/<router>.<procedure>.test.ts`
+- **Required mocks** (top of file — Vitest hoists before imports):
+  ```ts
+  vi.mock("~/server/auth", () => ({ auth: vi.fn() }));
+  vi.mock("~/server/db", () => ({ db: {} }));
+  vi.mock("~/server/lib/tuya", () => ({ getTuyaClient: vi.fn() }));
+  vi.mock("~/server/lib/crypto", () => ({
+    decryptLocalKey: vi.fn().mockReturnValue("plaintext-key"),
+  }));
+  vi.mock("~/server/lib/tuya/dp-codes", () => ({
+    DP_CODE_MAP: { "test-product-key": 2 },
+  }));
+  ```
+  The `~/server/lib/crypto` mock prevents real AES-256-GCM execution in tests (crypto correctness is covered by Phase 1 unit tests). The `dp-codes` mock injects a synthetic productKey → DPS mapping.
+- **Two-call `db.select()` pattern**: `device.setpoint` calls `db.select()` twice — once for the device lookup, once for the gateway lookup. Use `mockReturnValueOnce` chained twice so each call resolves to a different row:
+  ```ts
+  const mockDb = {
+    select: vi.fn()
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([mockDevice]) }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([mockGateway]) }),
+      }),
+  };
+  ```
+  Pass `mockDb as never` when creating the caller.
+- **`sendSetpoint` spy pattern**:
+  - Success path: `vi.fn().mockResolvedValue(undefined)`
+  - Failure path: `vi.fn().mockRejectedValue(new Error("timeout"))`
+  - Wire to caller via: `vi.mocked(getTuyaClient).mockReturnValue({ sendSetpoint: mock } as never)`
+- **Anti-pattern to avoid**: Do not assert only the success return value. The highest-signal tests are the **failure paths** — `BAD_REQUEST` for unsupported DP code and `INTERNAL_SERVER_ERROR` for tuyapi rejection. The `BAD_REQUEST` test MUST assert `expect(sendSetpointMock).not.toHaveBeenCalled()` — this is the guard that proves the unsupported-device check fired before the command was dispatched. Without this assertion, a broken guard (that lets the command through) would still pass the test.
+- **Call `afterEach(() => vi.resetAllMocks())`** to prevent mock state from leaking between test cases.
 
 ### 6.5 Adding a business logic unit test
 
-TBD — see §3 Phase 3 (room threshold scoring: scoreRoom z known inputs + edge cases).
+**Reference test**: `src/server/lib/scoring.test.ts`  
+**Run**: `npm test`
+
+- **File location**: co-located with the module — `src/server/lib/<module>.test.ts`
+- **No mocks needed** for pure functions: import the function under test directly; no `vi.mock` required.
+- **Oracle rule** (critical — read this before writing any `expect`): Every expected constant in an assertion must be derivable from a PRD or specification rule **by reading that rule**, not by running the function and recording its current output. Writing `expect(result).toBe(scoreRoom(inputs))` as the expected value is the *implementation mirror anti-pattern* — it turns a test into a tautology that passes even when the function is wrong, as long as it is consistently wrong.
+  - Correct: `expect(result.badge).toBe("Too Cold")` — because PRD §FR-012 states `temp < minTempC → "Too Cold"`, and `15 < 18`.
+  - Wrong: `expect(result.badge).toBe(scoreRoom(15, null, thresholds).badge)` — this re-invokes the function as the oracle.
+- **Edge-case checklist** — always cover:
+  - **Null inputs**: `temperatureC: null` → badge must be `null`, not an error or default string.
+  - **Boundary values**: test at exactly `minTempC` and `maxTempC` — the contract is inclusive (`>=` / `<=`), so `temp === minTempC` must yield `"OK"`, not `"Too Cold"`.
+  - **Suppression paths**: fields that are `null` must suppress derived computations (e.g. `anomalyGapC: null` → `anomaly: false` even when all other inputs are non-null).
+  - **Partial null**: a single null threshold field (e.g. `minTempC: null` with `maxTempC` non-null) must suppress the badge — partial thresholds are not safe to use.
 
 ### 6.6 Per-rollout-phase notes
 
