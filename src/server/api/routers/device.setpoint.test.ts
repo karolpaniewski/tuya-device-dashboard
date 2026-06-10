@@ -12,6 +12,7 @@ vi.mock("~/server/lib/tuya/dp-codes", () => ({
 }));
 
 import { createCaller } from "~/server/api/root";
+import { decryptLocalKey } from "~/server/lib/crypto";
 import { getTuyaClient } from "~/server/lib/tuya";
 
 const MOCK_DEVICE_BASE = {
@@ -59,8 +60,6 @@ function makeDb(
 	};
 }
 
-afterEach(() => vi.resetAllMocks());
-
 describe("device.setpoint — auth gate", () => {
 	it("throws UNAUTHORIZED when session null", async () => {
 		const caller = createCaller({
@@ -75,6 +74,8 @@ describe("device.setpoint — auth gate", () => {
 });
 
 describe("device.setpoint — DP validation (BAD_REQUEST)", () => {
+	afterEach(() => vi.resetAllMocks());
+
 	it("throws BAD_REQUEST for unknown productKey", async () => {
 		const device = { ...MOCK_DEVICE_BASE, productKey: "unknown-key" };
 		const caller = createCaller({
@@ -120,7 +121,26 @@ describe("device.setpoint — DP validation (BAD_REQUEST)", () => {
 	});
 });
 
+describe("device.setpoint — gateway config (BAD_REQUEST)", () => {
+	it("throws BAD_REQUEST GATEWAY_KEY_NOT_SET when gateway.localKey is null", async () => {
+		const device = { ...MOCK_DEVICE_BASE, productKey: "test-product-key" };
+		const caller = createCaller({
+			db: makeDb([device], [{ ...MOCK_GATEWAY, localKey: null }]) as never,
+			session: AUTH_SESSION as never,
+			headers: new Headers(),
+		});
+		await expect(
+			caller.device.setpoint({ deviceId: "dev-1", setpointC: 22 }),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+			message: "GATEWAY_KEY_NOT_SET",
+		});
+	});
+});
+
 describe("device.setpoint — command failure", () => {
+	afterEach(() => vi.resetAllMocks());
+
 	it("throws INTERNAL_SERVER_ERROR when tuyapi rejects", async () => {
 		const sendSetpointMock = vi.fn().mockRejectedValue(new Error("timeout"));
 		vi.mocked(getTuyaClient).mockReturnValue({
@@ -140,7 +160,10 @@ describe("device.setpoint — command failure", () => {
 });
 
 describe("device.setpoint — success", () => {
+	afterEach(() => vi.resetAllMocks());
+
 	it("returns { success: true } on success", async () => {
+		vi.mocked(decryptLocalKey).mockReturnValue("plaintext-key");
 		const sendSetpointMock = vi.fn().mockResolvedValue(undefined);
 		vi.mocked(getTuyaClient).mockReturnValue({
 			sendSetpoint: sendSetpointMock,
@@ -157,5 +180,10 @@ describe("device.setpoint — success", () => {
 			setpointC: 22,
 		});
 		expect(result).toMatchObject({ success: true, setpointC: 22 });
+		expect(vi.mocked(decryptLocalKey)).toHaveBeenCalledWith("encrypted-key");
+		expect(sendSetpointMock).toHaveBeenCalledWith(
+			expect.objectContaining({ localKey: "plaintext-key" }),
+			expect.anything(),
+		);
 	});
 });

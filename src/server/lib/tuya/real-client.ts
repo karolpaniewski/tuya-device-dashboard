@@ -17,9 +17,11 @@ export const realTuyaClient: TuyaGatewayClient = {
 	},
 
 	async sendSetpoint(gateway, command) {
+		if (!gateway.localKey)
+			throw new Error("localKey is required for sendSetpoint");
 		const device = new TuyAPI({
 			id: gateway.tuyaGatewayId,
-			key: gateway.localKey ?? "",
+			key: gateway.localKey,
 			ip: gateway.ipAddress ?? undefined,
 			version: "3.3",
 		});

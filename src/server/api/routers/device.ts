@@ -58,9 +58,16 @@ export const deviceRouter = createTRPCRouter({
 				});
 			}
 
+			if (!gateway.localKey) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "GATEWAY_KEY_NOT_SET",
+				});
+			}
+
 			let plainKey: string;
 			try {
-				plainKey = decryptLocalKey(gateway.localKey ?? "");
+				plainKey = decryptLocalKey(gateway.localKey);
 			} catch {
 				throw new TRPCError({
 					code: "INTERNAL_SERVER_ERROR",
