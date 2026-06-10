@@ -279,32 +279,32 @@ Add `afterEach(() => vi.resetAllMocks())` to prevent mock state leaking between 
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes with zero errors
-- [x] 1.2 `npm run check` (Biome lint) passes
-- [x] 1.3 `npm run dev` starts without runtime errors
+- [x] 1.1 `npm run typecheck` passes with zero errors — bc85590
+- [x] 1.2 `npm run check` (Biome lint) passes — bc85590
+- [x] 1.3 `npm run dev` starts without runtime errors — bc85590
 
 #### Manual
 
-- [x] 1.4 (deferred to Phase 3 tests — no manual verification for pure backend)
+- [x] 1.4 (deferred to Phase 3 tests — no manual verification for pure backend) — bc85590
 
 ### Phase 2: Setup UI
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` passes with zero errors
-- [ ] 2.2 `npm run check` (Biome lint) passes
-- [ ] 2.3 `npm run dev` starts without errors
+- [x] 2.1 `npm run typecheck` passes with zero errors
+- [x] 2.2 `npm run check` (Biome lint) passes
+- [x] 2.3 `npm run dev` starts without errors
 
 #### Manual
 
-- [ ] 2.4 Main dashboard shows "Setup →" link in top-right header
-- [ ] 2.5 `/setup` redirects to `/login` when logged out
-- [ ] 2.6 Room creation: type name → Add → room appears with 0-device badge
-- [ ] 2.7 Room rename: edit icon → type → Enter → name updates
-- [ ] 2.8 Room delete (0 devices): button active → click → room removed
-- [ ] 2.9 Room delete (with devices): button disabled + tooltip shown
-- [ ] 2.10 Device assignment: change dropdown → main dashboard reflects assignment
-- [ ] 2.11 Unassign: select "— Unassigned" → device appears in Unassigned section
+- [x] 2.4 Main dashboard shows "Setup →" link in top-right header
+- [x] 2.5 `/setup` redirects to `/login` when logged out
+- [x] 2.6 Room creation: type name → Add → room appears with 0-device badge
+- [x] 2.7 Room rename: edit icon → type → Enter → name updates
+- [x] 2.8 Room delete (0 devices): button active → click → room removed
+- [x] 2.9 Room delete (with devices): button disabled + tooltip shown
+- [x] 2.10 Device assignment: change dropdown → main dashboard reflects assignment
+- [x] 2.11 Unassign: select "— Unassigned" → device appears in Unassigned section
 
 ### Phase 3: Integration Tests
 
