@@ -37,6 +37,7 @@ export const deviceRouter = createTRPCRouter({
 					message: "UNSUPPORTED_DEVICE",
 				});
 			}
+			// biome-ignore lint/style/noNonNullAssertion: productKey presence in DP_CODE_MAP validated by guard above
 			const dps = DP_CODE_MAP[device.productKey]!;
 
 			if (device.gatewayId === null) {

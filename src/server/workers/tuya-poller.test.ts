@@ -42,6 +42,7 @@ describe("pollOnce › happy path", () => {
 		await pollOnce();
 
 		expect(deviceStateStore.has("d1")).toBe(true);
+		// biome-ignore lint/style/noNonNullAssertion: "d1" was set immediately above; get() is guaranteed non-null
 		const state = deviceStateStore.get("d1")!;
 		expect(state.isOnline).toBe(true);
 		expect(state.temperatureC).toBe(21);
@@ -69,6 +70,7 @@ describe("pollOnce › DB error", () => {
 
 		await pollOnce();
 
+		// biome-ignore lint/style/noNonNullAssertion: "d1" was seeded in test setup; get() is guaranteed non-null
 		expect(deviceStateStore.get("d1")!.lastPolledAt.getTime()).toBe(
 			oldDate.getTime(),
 		);

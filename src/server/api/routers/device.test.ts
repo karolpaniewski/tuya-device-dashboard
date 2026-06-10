@@ -68,6 +68,7 @@ describe("device.overview — stale detection", () => {
 			lastPolledAt: new Date(Date.now() - 10_000),
 		});
 		const result = await makeCallerWithRow().device.overview();
+		// biome-ignore lint/style/noNonNullAssertion: test seeds exactly one device; unassigned[0] is guaranteed
 		expect(result.unassigned[0]!.isStale).toBe(false);
 	});
 
@@ -79,12 +80,14 @@ describe("device.overview — stale detection", () => {
 			lastPolledAt: new Date(Date.now() - 61_000),
 		});
 		const result = await makeCallerWithRow().device.overview();
+		// biome-ignore lint/style/noNonNullAssertion: test seeds exactly one device; unassigned[0] is guaranteed
 		expect(result.unassigned[0]!.isStale).toBe(true);
 	});
 
 	it("never polled: isStale false, isOnline false", async () => {
 		// store is clear from afterEach; verify device-absent path
 		const result = await makeCallerWithRow().device.overview();
+		// biome-ignore lint/style/noNonNullAssertion: test seeds exactly one device; unassigned[0] is guaranteed
 		const device = result.unassigned[0]!;
 		expect(device.isStale).toBe(false);
 		expect(device.isOnline).toBe(false);
