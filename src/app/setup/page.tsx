@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { api, HydrateClient } from "~/trpc/server";
 import { SetupShell } from "../_components/setup/setup-shell";

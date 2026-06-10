@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { api, HydrateClient } from "~/trpc/server";
 import { DeviceOverview } from "./_components/device-overview";
