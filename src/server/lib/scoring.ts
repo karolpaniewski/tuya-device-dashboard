@@ -40,7 +40,10 @@ export function scoreRoom(
 		temperatureC < valveSetpointC - thresholds.anomalyGapC
 	) {
 		anomaly = true;
-		const gap = Math.round((valveSetpointC - thresholds.anomalyGapC - temperatureC) * 10) / 10;
+		const gap =
+			Math.round(
+				(valveSetpointC - thresholds.anomalyGapC - temperatureC) * 10,
+			) / 10;
 		suggestion = `Temperature is ${gap}°C below setpoint — consider raising valve to ${valveSetpointC}°C`;
 	}
 

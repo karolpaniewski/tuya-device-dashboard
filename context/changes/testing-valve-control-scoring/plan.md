@@ -583,24 +583,24 @@ pattern established by `scoring.test.ts`:
 
 #### Automated
 
-- [x] 3.2.1 `npm run typecheck` passes across `types.ts`, `real-client.ts`, `stub-client.ts`, `device-state-store.ts`, `tuya-poller.ts`, `device.test.ts`
-- [x] 3.2.2 `npm test` passes — all existing tests green (no regressions)
+- [x] 3.2.1 `npm run typecheck` passes across `types.ts`, `real-client.ts`, `stub-client.ts`, `device-state-store.ts`, `tuya-poller.ts`, `device.test.ts` — 88e67a9
+- [x] 3.2.2 `npm test` passes — all existing tests green (no regressions) — 88e67a9
 
 #### Manual
 
-- [x] 3.2.3 `real-client.ts` `sendSetpoint` throws on tuyapi errors (inspect — do not run against hardware)
+- [x] 3.2.3 `real-client.ts` `sendSetpoint` throws on tuyapi errors (inspect — do not run against hardware) — 88e67a9
 
 ### Phase 3.3: device.setpoint mutation + integration tests (Risk #4)
 
 #### Automated
 
-- [ ] 3.3.1 `npm test` passes — all `device.setpoint.test.ts` cases green
-- [ ] 3.3.2 `npm run typecheck` passes
-- [ ] 3.3.3 `npm run lint` passes
+- [x] 3.3.1 `npm test` passes — all `device.setpoint.test.ts` cases green
+- [x] 3.3.2 `npm run typecheck` passes
+- [x] 3.3.3 `npm run lint` passes
 
 #### Manual
 
-- [ ] 3.3.4 BAD_REQUEST test asserts `sendSetpoint` NOT called — verify assertion is present and meaningful
+- [x] 3.3.4 BAD_REQUEST test asserts `sendSetpoint` NOT called — verify assertion is present and meaningful
 
 ### Phase 3.4: Extend DeviceState read path + wire scoreRoom
 

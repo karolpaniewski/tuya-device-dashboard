@@ -1,12 +1,91 @@
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { deviceRoomAssignments, devices, rooms } from "~/server/db/schema";
+import {
+	deviceRoomAssignments,
+	devices,
+	gateways,
+	rooms,
+} from "~/server/db/schema";
+import { decryptLocalKey } from "~/server/lib/crypto";
 import { deviceStateStore } from "~/server/lib/device-state-store";
+import { getTuyaClient } from "~/server/lib/tuya";
+import { DP_CODE_MAP } from "~/server/lib/tuya/dp-codes";
 
 const STALE_THRESHOLD_MS = 60_000;
 
 export const deviceRouter = createTRPCRouter({
+	setpoint: protectedProcedure
+		.input(z.object({ deviceId: z.string(), setpointC: z.number() }))
+		.mutation(async ({ ctx, input }) => {
+			const [device] = await ctx.db
+				.select()
+				.from(devices)
+				.where(eq(devices.id, input.deviceId));
+
+			if (!device) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Device not found" });
+			}
+
+			if (device.productKey === null || !(device.productKey in DP_CODE_MAP)) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "UNSUPPORTED_DEVICE",
+				});
+			}
+			const dps = DP_CODE_MAP[device.productKey]!;
+
+			if (device.gatewayId === null) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "DEVICE_NOT_PAIRED",
+				});
+			}
+
+			const [gateway] = await ctx.db
+				.select()
+				.from(gateways)
+				.where(eq(gateways.id, device.gatewayId));
+
+			if (!gateway) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Gateway not found",
+				});
+			}
+
+			let plainKey: string;
+			try {
+				plainKey = decryptLocalKey(gateway.localKey ?? "");
+			} catch {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "KEY_DECRYPT_FAILED",
+				});
+			}
+
+			const client = getTuyaClient();
+			try {
+				await client.sendSetpoint(
+					{
+						tuyaGatewayId: gateway.tuyaGatewayId,
+						ipAddress: gateway.ipAddress ?? null,
+						localKey: plainKey,
+					},
+					{ dps, set: input.setpointC },
+				);
+			} catch {
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message: "COMMAND_FAILED",
+				});
+			}
+
+			return { success: true as const, setpointC: input.setpointC };
+		}),
+
 	overview: protectedProcedure.query(async ({ ctx }) => {
 		const rows = await ctx.db
 			.select({ device: devices, room: rooms })
