@@ -3,7 +3,11 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { deviceRoomAssignments, rooms } from "~/server/db/schema";
+import {
+	deviceRoomAssignments,
+	rooms,
+	roomThresholds,
+} from "~/server/db/schema";
 
 export const roomRouter = createTRPCRouter({
 	list: protectedProcedure.query(async ({ ctx }) => {
@@ -107,6 +111,69 @@ export const roomRouter = createTRPCRouter({
 					.delete(deviceRoomAssignments)
 					.where(eq(deviceRoomAssignments.deviceId, input.deviceId));
 			}
+
+			return { success: true as const };
+		}),
+
+	getThreshold: protectedProcedure
+		.input(z.object({ roomId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const [row] = await ctx.db
+				.select()
+				.from(roomThresholds)
+				.where(eq(roomThresholds.roomId, input.roomId));
+
+			if (!row) return null;
+
+			return {
+				anomalyGapC: row.anomalyGapC,
+				maxTempC: row.maxTempC,
+				minTempC: row.minTempC,
+			};
+		}),
+
+	setThreshold: protectedProcedure
+		.input(
+			z.object({
+				anomalyGapC: z.number().min(0),
+				maxTempC: z.number(),
+				minTempC: z.number(),
+				roomId: z.string(),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const [room] = await ctx.db
+				.select({ id: rooms.id })
+				.from(rooms)
+				.where(eq(rooms.id, input.roomId));
+
+			if (!room) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
+			}
+
+			if (input.minTempC >= input.maxTempC) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Min must be less than max",
+				});
+			}
+
+			await ctx.db
+				.insert(roomThresholds)
+				.values({
+					anomalyGapC: input.anomalyGapC,
+					maxTempC: input.maxTempC,
+					minTempC: input.minTempC,
+					roomId: input.roomId,
+				})
+				.onConflictDoUpdate({
+					target: roomThresholds.roomId,
+					set: {
+						anomalyGapC: input.anomalyGapC,
+						maxTempC: input.maxTempC,
+						minTempC: input.minTempC,
+					},
+				});
 
 			return { success: true as const };
 		}),

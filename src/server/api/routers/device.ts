@@ -17,6 +17,7 @@ import { getTuyaClient } from "~/server/lib/tuya";
 import { DP_CODE_MAP } from "~/server/lib/tuya/dp-codes";
 
 const STALE_THRESHOLD_MS = 60_000;
+const DEFAULT_THRESHOLDS = { anomalyGapC: 3, maxTempC: 24, minTempC: 18 };
 
 export const deviceRouter = createTRPCRouter({
 	setpoint: protectedProcedure
@@ -161,23 +162,19 @@ export const deviceRouter = createTRPCRouter({
 		);
 
 		const scoredRooms = Array.from(roomsMap.values()).map((room) => {
-			const sensor = room.devices.find(
-				(d) => d.deviceType === "sensor" && d.temperatureC !== null,
-			);
+			const roomTempC = room.devices
+				.filter((d) => d.deviceType === "sensor")
+				.flatMap((d) => (d.temperatureC !== null ? [d.temperatureC] : []))
+				.reduce<number | null>(
+					(min, t) => (min === null || t < min ? t : min),
+					null,
+				);
 			const valve = room.devices.find((d) => d.deviceType === "valve");
 			const valveSetpointC = valve
 				? (deviceStateStore.get(valve.tuyaDeviceId)?.setpointC ?? null)
 				: null;
-			const thresholds = thresholdMap.get(room.roomId) ?? {
-				minTempC: null,
-				maxTempC: null,
-				anomalyGapC: null,
-			};
-			const score = scoreRoom(
-				sensor?.temperatureC ?? null,
-				valveSetpointC,
-				thresholds,
-			);
+			const thresholds = thresholdMap.get(room.roomId) ?? DEFAULT_THRESHOLDS;
+			const score = scoreRoom(roomTempC, valveSetpointC, thresholds);
 			return { ...room, ...score };
 		});
 
