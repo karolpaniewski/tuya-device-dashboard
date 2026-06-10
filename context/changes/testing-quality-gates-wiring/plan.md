@@ -301,14 +301,14 @@ This hook fires after every edit or write; the agent sees test output and can se
 
 #### Automated
 
-- [x] 3.1 `npm run check` exits 0 after test-plan.md edits
-- [x] 3.2 `npm test` exits 0
+- [x] 3.1 `npm run check` exits 0 after test-plan.md edits — c3733fb
+- [x] 3.2 `npm test` exits 0 — c3733fb
 
 #### Manual
 
-- [x] 3.3 §5 lint+typecheck row reads "required — local ✔; CI YAML pending (Module 1 Lesson 5)"
-- [x] 3.4 §5 Vitest row reads "required — local ✔; CI YAML pending (Module 1 Lesson 5)"
-- [x] 3.5 §6.6 contains post-edit hook recipe with exact `.claude/settings.json` snippet
-- [x] 3.6 §6.7 is "Per-rollout-phase notes" (old §6.6 renamed)
-- [x] 3.7 §3 Phase 4 Status reads `complete`
-- [x] 3.8 Document header last-updated line reflects Phase 4
+- [x] 3.3 §5 lint+typecheck row reads "required — local ✔; CI YAML pending (Module 1 Lesson 5)" — c3733fb
+- [x] 3.4 §5 Vitest row reads "required — local ✔; CI YAML pending (Module 1 Lesson 5)" — c3733fb
+- [x] 3.5 §6.6 contains post-edit hook recipe with exact `.claude/settings.json` snippet — c3733fb
+- [x] 3.6 §6.7 is "Per-rollout-phase notes" (old §6.6 renamed) — c3733fb
+- [x] 3.7 §3 Phase 4 Status reads `complete` — c3733fb
+- [x] 3.8 Document header last-updated line reflects Phase 4 — c3733fb
