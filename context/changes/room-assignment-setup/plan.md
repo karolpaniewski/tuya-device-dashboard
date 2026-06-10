@@ -291,29 +291,29 @@ Add `afterEach(() => vi.resetAllMocks())` to prevent mock state leaking between 
 
 #### Automated
 
-- [x] 2.1 `npm run typecheck` passes with zero errors
-- [x] 2.2 `npm run check` (Biome lint) passes
-- [x] 2.3 `npm run dev` starts without errors
+- [x] 2.1 `npm run typecheck` passes with zero errors — d58e30b
+- [x] 2.2 `npm run check` (Biome lint) passes — d58e30b
+- [x] 2.3 `npm run dev` starts without errors — d58e30b
 
 #### Manual
 
-- [x] 2.4 Main dashboard shows "Setup →" link in top-right header
-- [x] 2.5 `/setup` redirects to `/login` when logged out
-- [x] 2.6 Room creation: type name → Add → room appears with 0-device badge
-- [x] 2.7 Room rename: edit icon → type → Enter → name updates
-- [x] 2.8 Room delete (0 devices): button active → click → room removed
-- [x] 2.9 Room delete (with devices): button disabled + tooltip shown
-- [x] 2.10 Device assignment: change dropdown → main dashboard reflects assignment
-- [x] 2.11 Unassign: select "— Unassigned" → device appears in Unassigned section
+- [x] 2.4 Main dashboard shows "Setup →" link in top-right header — d58e30b
+- [x] 2.5 `/setup` redirects to `/login` when logged out — d58e30b
+- [x] 2.6 Room creation: type name → Add → room appears with 0-device badge — d58e30b
+- [x] 2.7 Room rename: edit icon → type → Enter → name updates — d58e30b
+- [x] 2.8 Room delete (0 devices): button active → click → room removed — d58e30b
+- [x] 2.9 Room delete (with devices): button disabled + tooltip shown — d58e30b
+- [x] 2.10 Device assignment: change dropdown → main dashboard reflects assignment — d58e30b
+- [x] 2.11 Unassign: select "— Unassigned" → device appears in Unassigned section — d58e30b
 
 ### Phase 3: Integration Tests
 
 #### Automated
 
-- [ ] 3.1 `npm test` passes — all room.test.ts cases green
-- [ ] 3.2 `npm run typecheck` passes
-- [ ] 3.3 `npm run check` passes
+- [x] 3.1 `npm test` passes — all room.test.ts cases green
+- [x] 3.2 `npm run typecheck` passes
+- [x] 3.3 `npm run check` passes
 
 #### Manual
 
-- [ ] 3.4 No regressions in existing test files (device, crypto, scoring, tuya-poller)
+- [x] 3.4 No regressions in existing test files (device, crypto, scoring, tuya-poller)
