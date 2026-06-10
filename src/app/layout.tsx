@@ -3,7 +3,7 @@ import "~/styles/globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
-
+import { Toaster } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -26,6 +26,7 @@ export default function RootLayout({
 				<TRPCReactProvider>
 					<SessionProvider>{children}</SessionProvider>
 				</TRPCReactProvider>
+				<Toaster position="bottom-right" richColors />
 			</body>
 		</html>
 	);
