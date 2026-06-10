@@ -332,16 +332,16 @@ No automated tests — user confirmed manual verification is sufficient for this
 
 #### Automated
 
-- [x] 3.1 `npm run typecheck` passes with zero errors
-- [x] 3.2 `npm run check` (Biome lint) passes
-- [x] 3.3 `npm run dev` starts without runtime errors
+- [x] 3.1 `npm run typecheck` passes with zero errors — c5018ae
+- [x] 3.2 `npm run check` (Biome lint) passes — c5018ae
+- [x] 3.3 `npm run dev` starts without runtime errors — c5018ae
 
 #### Manual
 
-- [x] 3.4 ⚙ button appears on each room row in /setup
-- [x] 3.5 Clicking ⚙ opens threshold form; clicking again closes it (toggle)
-- [x] 3.6 Form pre-populates with saved values or defaults (18 / 24 / 3)
-- [x] 3.7 Saving closes form; dashboard badge updates
-- [x] 3.8 Min ≥ Max shows inline error; mutation not called
-- [x] 3.9 Cancel closes without saving; re-open shows last saved values
-- [x] 3.10 Opening rename closes threshold form
+- [x] 3.4 ⚙ button appears on each room row in /setup — c5018ae
+- [x] 3.5 Clicking ⚙ opens threshold form; clicking again closes it (toggle) — c5018ae
+- [x] 3.6 Form pre-populates with saved values or defaults (18 / 24 / 3) — c5018ae
+- [x] 3.7 Saving closes form; dashboard badge updates — c5018ae
+- [x] 3.8 Min ≥ Max shows inline error; mutation not called — c5018ae
+- [x] 3.9 Cancel closes without saving; re-open shows last saved values — c5018ae
+- [x] 3.10 Opening rename closes threshold form — c5018ae
