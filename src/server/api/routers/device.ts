@@ -1,14 +1,16 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, asc, eq, gte, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
 	deviceRoomAssignments,
 	devices,
+	deviceTemperatureReadings,
 	gateways,
 	rooms,
 	roomThresholds,
+	sites,
 } from "~/server/db/schema";
 import { decryptLocalKey } from "~/server/lib/crypto";
 import { deviceStateStore } from "~/server/lib/device-state-store";
@@ -21,7 +23,9 @@ const DEFAULT_THRESHOLDS = { anomalyGapC: 3, maxTempC: 24, minTempC: 18 };
 
 export const deviceRouter = createTRPCRouter({
 	setpoint: protectedProcedure
-		.input(z.object({ deviceId: z.string(), setpointC: z.number() }))
+		.input(
+			z.object({ deviceId: z.string(), setpointC: z.number().min(5).max(35) }),
+		)
 		.mutation(async ({ ctx, input }) => {
 			const [device] = await ctx.db
 				.select()
@@ -85,7 +89,11 @@ export const deviceRouter = createTRPCRouter({
 						ipAddress: gateway.ipAddress ?? null,
 						localKey: plainKey,
 					},
-					{ dps, set: input.setpointC },
+					{
+						dps,
+						set: Math.round(input.setpointC * 10),
+						cid: device.nodeId ?? undefined,
+					},
 				);
 			} catch {
 				throw new TRPCError({
@@ -97,89 +105,168 @@ export const deviceRouter = createTRPCRouter({
 			return { success: true as const, setpointC: input.setpointC };
 		}),
 
-	overview: protectedProcedure.query(async ({ ctx }) => {
-		const rows = await ctx.db
-			.select({ device: devices, room: rooms })
-			.from(devices)
-			.leftJoin(
-				deviceRoomAssignments,
-				eq(deviceRoomAssignments.deviceId, devices.id),
-			)
-			.leftJoin(rooms, eq(rooms.id, deviceRoomAssignments.roomId));
+	temperatureHistory: protectedProcedure
+		.input(
+			z.object({
+				tuyaDeviceId: z.string(),
+				range: z.enum(["1h", "24h", "7d"]),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const nowSeconds = Math.floor(Date.now() / 1000);
+			const rangeSecs = { "1h": 3600, "24h": 86400, "7d": 604800 } as const;
+			const fromTs = new Date((nowSeconds - rangeSecs[input.range]) * 1000);
 
-		const roomsMap = new Map<
-			string,
-			{ roomId: string; roomName: string; devices: DeviceItem[] }
-		>();
-		const unassigned: DeviceItem[] = [];
-
-		for (const row of rows) {
-			const state = deviceStateStore.get(row.device.tuyaDeviceId);
-			const isStale = state?.lastPolledAt
-				? Date.now() - state.lastPolledAt.getTime() > STALE_THRESHOLD_MS
-				: false;
-			const item: DeviceItem = {
-				id: row.device.id,
-				tuyaDeviceId: row.device.tuyaDeviceId,
-				name: row.device.name,
-				deviceType: row.device.deviceType as "sensor" | "valve" | "plug",
-				roomId: row.room?.id ?? null,
-				roomName: row.room?.name ?? null,
-				isOnline: state?.isOnline ?? false,
-				temperatureC: state?.temperatureC ?? null,
-				setpointC: state?.setpointC ?? null,
-				lastPolledAt: state?.lastPolledAt ?? null,
-				isStale,
-			};
-
-			if (row.room) {
-				const existing = roomsMap.get(row.room.id);
-				if (existing) {
-					existing.devices.push(item);
-				} else {
-					roomsMap.set(row.room.id, {
-						roomId: row.room.id,
-						roomName: row.room.name,
-						devices: [item],
-					});
-				}
-			} else {
-				unassigned.push(item);
+			if (input.range === "1h") {
+				return ctx.db
+					.select({
+						recordedAt: deviceTemperatureReadings.recordedAt,
+						temperatureC: deviceTemperatureReadings.temperatureC,
+						setpointC: deviceTemperatureReadings.setpointC,
+					})
+					.from(deviceTemperatureReadings)
+					.where(
+						and(
+							eq(deviceTemperatureReadings.tuyaDeviceId, input.tuyaDeviceId),
+							gte(deviceTemperatureReadings.recordedAt, fromTs),
+						),
+					)
+					.orderBy(asc(deviceTemperatureReadings.recordedAt));
 			}
-		}
 
-		// Separate query to avoid deepening the existing mock chain in tests
-		const thresholdRows = await ctx.db.select().from(roomThresholds);
-		const thresholdMap = new Map(
-			thresholdRows.map((t) => [
-				t.roomId,
+			const bucketSize = input.range === "24h" ? 300 : 3600;
+			const bucketExpr = sql<number>`(${deviceTemperatureReadings.recordedAt} / ${bucketSize}) * ${bucketSize}`;
+			const rows = await ctx.db
+				.select({
+					bucket: bucketExpr,
+					temperatureC: sql<
+						string | null
+					>`AVG(${deviceTemperatureReadings.temperatureC})`,
+					setpointC: sql<
+						string | null
+					>`AVG(${deviceTemperatureReadings.setpointC})`,
+				})
+				.from(deviceTemperatureReadings)
+				.where(
+					and(
+						eq(deviceTemperatureReadings.tuyaDeviceId, input.tuyaDeviceId),
+						gte(deviceTemperatureReadings.recordedAt, fromTs),
+					),
+				)
+				.groupBy(bucketExpr)
+				.orderBy(asc(bucketExpr));
+
+			return rows.map((r) => ({
+				recordedAt: new Date(r.bucket * 1000),
+				temperatureC: r.temperatureC !== null ? Number(r.temperatureC) : null,
+				setpointC: r.setpointC !== null ? Number(r.setpointC) : null,
+			}));
+		}),
+
+	overview: protectedProcedure
+		.input(z.object({ siteId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const baseQuery = ctx.db
+				.select({ device: devices, room: rooms })
+				.from(devices)
+				.leftJoin(
+					deviceRoomAssignments,
+					eq(deviceRoomAssignments.deviceId, devices.id),
+				)
+				.leftJoin(rooms, eq(rooms.id, deviceRoomAssignments.roomId));
+
+			const rows =
+				input.siteId !== "all"
+					? await baseQuery.where(eq(devices.siteId, input.siteId))
+					: await baseQuery;
+
+			const roomsMap = new Map<
+				string,
 				{
-					minTempC: t.minTempC ?? null,
-					maxTempC: t.maxTempC ?? null,
-					anomalyGapC: t.anomalyGapC ?? null,
-				},
-			]),
-		);
+					roomId: string;
+					roomName: string;
+					siteId: string;
+					devices: DeviceItem[];
+				}
+			>();
+			const unassigned: DeviceItem[] = [];
 
-		const scoredRooms = Array.from(roomsMap.values()).map((room) => {
-			const roomTempC = room.devices
-				.filter((d) => d.deviceType === "sensor")
-				.flatMap((d) => (d.temperatureC !== null ? [d.temperatureC] : []))
-				.reduce<number | null>(
-					(min, t) => (min === null || t < min ? t : min),
-					null,
-				);
-			const valve = room.devices.find((d) => d.deviceType === "valve");
-			const valveSetpointC = valve
-				? (deviceStateStore.get(valve.tuyaDeviceId)?.setpointC ?? null)
-				: null;
-			const thresholds = thresholdMap.get(room.roomId) ?? DEFAULT_THRESHOLDS;
-			const score = scoreRoom(roomTempC, valveSetpointC, thresholds);
-			return { ...room, ...score };
-		});
+			for (const row of rows) {
+				const state = deviceStateStore.get(row.device.tuyaDeviceId);
+				const isStale = state?.lastPolledAt
+					? Date.now() - state.lastPolledAt.getTime() > STALE_THRESHOLD_MS
+					: false;
+				const deviceSiteId = row.device.siteId ?? "";
+				const item: DeviceItem = {
+					id: row.device.id,
+					tuyaDeviceId: row.device.tuyaDeviceId,
+					name: row.device.name,
+					deviceType: row.device.deviceType as "sensor" | "valve" | "plug",
+					roomId: row.room?.id ?? null,
+					roomName: row.room?.name ?? null,
+					siteId: deviceSiteId,
+					nodeId: row.device.nodeId ?? null,
+					isOnline: state?.isOnline ?? false,
+					temperatureC: state?.temperatureC ?? null,
+					setpointC: state?.setpointC ?? null,
+					lastPolledAt: state?.lastPolledAt ?? null,
+					isStale,
+				};
 
-		return { rooms: scoredRooms, unassigned };
-	}),
+				if (row.room) {
+					const existing = roomsMap.get(row.room.id);
+					if (existing) {
+						existing.devices.push(item);
+					} else {
+						roomsMap.set(row.room.id, {
+							roomId: row.room.id,
+							roomName: row.room.name,
+							siteId: row.room.siteId ?? "",
+							devices: [item],
+						});
+					}
+				} else {
+					unassigned.push(item);
+				}
+			}
+
+			// Separate query to avoid deepening the existing mock chain in tests
+			const thresholdRows = await ctx.db.select().from(roomThresholds);
+			const thresholdMap = new Map(
+				thresholdRows.map((t) => [
+					t.roomId,
+					{
+						minTempC: t.minTempC ?? null,
+						maxTempC: t.maxTempC ?? null,
+						anomalyGapC: t.anomalyGapC ?? null,
+					},
+				]),
+			);
+
+			const siteRows = await ctx.db
+				.select({ id: sites.id, name: sites.name })
+				.from(sites);
+			const siteMap = new Map(siteRows.map((s) => [s.id, s.name]));
+
+			const scoredRooms = Array.from(roomsMap.values()).map((room) => {
+				const roomTempC = room.devices
+					.filter((d) => d.deviceType === "sensor")
+					.flatMap((d) => (d.temperatureC !== null ? [d.temperatureC] : []))
+					.reduce<number | null>(
+						(min, t) => (min === null || t < min ? t : min),
+						null,
+					);
+				const valve = room.devices.find((d) => d.deviceType === "valve");
+				const valveSetpointC = valve
+					? (deviceStateStore.get(valve.tuyaDeviceId)?.setpointC ?? null)
+					: null;
+				const thresholds = thresholdMap.get(room.roomId) ?? DEFAULT_THRESHOLDS;
+				const score = scoreRoom(roomTempC, valveSetpointC, thresholds);
+				return { ...room, siteName: siteMap.get(room.siteId) ?? "", ...score };
+			});
+
+			return { rooms: scoredRooms, unassigned };
+		}),
 });
 
 interface DeviceItem {
@@ -189,6 +276,8 @@ interface DeviceItem {
 	deviceType: "sensor" | "valve" | "plug";
 	roomId: string | null;
 	roomName: string | null;
+	siteId: string;
+	nodeId: string | null;
 	isOnline: boolean;
 	temperatureC: number | null;
 	setpointC: number | null;

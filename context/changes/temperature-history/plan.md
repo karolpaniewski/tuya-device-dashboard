@@ -355,29 +355,29 @@ naturally from the first poll after the migration is applied.
 
 #### Automated
 
-- [x] 1.1 Typecheck passes: `npm run typecheck`
-- [x] 1.2 Migration applies cleanly: `npm run db:generate && npm run db:migrate`
-- [x] 1.3 Biome clean: `npm run check`
-- [x] 1.4 Poller tests pass: `npm test`
+- [x] 1.1 Typecheck passes: `npm run typecheck` — e10ad72
+- [x] 1.2 Migration applies cleanly: `npm run db:generate && npm run db:migrate` — e10ad72
+- [x] 1.3 Biome clean: `npm run check` — e10ad72
+- [x] 1.4 Poller tests pass: `npm test` — e10ad72
 
 #### Manual
 
-- [x] 1.5 Rows appear in `.bootstrap-scaffold_device_temperature_reading` after 60 s
-- [x] 1.6 Row count grows ~21 rows every 30 s while devices report
-- [x] 1.7 Purge deletes rows older than 30 days when triggered
+- [x] 1.5 Rows appear in `.bootstrap-scaffold_device_temperature_reading` after 60 s — e10ad72
+- [x] 1.6 Row count grows ~21 rows every 30 s while devices report — e10ad72
+- [x] 1.7 Purge deletes rows older than 30 days when triggered — e10ad72
 
 ### Phase 2: tRPC Read Endpoint
 
 #### Automated
 
-- [ ] 2.1 Typecheck passes: `npm run typecheck`
-- [ ] 2.2 All tests pass including new endpoint tests: `npm test`
-- [ ] 2.3 Biome clean: `npm run check`
+- [x] 2.1 Typecheck passes: `npm run typecheck`
+- [x] 2.2 All tests pass including new endpoint tests: `npm test`
+- [x] 2.3 Biome clean: `npm run check`
 
 #### Manual
 
-- [ ] 2.4 `temperatureHistory` query returns non-empty array with correct timestamps
-- [ ] 2.5 Bucketing reduces 7 d range to ≤ 168 hourly points
+- [x] 2.4 `temperatureHistory` query returns non-empty array with correct timestamps
+- [x] 2.5 Bucketing reduces 7 d range to ≤ 168 hourly points
 
 ### Phase 3: Frontend — Modal and Chart
 
