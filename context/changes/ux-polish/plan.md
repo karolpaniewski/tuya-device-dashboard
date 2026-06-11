@@ -515,9 +515,9 @@ No database changes. No API changes. The `cn()` utility from `src/lib/utils.ts` 
 
 #### Automated
 
-- [ ] 4.1 `npm run ci` passes after all Phase 4 changes
-- [ ] 4.2 No TypeScript errors on any Phase 4 file
-- [ ] 4.3 `next build` completes without warnings
+- [x] 4.1 `npm run ci` passes after all Phase 4 changes
+- [x] 4.2 No TypeScript errors on any Phase 4 file
+- [x] 4.3 `next build` completes without warnings
 
 #### Manual
 

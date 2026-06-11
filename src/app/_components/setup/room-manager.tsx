@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Settings, X } from "lucide-react";
+import { Building2, Pencil, Settings, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
@@ -81,7 +81,7 @@ export function RoomManager({ rooms, utils }: Props) {
 			<ul className="flex flex-col gap-2">
 				{rooms.map((room) => (
 					<li
-						className="flex flex-col gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3"
+						className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm"
 						key={room.id}
 					>
 						<div className="flex items-center gap-3">
@@ -160,8 +160,12 @@ export function RoomManager({ rooms, utils }: Props) {
 					</li>
 				))}
 				{rooms.length === 0 && (
-					<li className="text-gray-500 text-sm">
-						No rooms yet — add one below.
+					<li className="flex flex-col items-center justify-center py-16 text-center">
+						<Building2 className="mb-4 text-gray-600" size={48} />
+						<p className="font-semibold text-white">No rooms yet</p>
+						<p className="mt-1 max-w-xs text-gray-400 text-sm">
+							Add a room below to start organizing your devices.
+						</p>
 					</li>
 				)}
 			</ul>

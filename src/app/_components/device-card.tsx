@@ -20,7 +20,7 @@ export function DeviceCard({ device }: { device: DeviceItem }) {
 			: null;
 
 	return (
-		<div className="flex flex-col gap-2 rounded-lg border border-gray-700 bg-gray-800 p-4">
+		<div className="fade-in slide-in-from-bottom-2 flex animate-in flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px] transition-all duration-300 hover:border-white/20 hover:bg-white/[0.08]">
 			<div className="flex items-center justify-between gap-2">
 				<span className="font-semibold text-white">{device.name}</span>
 				<Badge
@@ -48,7 +48,7 @@ export function DeviceCard({ device }: { device: DeviceItem }) {
 				</span>
 				<div className="flex items-center gap-1">
 					{device.isStale && (
-						<span className="rounded bg-yellow-100 px-1 text-xs text-yellow-800">
+						<span className="rounded border border-yellow-700/40 bg-yellow-900/40 px-1 text-xs text-yellow-300">
 							Data may be outdated
 						</span>
 					)}

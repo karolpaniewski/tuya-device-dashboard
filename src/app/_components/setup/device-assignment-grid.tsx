@@ -1,5 +1,6 @@
 "use client";
 
+import { Wifi } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { ErrorMessage } from "~/components/ui/error-message";
@@ -60,7 +61,7 @@ export function DeviceAssignmentGrid({ devices, rooms, utils }: Props) {
 			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 				{devices.map((device) => (
 					<div
-						className="flex flex-col gap-3 rounded-lg border border-gray-700 bg-gray-800 p-4"
+						className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px]"
 						key={device.id}
 					>
 						<div className="flex items-center justify-between gap-2">
@@ -104,9 +105,14 @@ export function DeviceAssignmentGrid({ devices, rooms, utils }: Props) {
 					</div>
 				))}
 				{devices.length === 0 && (
-					<p className="col-span-full text-gray-500 text-sm">
-						No devices discovered yet.
-					</p>
+					<div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+						<Wifi className="mb-4 text-gray-600" size={48} />
+						<p className="font-semibold text-white">No devices discovered</p>
+						<p className="mt-1 max-w-xs text-gray-400 text-sm">
+							Devices will appear here once the polling worker finds them on the
+							LAN.
+						</p>
+					</div>
 				)}
 			</div>
 		</section>

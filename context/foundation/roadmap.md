@@ -39,7 +39,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-06  | cicd-pipeline          | push to main triggers lint + typecheck + Vitest; passing build produces a deployable artifact   | —                        | PRD §Non-Goals (deferred v1)      | proposed |
 | S-07  | observability          | structured logging replaces console.log; errors surface with request/user/device context        | —                        | PRD §Non-Goals (deferred v1)      | proposed |
 | S-08  | mobile-responsive      | dashboard usable on 375 px viewport (iOS Safari, Android Chrome) without horizontal scroll      | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | proposed |
-| S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | proposed |
+| S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-10  | external-notifications | receive email/SMS/push alert when a room threshold is violated                                  | S-05                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-11  | automation-rules       | create time-based rules (set valve setpoint to X at time Y on days Z)                          | S-01, S-04               | PRD §Non-Goals (deferred v2)      | needs-shaping |
@@ -208,7 +208,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Visual changes touch every existing component — screenshot-level regressions are likely undetected until manual review. Mobile breakpoints (S-08) can conflict with layout changes introduced here; doing both simultaneously on the same file risks merge pain. Safest to do S-14 before S-08, or keep them on separate branches.
-- **Status:** proposed
+- **Status:** done
 
 ### S-09: Historical temperature data
 
@@ -323,3 +323,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-02       | room-assignment-setup  | 2026-06-10  |
 | S-03       | device-filter-search   | 2026-06-10  |
 | S-05       | room-health-thresholds | 2026-06-10  |
+| S-14       | ux-polish              | 2026-06-11  |

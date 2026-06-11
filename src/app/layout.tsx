@@ -23,6 +23,10 @@ export default function RootLayout({
 	return (
 		<html className={`${geist.variable} dark`} lang="en">
 			<body>
+				<div className="fixed inset-0 -z-10 overflow-hidden bg-gray-950">
+					<div className="absolute -top-40 -left-20 h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-3xl" />
+					<div className="absolute -right-20 -bottom-40 h-[500px] w-[500px] rounded-full bg-purple-600/8 blur-3xl" />
+				</div>
 				<TRPCReactProvider>
 					<SessionProvider>{children}</SessionProvider>
 				</TRPCReactProvider>

@@ -11,9 +11,9 @@ export default async function LoginPage({
 	const { error, callbackUrl } = await searchParams;
 
 	return (
-		<main className="flex min-h-screen items-center justify-center bg-gray-50">
-			<div className="w-full max-w-sm rounded-lg bg-white p-8 shadow">
-				<h1 className="mb-6 font-semibold text-2xl text-gray-900">
+		<main className="flex min-h-screen items-center justify-center">
+			<div className="w-full max-w-sm rounded-xl border border-white/10 bg-white/5 p-8 shadow backdrop-blur-sm">
+				<h1 className="mb-6 font-semibold text-2xl text-white">
 					Tuya Dashboard
 				</h1>
 
@@ -31,7 +31,7 @@ export default async function LoginPage({
 
 					<div>
 						<label
-							className="mb-1 block font-medium text-gray-700 text-sm"
+							className="mb-1 block font-medium text-gray-300 text-sm"
 							htmlFor="email"
 						>
 							Email
@@ -47,7 +47,7 @@ export default async function LoginPage({
 
 					<div>
 						<label
-							className="mb-1 block font-medium text-gray-700 text-sm"
+							className="mb-1 block font-medium text-gray-300 text-sm"
 							htmlFor="password"
 						>
 							Hasło

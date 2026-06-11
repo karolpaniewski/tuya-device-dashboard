@@ -60,7 +60,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 
 	return (
 		<form
-			className="flex flex-col gap-3 rounded-lg border border-gray-700 bg-gray-900 p-3"
+			className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm"
 			onSubmit={(e) => {
 				e.preventDefault();
 				const minVal = parseFloat(min);

@@ -8,7 +8,7 @@ interface PageShellProps {
 
 export function PageShell({ children, rightContent, title }: PageShellProps) {
 	return (
-		<main className="min-h-screen bg-gray-950 px-6 py-8 text-white">
+		<main className="min-h-screen px-6 py-8 text-white">
 			<div className="mb-8 flex items-center justify-between">
 				<h1 className="font-bold text-2xl">{title}</h1>
 				{rightContent}

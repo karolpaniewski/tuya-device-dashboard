@@ -52,7 +52,7 @@ export function FilterBar({
 	rooms,
 }: FilterBarProps) {
 	return (
-		<div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3">
+		<div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
 			<Input
 				className="min-w-32 flex-1 text-sm"
 				onChange={(e) => onSearchChange(e.target.value)}
