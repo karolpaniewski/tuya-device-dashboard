@@ -1,7 +1,7 @@
 ---
 id: temperature-history
 title: Historical temperature data (S-09)
-status: implementing
+status: implemented
 created: 2026-06-11
 updated: 2026-06-11
 roadmap_id: S-09

@@ -383,16 +383,16 @@ naturally from the first poll after the migration is applied.
 
 #### Automated
 
-- [x] 3.1 Typecheck passes: `npm run typecheck`
-- [x] 3.2 All tests pass: `npm test`
-- [x] 3.3 Biome clean: `npm run check`
-- [x] 3.4 Build succeeds: `npm run build`
+- [x] 3.1 Typecheck passes: `npm run typecheck` — 3fd4a9a
+- [x] 3.2 All tests pass: `npm test` — 3fd4a9a
+- [x] 3.3 Biome clean: `npm run check` — 3fd4a9a
+- [x] 3.4 Build succeeds: `npm run build` — 3fd4a9a
 
 #### Manual
 
-- [x] 3.5 History icon visible on valve and sensor cards
-- [x] 3.6 Modal opens with loading skeleton then chart
-- [x] 3.7 Two lines render (temperature + setpoint) with correct axes
-- [x] 3.8 Range tabs 1 h / 24 h / 7 d re-fetch and re-render correctly
-- [x] 3.9 Empty-state message shown when no data
-- [x] 3.10 No layout regressions on existing device cards
+- [x] 3.5 History icon visible on valve and sensor cards — 3fd4a9a
+- [x] 3.6 Modal opens with loading skeleton then chart — 3fd4a9a
+- [x] 3.7 Two lines render (temperature + setpoint) with correct axes — 3fd4a9a
+- [x] 3.8 Range tabs 1 h / 24 h / 7 d re-fetch and re-render correctly — 3fd4a9a
+- [x] 3.9 Empty-state message shown when no data — 3fd4a9a
+- [x] 3.10 No layout regressions on existing device cards — 3fd4a9a
