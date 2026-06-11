@@ -370,29 +370,29 @@ naturally from the first poll after the migration is applied.
 
 #### Automated
 
-- [x] 2.1 Typecheck passes: `npm run typecheck`
-- [x] 2.2 All tests pass including new endpoint tests: `npm test`
-- [x] 2.3 Biome clean: `npm run check`
+- [x] 2.1 Typecheck passes: `npm run typecheck` — ab08f75
+- [x] 2.2 All tests pass including new endpoint tests: `npm test` — ab08f75
+- [x] 2.3 Biome clean: `npm run check` — ab08f75
 
 #### Manual
 
-- [x] 2.4 `temperatureHistory` query returns non-empty array with correct timestamps
-- [x] 2.5 Bucketing reduces 7 d range to ≤ 168 hourly points
+- [x] 2.4 `temperatureHistory` query returns non-empty array with correct timestamps — ab08f75
+- [x] 2.5 Bucketing reduces 7 d range to ≤ 168 hourly points — ab08f75
 
 ### Phase 3: Frontend — Modal and Chart
 
 #### Automated
 
-- [ ] 3.1 Typecheck passes: `npm run typecheck`
-- [ ] 3.2 All tests pass: `npm test`
-- [ ] 3.3 Biome clean: `npm run check`
-- [ ] 3.4 Build succeeds: `npm run build`
+- [x] 3.1 Typecheck passes: `npm run typecheck`
+- [x] 3.2 All tests pass: `npm test`
+- [x] 3.3 Biome clean: `npm run check`
+- [x] 3.4 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 3.5 History icon visible on valve and sensor cards
-- [ ] 3.6 Modal opens with loading skeleton then chart
-- [ ] 3.7 Two lines render (temperature + setpoint) with correct axes
-- [ ] 3.8 Range tabs 1 h / 24 h / 7 d re-fetch and re-render correctly
-- [ ] 3.9 Empty-state message shown when no data
-- [ ] 3.10 No layout regressions on existing device cards
+- [x] 3.5 History icon visible on valve and sensor cards
+- [x] 3.6 Modal opens with loading skeleton then chart
+- [x] 3.7 Two lines render (temperature + setpoint) with correct axes
+- [x] 3.8 Range tabs 1 h / 24 h / 7 d re-fetch and re-render correctly
+- [x] 3.9 Empty-state message shown when no data
+- [x] 3.10 No layout regressions on existing device cards
