@@ -17,13 +17,13 @@ const FIXTURE_READINGS: TuyaDeviceReading[] = [
 		tuyaDeviceId: "stub-dev-003",
 		isOnline: true,
 		temperatureC: 20.1,
-		setpointC: null,
+		setpointC: 21.0,
 	},
 	{
 		tuyaDeviceId: "stub-dev-004",
 		isOnline: false,
 		temperatureC: null,
-		setpointC: null,
+		setpointC: 20.0,
 	},
 	{
 		tuyaDeviceId: "stub-dev-005",
@@ -34,7 +34,7 @@ const FIXTURE_READINGS: TuyaDeviceReading[] = [
 ];
 
 export const stubTuyaClient: TuyaGatewayClient = {
-	async fetchGatewayDevices(_gateway) {
+	async fetchGatewayDevices(_gateway, _devices) {
 		// Simulate 150ms LAN latency
 		await new Promise((r) => setTimeout(r, 150));
 		return FIXTURE_READINGS;

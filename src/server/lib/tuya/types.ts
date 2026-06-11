@@ -6,11 +6,14 @@ export interface TuyaDeviceReading {
 }
 
 export interface TuyaGatewayClient {
-	fetchGatewayDevices(gateway: {
-		tuyaGatewayId: string;
-		ipAddress: string | null;
-		localKey: string | null;
-	}): Promise<TuyaDeviceReading[]>;
+	fetchGatewayDevices(
+		gateway: {
+			tuyaGatewayId: string;
+			ipAddress: string | null;
+			localKey: string | null;
+		},
+		devices: { tuyaDeviceId: string; nodeId: string | null }[],
+	): Promise<TuyaDeviceReading[]>;
 
 	sendSetpoint(
 		gateway: {
@@ -18,6 +21,6 @@ export interface TuyaGatewayClient {
 			ipAddress: string | null;
 			localKey: string | null;
 		},
-		command: { dps: number; set: number },
+		command: { dps: number; set: number; cid?: string },
 	): Promise<void>;
 }

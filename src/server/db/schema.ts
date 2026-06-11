@@ -9,6 +9,19 @@ export const createTable = sqliteTableCreator(
 	(name) => `.bootstrap-scaffold_${name}`,
 );
 
+export const sites = createTable("site", (d) => ({
+	id: d
+		.text({ length: 255 })
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	name: d.text({ length: 255 }).notNull(),
+	createdAt: d
+		.integer({ mode: "timestamp" })
+		.notNull()
+		.default(sql`(unixepoch())`),
+	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+}));
+
 export const users = createTable(
 	"user",
 	(d) => ({
@@ -27,35 +40,56 @@ export const users = createTable(
 	(t) => [index("user_email_idx").on(t.email)],
 );
 
-export const gateways = createTable("gateway", (d) => ({
-	id: d
-		.text({ length: 255 })
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	tuyaGatewayId: d.text("tuya_gateway_id", { length: 255 }).notNull().unique(),
-	name: d.text({ length: 255 }).notNull(),
-	ipAddress: d.text("ip_address", { length: 45 }),
-	// AES-256-GCM ciphertext — use encryptLocalKey/decryptLocalKey from ~/server/lib/crypto
-	localKey: d.text("local_key", { length: 255 }),
-	createdAt: d
-		.integer({ mode: "timestamp" })
-		.notNull()
-		.default(sql`(unixepoch())`),
-	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
-}));
+export const gateways = createTable(
+	"gateway",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		tuyaGatewayId: d
+			.text("tuya_gateway_id", { length: 255 })
+			.notNull()
+			.unique(),
+		name: d.text({ length: 255 }).notNull(),
+		ipAddress: d.text("ip_address", { length: 45 }),
+		// AES-256-GCM ciphertext — use encryptLocalKey/decryptLocalKey from ~/server/lib/crypto
+		localKey: d.text("local_key", { length: 255 }),
+		siteId: d
+			.text("site_id", { length: 255 })
+			.notNull()
+			.default("default")
+			.references(() => sites.id, { onDelete: "restrict" }),
+		createdAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+	}),
+	(t) => [index("gateway_site_idx").on(t.siteId)],
+);
 
-export const rooms = createTable("room", (d) => ({
-	id: d
-		.text({ length: 255 })
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	name: d.text({ length: 255 }).notNull(),
-	createdAt: d
-		.integer({ mode: "timestamp" })
-		.notNull()
-		.default(sql`(unixepoch())`),
-	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
-}));
+export const rooms = createTable(
+	"room",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		name: d.text({ length: 255 }).notNull(),
+		siteId: d
+			.text("site_id", { length: 255 })
+			.notNull()
+			.default("default")
+			.references(() => sites.id, { onDelete: "restrict" }),
+		createdAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+	}),
+	(t) => [index("room_site_idx").on(t.siteId)],
+);
 
 export const devices = createTable(
 	"device",
@@ -75,6 +109,13 @@ export const devices = createTable(
 		// AES-256-GCM ciphertext — use encryptLocalKey/decryptLocalKey from ~/server/lib/crypto
 		localKey: d.text("local_key", { length: 255 }),
 		productKey: d.text("product_key", { length: 255 }),
+		// Zigbee node ID — used as TuyAPI `cid` for sub-device addressing through gateway
+		nodeId: d.text("node_id", { length: 20 }),
+		siteId: d
+			.text("site_id", { length: 255 })
+			.notNull()
+			.default("default")
+			.references(() => sites.id, { onDelete: "restrict" }),
 		createdAt: d
 			.integer({ mode: "timestamp" })
 			.notNull()
@@ -87,6 +128,7 @@ export const devices = createTable(
 			sql`${t.deviceType} IN ('sensor', 'valve', 'plug')`,
 		),
 		index("device_gateway_idx").on(t.gatewayId),
+		index("device_site_idx").on(t.siteId),
 	],
 );
 
@@ -112,6 +154,28 @@ export const deviceRoomAssignments = createTable(
 			.default(sql`(unixepoch())`),
 	}),
 	(t) => [index("assignment_room_idx").on(t.roomId)],
+);
+
+export const deviceTemperatureReadings = createTable(
+	"device_temperature_reading",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		// Denormalized — no FK — poller has tuyaDeviceId directly, avoids join on every write
+		tuyaDeviceId: d.text("tuya_device_id", { length: 255 }).notNull(),
+		temperatureC: d.real("temperature_c"),
+		setpointC: d.real("setpoint_c"),
+		recordedAt: d
+			.integer("recorded_at", { mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+	}),
+	(t) => [
+		index("reading_device_time_idx").on(t.tuyaDeviceId, t.recordedAt),
+		index("reading_time_idx").on(t.recordedAt),
+	],
 );
 
 export const roomThresholds = createTable(

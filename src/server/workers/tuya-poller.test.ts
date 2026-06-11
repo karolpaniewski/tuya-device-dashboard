@@ -10,10 +10,13 @@ import { getTuyaClient } from "~/server/lib/tuya";
 import { pollOnce } from "~/server/workers/tuya-poller";
 
 const GATEWAY = {
+	id: "gw-db-1",
 	tuyaGatewayId: "tuya-gw-1",
 	ipAddress: "192.168.1.100",
 	localKey: null as string | null, // null skips decryptLocalKey; no crypto mock needed
 };
+
+const DEVICE = { tuyaDeviceId: "d1", nodeId: null };
 
 beforeEach(() => {
 	deviceStateStore.clear();
@@ -28,15 +31,32 @@ afterEach(() => {
 
 describe("pollOnce › happy path", () => {
 	it("updates the store with fresh entries after a successful poll", async () => {
-		vi.mocked(db.select).mockReturnValue({
-			from: vi.fn().mockResolvedValue([GATEWAY]),
-		} as never);
+		vi.mocked(db.select)
+			// First call: gateways
+			.mockReturnValueOnce({
+				from: vi.fn().mockResolvedValue([GATEWAY]),
+			} as never)
+			// Second call: devices for gateway
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([DEVICE]),
+				}),
+			} as never);
+
+		const mockInsert = vi
+			.fn()
+			.mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
+		vi.mocked(db).insert = mockInsert as never;
+
 		vi.mocked(getTuyaClient).mockReturnValue({
-			fetchGatewayDevices: vi
-				.fn()
-				.mockResolvedValue([
-					{ tuyaDeviceId: "d1", isOnline: true, temperatureC: 21 },
-				]),
+			fetchGatewayDevices: vi.fn().mockResolvedValue([
+				{
+					tuyaDeviceId: "d1",
+					isOnline: true,
+					temperatureC: 21,
+					setpointC: 20,
+				},
+			]),
 		} as never);
 
 		await pollOnce();
@@ -47,6 +67,40 @@ describe("pollOnce › happy path", () => {
 		expect(state.isOnline).toBe(true);
 		expect(state.temperatureC).toBe(21);
 		expect(Date.now() - state.lastPolledAt.getTime()).toBeLessThan(1000);
+		// History insert was called with the reading
+		expect(mockInsert).toHaveBeenCalledOnce();
+	});
+
+	it("does not insert when temperatureC and setpointC are both null", async () => {
+		vi.mocked(db.select)
+			.mockReturnValueOnce({
+				from: vi.fn().mockResolvedValue([GATEWAY]),
+			} as never)
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([DEVICE]),
+				}),
+			} as never);
+
+		const mockInsert = vi
+			.fn()
+			.mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
+		vi.mocked(db).insert = mockInsert as never;
+
+		vi.mocked(getTuyaClient).mockReturnValue({
+			fetchGatewayDevices: vi.fn().mockResolvedValue([
+				{
+					tuyaDeviceId: "d1",
+					isOnline: true,
+					temperatureC: null,
+					setpointC: null,
+				},
+			]),
+		} as never);
+
+		await pollOnce();
+
+		expect(mockInsert).not.toHaveBeenCalled();
 	});
 });
 
@@ -83,9 +137,16 @@ describe("pollOnce › DB error", () => {
 
 describe("pollOnce › gateway fetch error", () => {
 	it("catches the error, logs it, and does not write to the store", async () => {
-		vi.mocked(db.select).mockReturnValue({
-			from: vi.fn().mockResolvedValue([GATEWAY]),
-		} as never);
+		vi.mocked(db.select)
+			.mockReturnValueOnce({
+				from: vi.fn().mockResolvedValue([GATEWAY]),
+			} as never)
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([DEVICE]),
+				}),
+			} as never);
+
 		vi.mocked(getTuyaClient).mockReturnValue({
 			fetchGatewayDevices: vi.fn().mockRejectedValue(new Error("LAN timeout")),
 		} as never);

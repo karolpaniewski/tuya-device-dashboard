@@ -2,18 +2,175 @@ import TuyAPI from "tuyapi";
 
 import type { TuyaDeviceReading, TuyaGatewayClient } from "./types";
 
-// When implementing fetchGatewayDevices for production, for each device under this gateway:
-// const device = new TuyAPI({ id: dev.tuyaDeviceId, key: gateway.localKey, version: '3.3' });
-// await device.connect();
-// const schema = await device.get({ schema: true });
-// await device.disconnect();
+const CONNECT_TIMEOUT_MS = 8_000;
+// How long to wait for reconnect after a disconnect
+const RECONNECT_DELAY_MS = 10_000;
+
+interface GatewayState {
+	tuyaGateway: InstanceType<typeof TuyAPI>;
+	// cid (nodeId) → most recent DPS snapshot
+	latestDps: Map<string, Record<string, unknown>>;
+	nodeToTuya: Map<string, string>;
+	isConnected: boolean;
+	reconnectTimer?: ReturnType<typeof setTimeout>;
+}
+
+// Module-level map — one persistent connection per gateway
+const gatewayConnections = new Map<string, GatewayState>();
+
+function buildConnection(
+	gateway: {
+		tuyaGatewayId: string;
+		ipAddress: string;
+		localKey: string;
+	},
+	nodeToTuya: Map<string, string>,
+): GatewayState {
+	const tuyaGateway = new TuyAPI({
+		id: gateway.tuyaGatewayId,
+		key: gateway.localKey,
+		ip: gateway.ipAddress,
+		version: "3.5",
+	});
+
+	const state: GatewayState = {
+		tuyaGateway,
+		latestDps: new Map(),
+		nodeToTuya,
+		isConnected: false,
+	};
+
+	const onData = (data: unknown, cmdByte?: number) => {
+		console.log(
+			`[tuya-debug] raw event (cmd=${cmdByte}):`,
+			JSON.stringify(data),
+		);
+		const d = data as {
+			cid?: string;
+			devId?: string;
+			dps?: Record<string, unknown>;
+		} | null;
+		if (!d) return;
+		const key = d.cid ?? d.devId;
+		if (key && d.dps) {
+			state.latestDps.set(key, { ...state.latestDps.get(key), ...d.dps });
+			console.log(`[tuya-poller] state update cid=${key}:`, d.dps);
+		}
+	};
+
+	tuyaGateway.on("data", onData);
+	tuyaGateway.on("dp-refresh", onData);
+	tuyaGateway.on("heartbeat", () =>
+		console.log(`[tuya-debug] heartbeat from ${gateway.tuyaGatewayId}`),
+	);
+	tuyaGateway.on("error", (err: unknown) =>
+		console.log(`[tuya-debug] gateway ${gateway.tuyaGatewayId} error:`, err),
+	);
+	tuyaGateway.on("disconnected", () => {
+		console.log(
+			`[tuya-poller] gateway ${gateway.tuyaGatewayId} disconnected — reconnecting in ${RECONNECT_DELAY_MS}ms`,
+		);
+		state.isConnected = false;
+		state.reconnectTimer = setTimeout(() => {
+			void connectState(gateway.tuyaGatewayId, state);
+		}, RECONNECT_DELAY_MS);
+	});
+
+	return state;
+}
+
+async function connectState(
+	tuyaGatewayId: string,
+	state: GatewayState,
+): Promise<void> {
+	try {
+		await Promise.race([
+			state.tuyaGateway.connect(),
+			new Promise<never>((_, reject) =>
+				setTimeout(
+					() => reject(new Error(`connect timeout (${CONNECT_TIMEOUT_MS}ms)`)),
+					CONNECT_TIMEOUT_MS,
+				),
+			),
+		]);
+		state.isConnected = true;
+		console.log(
+			`[tuya-poller] gateway ${tuyaGatewayId} connected (persistent)`,
+		);
+	} catch (err) {
+		console.error(
+			`[tuya-poller] gateway ${tuyaGatewayId} connect failed:`,
+			err,
+		);
+		// Retry after delay
+		state.reconnectTimer = setTimeout(() => {
+			void connectState(tuyaGatewayId, state);
+		}, RECONNECT_DELAY_MS);
+	}
+}
+
+async function ensureConnected(
+	gateway: {
+		tuyaGatewayId: string;
+		ipAddress: string;
+		localKey: string;
+	},
+	devices: { tuyaDeviceId: string; nodeId: string }[],
+): Promise<GatewayState> {
+	let state = gatewayConnections.get(gateway.tuyaGatewayId);
+
+	if (!state) {
+		const nodeToTuya = new Map(devices.map((d) => [d.nodeId, d.tuyaDeviceId]));
+		state = buildConnection(gateway, nodeToTuya);
+		gatewayConnections.set(gateway.tuyaGatewayId, state);
+		await connectState(gateway.tuyaGatewayId, state);
+	}
+
+	return state;
+}
 
 export const realTuyaClient: TuyaGatewayClient = {
-	async fetchGatewayDevices(gateway) {
-		console.warn(
-			`[tuya-poller] Real Tuya client not fully implemented. Set TUYA_STUB=true for development. (gateway: ${gateway.tuyaGatewayId})`,
+	async fetchGatewayDevices(gateway, devices) {
+		if (!gateway.ipAddress || !gateway.localKey) {
+			console.warn(
+				`[tuya-poller] Gateway ${gateway.tuyaGatewayId}: missing ipAddress or localKey — skipping`,
+			);
+			return [];
+		}
+
+		const pollable = devices.filter(
+			(d): d is { tuyaDeviceId: string; nodeId: string } => d.nodeId !== null,
 		);
-		return [] as TuyaDeviceReading[];
+		if (pollable.length === 0) return [];
+
+		const state = await ensureConnected(
+			{
+				tuyaGatewayId: gateway.tuyaGatewayId,
+				ipAddress: gateway.ipAddress,
+				localKey: gateway.localKey,
+			},
+			pollable,
+		);
+
+		// Build readings from whatever has been accumulated so far
+		const readings: TuyaDeviceReading[] = [];
+		for (const [cid, dps] of state.latestDps) {
+			const tuyaDeviceId = state.nodeToTuya.get(cid);
+			if (!tuyaDeviceId) continue;
+			const tempRaw = dps["2"];
+			const setpointRaw = dps["4"];
+			readings.push({
+				tuyaDeviceId,
+				isOnline: true,
+				temperatureC: typeof tempRaw === "number" ? tempRaw / 10 : null,
+				setpointC: typeof setpointRaw === "number" ? setpointRaw / 10 : null,
+			});
+		}
+
+		console.log(
+			`[tuya-poller] gateway ${gateway.tuyaGatewayId}: ${readings.length}/${pollable.length} devices with known state`,
+		);
+		return readings;
 	},
 
 	async sendSetpoint(gateway, command) {
@@ -23,7 +180,7 @@ export const realTuyaClient: TuyaGatewayClient = {
 			id: gateway.tuyaGatewayId,
 			key: gateway.localKey,
 			ip: gateway.ipAddress ?? undefined,
-			version: "3.3",
+			version: "3.5",
 		});
 		await device.connect();
 		try {
@@ -31,6 +188,7 @@ export const realTuyaClient: TuyaGatewayClient = {
 				dps: command.dps,
 				set: command.set,
 				shouldWaitForResponse: true,
+				...(command.cid ? { cid: command.cid } : {}),
 			});
 		} finally {
 			await device.disconnect();

@@ -1,0 +1,1 @@
+ALTER TABLE `.bootstrap-scaffold_device` ADD `node_id` text(20);
