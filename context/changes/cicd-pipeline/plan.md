@@ -223,8 +223,8 @@ No application code changes. No database schema changes.
 
 #### Automated
 
-- [x] 1.1 `npm run ci` passes locally with required env vars set
-- [x] 1.2 Workflow YAML renders without syntax errors
+- [x] 1.1 `npm run ci` passes locally with required env vars set — 00e1002
+- [x] 1.2 Workflow YAML renders without syntax errors — 00e1002
 
 #### Manual
 

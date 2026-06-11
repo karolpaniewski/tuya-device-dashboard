@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
+import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
 
 interface Props {
@@ -45,7 +48,14 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 	});
 
 	if (isLoading) {
-		return <p className="text-gray-500 text-sm">Loading…</p>;
+		return (
+			<div className="flex flex-wrap items-end gap-4">
+				<Skeleton className="h-9 w-24 rounded-md" />
+				<Skeleton className="h-9 w-24 rounded-md" />
+				<Skeleton className="h-9 w-24 rounded-md" />
+				<Skeleton className="h-9 w-20 rounded-md" />
+			</div>
+		);
 	}
 
 	return (
@@ -70,30 +80,42 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 			}}
 		>
 			<div className="flex flex-wrap items-end gap-4">
-				<label className="flex flex-col gap-1 text-sm text-white">
+				<label
+					className="flex flex-col gap-1 text-sm text-white"
+					htmlFor="threshold-min"
+				>
 					Min °C
-					<input
-						className="w-24 rounded border border-gray-600 bg-gray-800 px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+					<Input
+						className="w-24"
+						id="threshold-min"
 						onChange={(e) => setMin(e.target.value)}
 						step="0.5"
 						type="number"
 						value={min}
 					/>
 				</label>
-				<label className="flex flex-col gap-1 text-sm text-white">
+				<label
+					className="flex flex-col gap-1 text-sm text-white"
+					htmlFor="threshold-max"
+				>
 					Max °C
-					<input
-						className="w-24 rounded border border-gray-600 bg-gray-800 px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+					<Input
+						className="w-24"
+						id="threshold-max"
 						onChange={(e) => setMax(e.target.value)}
 						step="0.5"
 						type="number"
 						value={max}
 					/>
 				</label>
-				<label className="flex flex-col gap-1 text-sm text-white">
+				<label
+					className="flex flex-col gap-1 text-sm text-white"
+					htmlFor="threshold-gap"
+				>
 					Anomaly gap °C
-					<input
-						className="w-24 rounded border border-gray-600 bg-gray-800 px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+					<Input
+						className="w-24"
+						id="threshold-gap"
 						onChange={(e) => setGap(e.target.value)}
 						step="0.5"
 						type="number"
@@ -103,20 +125,12 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 			</div>
 			<ErrorMessage message={formError} variant="inline" />
 			<div className="flex gap-2">
-				<button
-					className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-					disabled={mutation.isPending}
-					type="submit"
-				>
+				<Button disabled={mutation.isPending} type="submit">
 					{mutation.isPending ? "Saving…" : "Save"}
-				</button>
-				<button
-					className="rounded border border-gray-600 px-3 py-1.5 text-gray-400 text-sm hover:text-white"
-					onClick={onClose}
-					type="button"
-				>
+				</Button>
+				<Button onClick={onClose} type="button" variant="outline">
 					Cancel
-				</button>
+				</Button>
 			</div>
 		</form>
 	);

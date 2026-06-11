@@ -500,9 +500,9 @@ No database changes. No API changes. The `cn()` utility from `src/lib/utils.ts` 
 
 #### Automated
 
-- [ ] 3.1 `npm run ci` passes after all Phase 3 changes
-- [ ] 3.2 No TypeScript errors on any Select import site
-- [ ] 3.3 `src/components/page-shell.tsx` exists
+- [x] 3.1 `npm run ci` passes after all Phase 3 changes
+- [x] 3.2 No TypeScript errors on any Select import site
+- [x] 3.3 `src/components/page-shell.tsx` exists
 
 #### Manual
 

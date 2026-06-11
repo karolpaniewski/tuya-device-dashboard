@@ -1,3 +1,5 @@
+import { Badge } from "~/components/ui/badge";
+import { cn } from "~/lib/utils";
 import type { RouterOutputs } from "~/trpc/react";
 import { DeviceCard } from "./device-card";
 
@@ -39,11 +41,9 @@ export function RoomGroup({
 					</span>
 				</h2>
 				{badge && (
-					<span
-						className={`rounded px-2 py-0.5 font-medium text-xs ${BADGE_STYLE[badge] ?? ""}`}
-					>
+					<Badge className={cn("font-medium", BADGE_STYLE[badge] ?? "")}>
 						{badge}
-					</span>
+					</Badge>
 				)}
 			</div>
 			{anomaly && suggestion && (

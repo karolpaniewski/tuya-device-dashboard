@@ -1,3 +1,5 @@
+import { Badge } from "~/components/ui/badge";
+import { cn } from "~/lib/utils";
 import type { RouterOutputs } from "~/trpc/react";
 
 type DeviceItem =
@@ -21,11 +23,14 @@ export function DeviceCard({ device }: { device: DeviceItem }) {
 		<div className="flex flex-col gap-2 rounded-lg border border-gray-700 bg-gray-800 p-4">
 			<div className="flex items-center justify-between gap-2">
 				<span className="font-semibold text-white">{device.name}</span>
-				<span
-					className={`rounded px-2 py-0.5 font-medium text-xs ${TYPE_BADGE[device.deviceType] ?? "bg-gray-600 text-gray-100"}`}
+				<Badge
+					className={cn(
+						"font-medium",
+						TYPE_BADGE[device.deviceType] ?? "bg-gray-600 text-gray-100",
+					)}
 				>
 					{device.deviceType}
-				</span>
+				</Badge>
 			</div>
 
 			<div className="font-bold text-2xl text-white">

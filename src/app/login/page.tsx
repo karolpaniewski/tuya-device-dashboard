@@ -1,9 +1,12 @@
+import { Button } from "~/components/ui/button";
+import { ErrorMessage } from "~/components/ui/error-message";
+import { Input } from "~/components/ui/input";
 import { loginAction } from "./actions";
 
 export default async function LoginPage({
 	searchParams,
 }: {
-	searchParams: Promise<{ error?: string; callbackUrl?: string }>;
+	searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }) {
 	const { error, callbackUrl } = await searchParams;
 
@@ -15,9 +18,12 @@ export default async function LoginPage({
 				</h1>
 
 				{error === "InvalidCredentials" && (
-					<p className="mb-4 rounded bg-red-50 px-3 py-2 text-red-700 text-sm">
-						Nieprawidłowy email lub hasło.
-					</p>
+					<div className="mb-4">
+						<ErrorMessage
+							message="Nieprawidłowy email lub hasło."
+							variant="banner"
+						/>
+					</div>
 				)}
 
 				<form action={loginAction} className="space-y-4">
@@ -30,9 +36,8 @@ export default async function LoginPage({
 						>
 							Email
 						</label>
-						<input
+						<Input
 							autoComplete="email"
-							className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
 							id="email"
 							name="email"
 							required
@@ -47,9 +52,8 @@ export default async function LoginPage({
 						>
 							Hasło
 						</label>
-						<input
+						<Input
 							autoComplete="current-password"
-							className="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
 							id="password"
 							name="password"
 							required
@@ -57,12 +61,9 @@ export default async function LoginPage({
 						/>
 					</div>
 
-					<button
-						className="w-full rounded bg-blue-600 px-4 py-2 font-medium text-sm text-white hover:bg-blue-700 focus:outline-none"
-						type="submit"
-					>
+					<Button className="w-full" type="submit">
 						Zaloguj się
-					</button>
+					</Button>
 				</form>
 			</div>
 		</main>

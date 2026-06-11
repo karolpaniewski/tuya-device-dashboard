@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
+import { PageShell } from "~/components/page-shell";
 import { api, HydrateClient } from "~/trpc/server";
 import { SetupShell } from "../_components/setup/setup-shell";
 
@@ -9,19 +10,20 @@ export default async function SetupPage() {
 	void api.device.overview.prefetch();
 
 	return (
-		<main className="min-h-screen bg-gray-950 px-6 py-8 text-white">
-			<div className="mb-8 flex items-center justify-between">
-				<h1 className="font-bold text-2xl">Room Setup</h1>
+		<PageShell
+			rightContent={
 				<Link
 					className="text-gray-400 text-sm transition-colors hover:text-white"
 					href="/"
 				>
 					← Dashboard
 				</Link>
-			</div>
+			}
+			title="Room Setup"
+		>
 			<HydrateClient>
 				<SetupShell />
 			</HydrateClient>
-		</main>
+		</PageShell>
 	);
 }

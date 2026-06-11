@@ -2,6 +2,7 @@
 
 import { Layers } from "lucide-react";
 import { useState } from "react";
+import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
@@ -135,16 +136,17 @@ export function DeviceOverview() {
 				rooms={rooms}
 			/>
 			{isEmpty ? (
-				<p className="text-gray-400 text-sm">
-					No devices match your filters.{" "}
-					<button
-						className="text-blue-400 hover:text-blue-300"
+				<div className="flex items-center gap-2 text-gray-400 text-sm">
+					No devices match your filters.
+					<Button
 						onClick={clearFilters}
+						size="sm"
 						type="button"
+						variant="ghost"
 					>
 						Clear filters
-					</button>
-				</p>
+					</Button>
+				</div>
 			) : (
 				<>
 					{filteredRooms.map((room) => (

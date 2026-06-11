@@ -3,7 +3,9 @@
 import { Pencil, Settings, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
+import { Input } from "~/components/ui/input";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { RoomThresholdForm } from "./room-threshold-form";
 
@@ -84,10 +86,9 @@ export function RoomManager({ rooms, utils }: Props) {
 					>
 						<div className="flex items-center gap-3">
 							{editingId === room.id ? (
-								<input
-									// biome-ignore lint/a11y/noAutofocus: intentional for inline edit UX
+								<Input
 									autoFocus
-									className="flex-1 rounded border border-gray-600 bg-gray-900 px-2 py-1 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+									className="flex-1 text-sm"
 									onBlur={() => commitRename(room.id)}
 									onChange={(e) => setEditingName(e.target.value)}
 									onKeyDown={(e) => {
@@ -103,8 +104,10 @@ export function RoomManager({ rooms, utils }: Props) {
 								{room.deviceCount}{" "}
 								{room.deviceCount === 1 ? "device" : "devices"}
 							</span>
-							<button
-								className={`text-sm ${thresholdRoomId === room.id ? "text-blue-400" : "text-gray-400 hover:text-blue-400"}`}
+							<Button
+								className={
+									thresholdRoomId === room.id ? "text-blue-400" : undefined
+								}
 								onClick={() => {
 									if (thresholdRoomId === room.id) {
 										setThresholdRoomId(null);
@@ -113,35 +116,39 @@ export function RoomManager({ rooms, utils }: Props) {
 										setThresholdRoomId(room.id);
 									}
 								}}
+								size="icon"
 								title="Thresholds"
 								type="button"
+								variant="ghost"
 							>
 								<Settings size={14} />
-							</button>
-							<button
-								className="text-gray-400 text-sm hover:text-white"
+							</Button>
+							<Button
 								onClick={() => startRename(room)}
+								size="icon"
 								title="Rename"
 								type="button"
+								variant="ghost"
 							>
 								<Pencil size={14} />
-							</button>
-							<button
-								className="text-gray-400 text-sm hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40"
+							</Button>
+							<Button
 								disabled={room.deviceCount > 0 || deleteMutation.isPending}
 								onClick={() => {
 									setError(null);
 									deleteMutation.mutate({ id: room.id });
 								}}
+								size="sm"
 								title={
 									room.deviceCount > 0
 										? "Room has assigned devices — reassign them first"
 										: "Delete room"
 								}
 								type="button"
+								variant="destructive"
 							>
 								<X size={14} />
-							</button>
+							</Button>
 						</div>
 						{thresholdRoomId === room.id && (
 							<RoomThresholdForm
@@ -170,19 +177,18 @@ export function RoomManager({ rooms, utils }: Props) {
 					}
 				}}
 			>
-				<input
-					className="flex-1 rounded border border-gray-600 bg-gray-900 px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+				<Input
+					className="flex-1 text-sm"
 					onChange={(e) => setNewName(e.target.value)}
 					placeholder="New room name"
 					value={newName}
 				/>
-				<button
-					className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+				<Button
 					disabled={createMutation.isPending || !newName.trim()}
 					type="submit"
 				>
 					{createMutation.isPending ? "Adding…" : "Add"}
-				</button>
+				</Button>
 			</form>
 		</section>
 	);

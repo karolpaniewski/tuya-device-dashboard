@@ -39,6 +39,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-06  | cicd-pipeline          | push to main triggers lint + typecheck + Vitest; passing build produces a deployable artifact   | —                        | PRD §Non-Goals (deferred v1)      | proposed |
 | S-07  | observability          | structured logging replaces console.log; errors surface with request/user/device context        | —                        | PRD §Non-Goals (deferred v1)      | proposed |
 | S-08  | mobile-responsive      | dashboard usable on 375 px viewport (iOS Safari, Android Chrome) without horizontal scroll      | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | proposed |
+| S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | proposed |
 | S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-10  | external-notifications | receive email/SMS/push alert when a room threshold is violated                                  | S-05                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-11  | automation-rules       | create time-based rules (set valve setpoint to X at time Y on days Z)                          | S-01, S-04               | PRD §Non-Goals (deferred v2)      | needs-shaping |
@@ -197,6 +198,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Tailwind's responsive utilities are present; most risk is in data-dense tables (device list, room grid) that were designed desktop-first. A card-based or stacked layout on small viewports is almost certainly required — not just a breakpoint tweak.
 - **Status:** proposed
 
+### S-14: UX/UI polish
+
+- **Outcome:** every page has loading skeleton states (device list, room grid), dedicated empty states (no devices discovered, no room assignments, no thresholds set), toast notifications on every mutation (assign room, save threshold, delete), user-friendly error messages replacing raw tRPC errors, an error boundary at page level; visual consistency lifted through a coherent icon set (Lucide), subtle backgrounds on cards and sections, and a tightened colour palette.
+- **Change ID:** ux-polish
+- **PRD refs:** PRD §Non-Goals (UX polish deferred from v1 for speed goal)
+- **Prerequisites:** S-01, S-02, S-03, S-05 (stable feature set to polish)
+- **Parallel with:** S-06, S-07, S-08
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Visual changes touch every existing component — screenshot-level regressions are likely undetected until manual review. Mobile breakpoints (S-08) can conflict with layout changes introduced here; doing both simultaneously on the same file risks merge pain. Safest to do S-14 before S-08, or keep them on separate branches.
+- **Status:** proposed
+
 ### S-09: Historical temperature data
 
 - **Outcome:** user can select a device or room and view temperature readings over a configurable time range (e.g. last hour, last 24 h, last 7 days) as a line chart; data persists across server restarts.
@@ -282,7 +295,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-05       | room-health-thresholds | Feature: per-room threshold config + OK/Too Cold/Too Hot status   | done                  | —                                                                     |
 | S-06       | cicd-pipeline          | Infra: lint + typecheck + Vitest on push; deployable artifact     | yes                   | Run `/10x-plan cicd-pipeline`                                         |
 | S-07       | observability          | Infra: structured logging with redaction; replaces console.log    | yes                   | Run `/10x-plan observability`                                         |
-| S-08       | mobile-responsive      | Feature: 375 px viewport support across all dashboard views       | yes                   | Run `/10x-plan mobile-responsive`; best after S-04 if UI is stable   |
+| S-08       | mobile-responsive      | Feature: 375 px viewport support across all dashboard views       | yes                   | Run `/10x-plan mobile-responsive`; best after S-14 (shared components stabilised) |
+| S-14       | ux-polish              | Feature: skeleton states, empty states, toast feedback, error UX, visual polish | yes      | Run `/10x-plan ux-polish`                                             |
 | S-09       | temperature-history    | Feature: temperature chart per device/room over configurable range| no                    | Run `/10x-shape` first — storage strategy + retention policy needed   |
 | S-10       | external-notifications | Feature: email/SMS/push on threshold violation                    | no                    | Run `/10x-shape` first — channel, provider, throttle rule needed      |
 | S-11       | automation-rules       | Feature: time-based valve setpoint rules                          | no                    | Run `/10x-shape` first + S-04 must unblock                            |

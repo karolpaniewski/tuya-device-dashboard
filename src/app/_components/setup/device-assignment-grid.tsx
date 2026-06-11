@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { Badge } from "~/components/ui/badge";
 import { ErrorMessage } from "~/components/ui/error-message";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "~/components/ui/select";
+import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 type DeviceItem =
@@ -56,26 +65,37 @@ export function DeviceAssignmentGrid({ devices, rooms, utils }: Props) {
 					>
 						<div className="flex items-center justify-between gap-2">
 							<span className="font-semibold text-white">{device.name}</span>
-							<span
-								className={`rounded px-2 py-0.5 font-medium text-xs ${TYPE_BADGE[device.deviceType] ?? "bg-gray-600 text-gray-100"}`}
+							<Badge
+								className={cn(
+									"font-medium",
+									TYPE_BADGE[device.deviceType] ?? "bg-gray-600 text-gray-100",
+								)}
 							>
 								{device.deviceType}
-							</span>
+							</Badge>
 						</div>
 
-						<select
-							className="rounded border border-gray-600 bg-gray-900 px-2 py-1.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
-							disabled={savingById[device.id]}
-							onChange={(e) => assign(device.id, e.target.value || null)}
-							value={device.roomId ?? ""}
+						<Select
+							onValueChange={(value) =>
+								assign(device.id, value === "unassigned" ? null : value)
+							}
+							value={device.roomId ?? "unassigned"}
 						>
-							<option value="">— Unassigned</option>
-							{rooms.map((room) => (
-								<option key={room.id} value={room.id}>
-									{room.name}
-								</option>
-							))}
-						</select>
+							<SelectTrigger
+								className="w-full"
+								disabled={savingById[device.id]}
+							>
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="unassigned">— Unassigned</SelectItem>
+								{rooms.map((room) => (
+									<SelectItem key={room.id} value={room.id}>
+										{room.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 
 						{savingById[device.id] && (
 							<p className="text-gray-400 text-xs">Saving…</p>
