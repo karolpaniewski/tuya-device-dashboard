@@ -3,6 +3,7 @@ export interface TuyaDeviceReading {
 	isOnline: boolean;
 	temperatureC: number | null;
 	setpointC: number | null;
+	humidityPct: number | null;
 }
 
 export interface TuyaGatewayClient {

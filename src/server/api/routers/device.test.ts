@@ -72,6 +72,7 @@ describe("device.overview — stale detection", () => {
 			isOnline: true,
 			temperatureC: 21,
 			setpointC: null,
+			humidityPct: null,
 			lastPolledAt: new Date(Date.now() - 10_000),
 		});
 		const result = await makeCallerWithRow().device.overview({ siteId: "all" });
@@ -84,6 +85,7 @@ describe("device.overview — stale detection", () => {
 			isOnline: true,
 			temperatureC: 21,
 			setpointC: null,
+			humidityPct: null,
 			lastPolledAt: new Date(Date.now() - 61_000),
 		});
 		const result = await makeCallerWithRow().device.overview({ siteId: "all" });
@@ -121,6 +123,7 @@ describe("device.overview — room scoring", () => {
 			isOnline: true,
 			temperatureC: 15,
 			setpointC: null,
+			humidityPct: null,
 			lastPolledAt: new Date(),
 		});
 

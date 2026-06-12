@@ -111,6 +111,7 @@ describe("pollOnce › DB error", () => {
 			isOnline: true,
 			temperatureC: 20,
 			setpointC: null,
+			humidityPct: null,
 			lastPolledAt: oldDate,
 		});
 

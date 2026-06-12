@@ -1,6 +1,17 @@
 "use client";
 
 import {
+	closestCorners,
+	DndContext,
+	type DragEndEvent,
+	DragOverlay,
+	type DragStartEvent,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+import {
 	CheckCircle2,
 	Flame,
 	Layers,
@@ -9,17 +20,20 @@ import {
 	Wifi,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSiteContext } from "~/components/site-context";
 import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { DeviceCard } from "./device-card";
+import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
 import { RoomGroup } from "./room-group";
 import { RoomSidebar } from "./room-sidebar";
 
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
+type DeviceItem = RoomItem["devices"][number];
 
 function matchDevice(
 	device: { deviceType: string; isOnline: boolean; name: string },
@@ -66,15 +80,159 @@ function SiteSection({
 
 export function DeviceOverview() {
 	const { activeSiteId } = useSiteContext();
+	const utils = api.useUtils();
 	const { data, isLoading, error } = api.device.overview.useQuery(
 		{ siteId: activeSiteId },
 		{ refetchInterval: 30_000, refetchIntervalInBackground: false },
 	);
+	const roomsListQuery = api.room.list.useQuery({ siteId: activeSiteId });
 
 	const [roomFilter, setRoomFilter] = useState("");
+	const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
 	const [typeFilter, setTypeFilter] = useState<FilterState["type"]>("");
 	const [statusFilter, setStatusFilter] = useState<FilterState["status"]>("");
 	const [nameSearch, setNameSearch] = useState("");
+
+	// DnD local state — mirrors server data, updated optimistically on drag
+	const [activeId, setActiveId] = useState<string | null>(null);
+	const [localRooms, setLocalRooms] = useState<RoomItem[]>([]);
+	const [localUnassigned, setLocalUnassigned] = useState<DeviceItem[]>([]);
+
+	// Sync local DnD state from server (skip during active drag)
+	useEffect(() => {
+		if (activeId !== null) return;
+		if (!data) return;
+		setLocalRooms(data.rooms);
+		setLocalUnassigned(data.unassigned);
+	}, [data, activeId]);
+
+	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+	);
+
+	const reorderMutation = api.device.reorder.useMutation({
+		onError: () => void utils.device.overview.invalidate(),
+	});
+	const setDeviceRoomMutation = api.room.setDeviceRoom.useMutation({
+		onError: () => void utils.device.overview.invalidate(),
+		onSuccess: () => void utils.device.overview.invalidate(),
+	});
+
+	function findContainer(deviceId: string): string | null {
+		for (const room of localRooms) {
+			if (room.devices.some((d) => d.id === deviceId)) return room.roomId;
+		}
+		if (localUnassigned.some((d) => d.id === deviceId)) return "unassigned";
+		return null;
+	}
+
+	function handleDragStart({ active }: DragStartEvent) {
+		setActiveId(String(active.id));
+	}
+
+	function handleDragEnd({ active, over }: DragEndEvent) {
+		setActiveId(null);
+		if (!over) return;
+
+		const activeDeviceId = String(active.id);
+		const overId = String(over.id);
+		if (activeDeviceId === overId) return;
+
+		const sourceContainer = findContainer(activeDeviceId);
+		if (!sourceContainer) return;
+
+		// Determine destination container: overId may be a room/container ID or a device ID
+		let destContainer =
+			overId === "unassigned" || localRooms.some((r) => r.roomId === overId)
+				? overId
+				: findContainer(overId);
+		if (!destContainer) destContainer = sourceContainer;
+
+		if (sourceContainer === destContainer) {
+			// Same-container reorder
+			const isUnassigned = sourceContainer === "unassigned";
+			const items = isUnassigned
+				? localUnassigned
+				: (localRooms.find((r) => r.roomId === sourceContainer)?.devices ?? []);
+			const oldIdx = items.findIndex((d) => d.id === activeDeviceId);
+			const newIdx = items.findIndex((d) => d.id === overId);
+			if (oldIdx === -1 || newIdx === -1) return;
+
+			const reordered = arrayMove(items, oldIdx, newIdx).map((d, i) => ({
+				...d,
+				sortOrder: i,
+			}));
+			if (isUnassigned) {
+				setLocalUnassigned(reordered);
+			} else {
+				setLocalRooms((prev) =>
+					prev.map((r) =>
+						r.roomId === sourceContainer ? { ...r, devices: reordered } : r,
+					),
+				);
+			}
+			reorderMutation.mutate(
+				reordered.map((d) => ({ id: d.id, sortOrder: d.sortOrder })),
+			);
+		} else {
+			// Cross-container move
+			const srcItems =
+				sourceContainer === "unassigned"
+					? localUnassigned
+					: (localRooms.find((r) => r.roomId === sourceContainer)?.devices ??
+						[]);
+			const activeDevice = srcItems.find((d) => d.id === activeDeviceId);
+			if (!activeDevice) return;
+
+			const destIsUnassigned = destContainer === "unassigned";
+			const destItems = destIsUnassigned
+				? localUnassigned
+				: (localRooms.find((r) => r.roomId === destContainer)?.devices ?? []);
+			const insertIdx = Math.max(
+				0,
+				destItems.findIndex((d) => d.id === overId),
+			);
+
+			const newSrcItems = srcItems
+				.filter((d) => d.id !== activeDeviceId)
+				.map((d, i) => ({ ...d, sortOrder: i }));
+			const newDestItems = [
+				...destItems.slice(0, insertIdx),
+				{ ...activeDevice, roomId: destIsUnassigned ? null : destContainer },
+				...destItems.slice(insertIdx),
+			].map((d, i) => ({ ...d, sortOrder: i }));
+
+			if (sourceContainer === "unassigned") {
+				setLocalUnassigned(newSrcItems);
+			} else {
+				setLocalRooms((prev) =>
+					prev.map((r) =>
+						r.roomId === sourceContainer ? { ...r, devices: newSrcItems } : r,
+					),
+				);
+			}
+			if (destIsUnassigned) {
+				setLocalUnassigned(newDestItems);
+			} else {
+				setLocalRooms((prev) =>
+					prev.map((r) =>
+						r.roomId === destContainer ? { ...r, devices: newDestItems } : r,
+					),
+				);
+			}
+
+			setDeviceRoomMutation.mutate({
+				deviceId: activeDeviceId,
+				roomId: destIsUnassigned ? null : destContainer,
+			});
+			reorderMutation.mutate(
+				[...newSrcItems, ...newDestItems].map((d) => ({
+					id: d.id,
+					sortOrder: d.sortOrder,
+				})),
+			);
+		}
+	}
 
 	function clearFilters() {
 		setRoomFilter("");
@@ -120,7 +278,8 @@ export function DeviceOverview() {
 	const rooms =
 		data?.rooms.map((r) => ({ roomId: r.roomId, roomName: r.roomName })) ?? [];
 
-	const filteredRooms = (data?.rooms ?? [])
+	// Use localRooms/localUnassigned (DnD-aware) as base for filtering
+	const filteredRooms = localRooms
 		.filter((room) => !roomFilter || room.roomId === roomFilter)
 		.map((room) => ({
 			...room,
@@ -132,9 +291,19 @@ export function DeviceOverview() {
 
 	const filteredUnassigned = roomFilter
 		? []
-		: (data?.unassigned ?? []).filter((d) =>
+		: localUnassigned.filter((d) =>
 				matchDevice(d, typeFilter, statusFilter, nameSearch),
 			);
+
+	// DnD: find the active device for DragOverlay
+	const allLocalDevices = [
+		...localRooms.flatMap((r) => r.devices),
+		...localUnassigned,
+	];
+	const activeDevice = activeId
+		? allLocalDevices.find((d) => d.id === activeId)
+		: null;
+	const dndEnabled = activeFilterCount === 0;
 
 	const isZeroDevices =
 		!isLoading &&
@@ -305,7 +474,12 @@ export function DeviceOverview() {
 								</Button>
 							</div>
 						) : (
-							<>
+							<DndContext
+								collisionDetection={closestCorners}
+								onDragEnd={handleDragEnd}
+								onDragStart={handleDragStart}
+								sensors={sensors}
+							>
 								{activeSiteId === "all"
 									? groupBySite(filteredRooms).map(([siteName, siteRooms]) => (
 											<SiteSection key={siteName} siteName={siteName}>
@@ -314,7 +488,9 @@ export function DeviceOverview() {
 														anomaly={room.anomaly}
 														badge={room.badge}
 														devices={room.devices}
+														dndEnabled={dndEnabled}
 														key={room.roomId}
+														onDeviceClick={setSelectedDevice}
 														primarySensorId={
 															room.devices.find(
 																(d) => d.deviceType === "sensor" && d.isOnline,
@@ -324,6 +500,7 @@ export function DeviceOverview() {
 															)?.tuyaDeviceId ??
 															null
 														}
+														roomId={room.roomId}
 														roomName={room.roomName}
 														suggestion={room.suggestion}
 													/>
@@ -335,15 +512,18 @@ export function DeviceOverview() {
 												anomaly={room.anomaly}
 												badge={room.badge}
 												devices={room.devices}
+												dndEnabled={dndEnabled}
 												key={room.roomId}
+												onDeviceClick={setSelectedDevice}
 												primarySensorId={
 													room.devices.find(
 														(d) => d.deviceType === "sensor" && d.isOnline,
-													)?.id ??
+													)?.tuyaDeviceId ??
 													room.devices.find((d) => d.deviceType === "sensor")
-														?.id ??
+														?.tuyaDeviceId ??
 													null
 												}
+												roomId={room.roomId}
 												roomName={room.roomName}
 												suggestion={room.suggestion}
 											/>
@@ -351,15 +531,31 @@ export function DeviceOverview() {
 								{filteredUnassigned.length > 0 && (
 									<RoomGroup
 										devices={filteredUnassigned}
+										dndEnabled={dndEnabled}
 										isUnassigned
+										onDeviceClick={setSelectedDevice}
+										roomId="unassigned"
 										roomName="Unassigned"
 									/>
 								)}
-							</>
+								<DragOverlay>
+									{activeDevice ? (
+										<div className="rotate-1 opacity-90 shadow-2xl">
+											<DeviceCard device={activeDevice} />
+										</div>
+									) : null}
+								</DragOverlay>
+							</DndContext>
 						)}
 					</div>
 				</div>
 			)}
+			<DeviceModal
+				device={selectedDevice}
+				onClose={() => setSelectedDevice(null)}
+				rooms={roomsListQuery.data ?? []}
+				utils={utils}
+			/>
 		</div>
 	);
 }

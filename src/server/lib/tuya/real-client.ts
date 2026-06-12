@@ -190,13 +190,16 @@ export const realTuyaClient: TuyaGatewayClient = {
 			const tuyaDeviceId = state.nodeToTuya.get(cid);
 			if (!tuyaDeviceId) continue;
 			const deviceType = state.nodeToType.get(cid) ?? "";
-			const tempRaw = deviceType === "sensor" ? dps["1"] : dps["2"];
-			const setpointRaw = deviceType === "sensor" ? undefined : dps["4"];
+			const isSensor = deviceType === "sensor";
+			const tempRaw = isSensor ? dps["1"] : dps["2"];
+			const setpointRaw = isSensor ? undefined : dps["4"];
+			const humidityRaw = isSensor ? dps["2"] : undefined;
 			readings.push({
 				tuyaDeviceId,
 				isOnline: true,
 				temperatureC: typeof tempRaw === "number" ? tempRaw / 10 : null,
 				setpointC: typeof setpointRaw === "number" ? setpointRaw / 10 : null,
+				humidityPct: typeof humidityRaw === "number" ? humidityRaw / 10 : null,
 			});
 		}
 

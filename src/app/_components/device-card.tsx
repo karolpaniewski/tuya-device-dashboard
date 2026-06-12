@@ -1,13 +1,11 @@
 "use client";
 
-import { History } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
-import { TemperatureHistoryModal } from "./temperature-history-modal";
 
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
@@ -77,7 +75,13 @@ function SetpointControl({
 	);
 }
 
-export function DeviceCard({ device }: { device: DeviceItem }) {
+export function DeviceCard({
+	device,
+	onClick,
+}: {
+	device: DeviceItem;
+	onClick?: () => void;
+}) {
 	const secsAgo =
 		device.lastPolledAt !== null
 			? Math.round(
@@ -87,80 +91,64 @@ export function DeviceCard({ device }: { device: DeviceItem }) {
 
 	const supportsSetpoint =
 		device.deviceType === "valve" && device.setpointC !== null;
-	const hasHistory = device.deviceType !== "plug";
-
-	const [historyOpen, setHistoryOpen] = useState(false);
 
 	return (
-		<>
-			<div className="fade-in slide-in-from-bottom-2 flex animate-in flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px] transition-all duration-300 hover:border-white/20 hover:bg-white/[0.08]">
-				<div className="flex items-center justify-between gap-2">
-					<span className="font-semibold text-white">{device.name}</span>
-					<div className="flex items-center gap-1">
-						{hasHistory && (
-							<button
-								aria-label="Historia temperatury"
-								className="rounded p-1 text-gray-400 transition-colors hover:text-white"
-								onClick={() => setHistoryOpen(true)}
-								type="button"
-							>
-								<History className="h-4 w-4" />
-							</button>
-						)}
-						<Badge
-							className={cn(
-								"font-medium",
-								TYPE_BADGE[device.deviceType] ?? "bg-gray-600 text-gray-100",
-							)}
-						>
-							{device.deviceType}
-						</Badge>
-					</div>
-				</div>
+		// biome-ignore lint/a11y/useSemanticElements: card contains nested interactive controls (SetpointControl), preventing use of a <button> wrapper
+		// biome-ignore lint/a11y/useKeyWithClickEvents: supplementary action; primary keyboard interaction is via drag handle
+		<div
+			className="fade-in slide-in-from-bottom-2 flex animate-in cursor-pointer flex-col gap-2 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px] transition-all duration-300 hover:border-white/20 hover:bg-white/[0.08]"
+			onClick={onClick}
+			role="button"
+			tabIndex={0}
+		>
+			<div className="flex items-center justify-between gap-2">
+				<span className="font-semibold text-white">{device.name}</span>
+				<Badge
+					className={cn(
+						"font-medium",
+						TYPE_BADGE[device.deviceType] ?? "bg-gray-600 text-gray-100",
+					)}
+				>
+					{device.deviceType}
+				</Badge>
+			</div>
 
-				<div className="flex items-center justify-between">
-					<div className="font-bold text-2xl text-white">
-						{device.temperatureC !== null ? `${device.temperatureC}°C` : "—"}
-					</div>
-					{supportsSetpoint && (
+			<div className="flex items-center justify-between">
+				<div className="font-bold text-2xl text-white">
+					{device.temperatureC !== null ? `${device.temperatureC}°C` : "—"}
+				</div>
+				{supportsSetpoint && (
+					// biome-ignore lint/a11y/noStaticElementInteractions: stopPropagation only
+					// biome-ignore lint/a11y/useKeyWithClickEvents: no keyboard action needed; parent card handles keyboard
+					<div onClick={(e) => e.stopPropagation()}>
 						<SetpointControl
 							deviceId={device.id}
 							initialSetpoint={device.setpointC}
 						/>
-					)}
-				</div>
-
-				<div className="flex items-center justify-between text-sm">
-					<span className="flex items-center gap-1">
-						<span
-							className={`inline-block h-2 w-2 rounded-full ${device.isOnline ? "bg-green-400" : "bg-red-500"}`}
-						/>
-						<span
-							className={device.isOnline ? "text-green-400" : "text-red-400"}
-						>
-							{device.isOnline ? "Online" : "Offline"}
-						</span>
-					</span>
-					<div className="flex items-center gap-1">
-						{device.isStale && (
-							<span className="rounded border border-yellow-700/40 bg-yellow-900/40 px-1 text-xs text-yellow-300">
-								Data may be outdated
-							</span>
-						)}
-						<span className="text-gray-400">
-							{secsAgo !== null ? `Updated ${secsAgo}s ago` : "—"}
-						</span>
 					</div>
+				)}
+			</div>
+
+			<div className="flex items-center justify-between text-sm">
+				<span className="flex items-center gap-1">
+					<span
+						className={`inline-block h-2 w-2 rounded-full ${device.isOnline ? "bg-green-400" : "bg-red-500"}`}
+					/>
+					<span className={device.isOnline ? "text-green-400" : "text-red-400"}>
+						{device.isOnline ? "Online" : "Offline"}
+					</span>
+				</span>
+				<div className="flex items-center gap-1">
+					{device.isStale && (
+						<span className="rounded border border-yellow-700/40 bg-yellow-900/40 px-1 text-xs text-yellow-300">
+							Data may be outdated
+						</span>
+					)}
+					<span className="text-gray-400">
+						{secsAgo !== null ? `Updated ${secsAgo}s ago` : "—"}
+					</span>
 				</div>
 			</div>
-			{hasHistory && (
-				<TemperatureHistoryModal
-					deviceName={device.name}
-					onClose={() => setHistoryOpen(false)}
-					open={historyOpen}
-					tuyaDeviceId={device.tuyaDeviceId}
-				/>
-			)}
-		</>
+		</div>
 	);
 }

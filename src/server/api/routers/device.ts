@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, asc, eq, gte, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -105,6 +105,48 @@ export const deviceRouter = createTRPCRouter({
 			return { success: true as const, setpointC: input.setpointC };
 		}),
 
+	rename: protectedProcedure
+		.input(z.object({ id: z.string(), name: z.string().min(1).max(255) }))
+		.mutation(async ({ ctx, input }) => {
+			const [updated] = await ctx.db
+				.update(devices)
+				.set({ name: input.name, updatedAt: new Date() })
+				.where(eq(devices.id, input.id))
+				.returning({ id: devices.id });
+			if (!updated) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Device not found" });
+			}
+			return { success: true as const };
+		}),
+
+	reorder: protectedProcedure
+		.input(
+			z.array(z.object({ id: z.string(), sortOrder: z.number().int().min(0) })),
+		)
+		.mutation(async ({ ctx, input }) => {
+			if (input.length === 0) return { success: true as const };
+			const ids = input.map((d) => d.id);
+			const existing = await ctx.db
+				.select({ id: devices.id })
+				.from(devices)
+				.where(inArray(devices.id, ids));
+			if (existing.length !== ids.length) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "One or more devices not found",
+				});
+			}
+			await ctx.db.transaction(async (tx) => {
+				for (const { id, sortOrder } of input) {
+					await tx
+						.update(devices)
+						.set({ sortOrder, updatedAt: new Date() })
+						.where(eq(devices.id, id));
+				}
+			});
+			return { success: true as const };
+		}),
+
 	temperatureHistory: protectedProcedure
 		.input(
 			z.object({
@@ -173,7 +215,8 @@ export const deviceRouter = createTRPCRouter({
 					deviceRoomAssignments,
 					eq(deviceRoomAssignments.deviceId, devices.id),
 				)
-				.leftJoin(rooms, eq(rooms.id, deviceRoomAssignments.roomId));
+				.leftJoin(rooms, eq(rooms.id, deviceRoomAssignments.roomId))
+				.orderBy(asc(devices.sortOrder));
 
 			const rows =
 				input.siteId !== "all"
@@ -206,9 +249,11 @@ export const deviceRouter = createTRPCRouter({
 					roomName: row.room?.name ?? null,
 					siteId: deviceSiteId,
 					nodeId: row.device.nodeId ?? null,
+					sortOrder: row.device.sortOrder,
 					isOnline: state?.isOnline ?? false,
 					temperatureC: state?.temperatureC ?? null,
 					setpointC: state?.setpointC ?? null,
+					humidityPct: state?.humidityPct ?? null,
 					lastPolledAt: state?.lastPolledAt ?? null,
 					isStale,
 				};
@@ -278,9 +323,11 @@ interface DeviceItem {
 	roomName: string | null;
 	siteId: string;
 	nodeId: string | null;
+	sortOrder: number;
 	isOnline: boolean;
 	temperatureC: number | null;
 	setpointC: number | null;
+	humidityPct: number | null;
 	lastPolledAt: Date | null;
 	isStale: boolean;
 }

@@ -6,30 +6,35 @@ const FIXTURE_READINGS: TuyaDeviceReading[] = [
 		isOnline: true,
 		temperatureC: 21.5,
 		setpointC: null,
+		humidityPct: 55,
 	},
 	{
 		tuyaDeviceId: "stub-dev-002",
 		isOnline: true,
 		temperatureC: 19.2,
 		setpointC: null,
+		humidityPct: 48,
 	},
 	{
 		tuyaDeviceId: "stub-dev-003",
 		isOnline: true,
 		temperatureC: 20.1,
 		setpointC: 21.0,
+		humidityPct: null,
 	},
 	{
 		tuyaDeviceId: "stub-dev-004",
 		isOnline: false,
 		temperatureC: null,
 		setpointC: 20.0,
+		humidityPct: null,
 	},
 	{
 		tuyaDeviceId: "stub-dev-005",
 		isOnline: true,
 		temperatureC: null,
 		setpointC: null,
+		humidityPct: null,
 	},
 ];
 

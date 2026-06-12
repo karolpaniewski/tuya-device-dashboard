@@ -111,6 +111,7 @@ export const devices = createTable(
 		productKey: d.text("product_key", { length: 255 }),
 		// Zigbee node ID — used as TuyAPI `cid` for sub-device addressing through gateway
 		nodeId: d.text("node_id", { length: 20 }),
+		sortOrder: d.integer("sort_order").notNull().default(0),
 		siteId: d
 			.text("site_id", { length: 255 })
 			.notNull()

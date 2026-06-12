@@ -1,10 +1,12 @@
 "use client";
 
+import { useDroppable } from "@dnd-kit/core";
+import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
 import { Badge } from "~/components/ui/badge";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
-import { DeviceCard } from "./device-card";
+import { SortableDeviceCard } from "./sortable-device-card";
 
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
@@ -51,8 +53,11 @@ interface RoomGroupProps {
 	anomaly?: boolean;
 	badge?: "OK" | "Too Cold" | "Too Hot" | null;
 	devices: DeviceItem[];
+	dndEnabled?: boolean;
 	isUnassigned?: boolean;
+	onDeviceClick?: (device: DeviceItem) => void;
 	primarySensorId?: string | null;
+	roomId: string;
 	roomName: string;
 	suggestion?: string | null;
 }
@@ -61,11 +66,49 @@ export function RoomGroup({
 	anomaly,
 	badge,
 	devices,
+	dndEnabled,
 	isUnassigned,
+	onDeviceClick,
 	primarySensorId,
+	roomId,
 	roomName,
 	suggestion,
 }: RoomGroupProps) {
+	const { setNodeRef, isOver } = useDroppable({ id: roomId });
+
+	const grid = (
+		<div
+			className={cn(
+				"grid min-h-[80px] grid-cols-1 gap-4 rounded-xl p-1 transition-colors sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+				isOver && dndEnabled ? "bg-white/[0.04] ring-1 ring-white/20" : "",
+			)}
+			ref={setNodeRef}
+		>
+			{dndEnabled ? (
+				<SortableContext
+					items={devices.map((d) => d.id)}
+					strategy={rectSortingStrategy}
+				>
+					{devices.map((device) => (
+						<SortableDeviceCard
+							device={device}
+							key={device.id}
+							onClick={() => onDeviceClick?.(device)}
+						/>
+					))}
+				</SortableContext>
+			) : (
+				devices.map((device) => (
+					<SortableDeviceCard
+						device={device}
+						key={device.id}
+						onClick={() => onDeviceClick?.(device)}
+					/>
+				))
+			)}
+		</div>
+	);
+
 	return (
 		<section className="flex flex-col gap-4">
 			<div className="flex items-center justify-between">
@@ -92,11 +135,7 @@ export function RoomGroup({
 				<p className="text-amber-400 text-sm italic">{suggestion}</p>
 			)}
 			{primarySensorId && <RoomSparkline deviceId={primarySensorId} />}
-			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-				{devices.map((device) => (
-					<DeviceCard device={device} key={device.id} />
-				))}
-			</div>
+			{grid}
 		</section>
 	);
 }

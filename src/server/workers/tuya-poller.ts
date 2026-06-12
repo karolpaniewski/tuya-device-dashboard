@@ -52,6 +52,7 @@ export async function pollOnce(): Promise<void> {
 					isOnline: reading.isOnline,
 					temperatureC: reading.temperatureC,
 					setpointC: reading.setpointC,
+					humidityPct: reading.humidityPct,
 					lastPolledAt: new Date(),
 				});
 				if (reading.temperatureC !== null || reading.setpointC !== null) {
