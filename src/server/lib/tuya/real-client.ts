@@ -11,6 +11,7 @@ interface GatewayState {
 	// cid (nodeId) → most recent DPS snapshot
 	latestDps: Map<string, Record<string, unknown>>;
 	nodeToTuya: Map<string, string>;
+	nodeToType: Map<string, string>;
 	isConnected: boolean;
 	reconnectTimer?: ReturnType<typeof setTimeout>;
 }
@@ -25,6 +26,7 @@ function buildConnection(
 		localKey: string;
 	},
 	nodeToTuya: Map<string, string>,
+	nodeToType: Map<string, string>,
 ): GatewayState {
 	const tuyaGateway = new TuyAPI({
 		id: gateway.tuyaGatewayId,
@@ -37,24 +39,24 @@ function buildConnection(
 		tuyaGateway,
 		latestDps: new Map(),
 		nodeToTuya,
+		nodeToType,
 		isConnected: false,
 	};
 
 	const onData = (data: unknown, cmdByte?: number) => {
-		console.log(
-			`[tuya-debug] raw event (cmd=${cmdByte}):`,
-			JSON.stringify(data),
-		);
 		const d = data as {
 			cid?: string;
 			devId?: string;
 			dps?: Record<string, unknown>;
 		} | null;
-		if (!d) return;
+		if (!d || typeof d !== "object") return;
 		const key = d.cid ?? d.devId;
 		if (key && d.dps) {
 			state.latestDps.set(key, { ...state.latestDps.get(key), ...d.dps });
-			console.log(`[tuya-poller] state update cid=${key}:`, d.dps);
+			console.log(
+				`[tuya-poller] state update cid=${key} cmd=${cmdByte}:`,
+				d.dps,
+			);
 		}
 	};
 
@@ -97,6 +99,9 @@ async function connectState(
 		console.log(
 			`[tuya-poller] gateway ${tuyaGatewayId} connected (persistent)`,
 		);
+		// Trigger DP_REFRESH for each sub-device to populate initial state.
+		// Gateway responds with dp-refresh events that onData stores in latestDps.
+		void refreshSubDevices(tuyaGatewayId, state);
 	} catch (err) {
 		console.error(
 			`[tuya-poller] gateway ${tuyaGatewayId} connect failed:`,
@@ -109,19 +114,42 @@ async function connectState(
 	}
 }
 
+async function refreshSubDevices(
+	tuyaGatewayId: string,
+	state: GatewayState,
+): Promise<void> {
+	const nodeIds = [...state.nodeToTuya.keys()];
+	console.log(
+		`[tuya-poller] refreshing ${nodeIds.length} sub-devices on gateway ${tuyaGatewayId}`,
+	);
+	for (const nodeId of nodeIds) {
+		try {
+			await state.tuyaGateway.refresh({ cid: nodeId });
+		} catch (err) {
+			console.warn(
+				`[tuya-poller] refresh failed cid=${nodeId}:`,
+				(err as Error).message,
+			);
+		}
+	}
+}
+
 async function ensureConnected(
 	gateway: {
 		tuyaGatewayId: string;
 		ipAddress: string;
 		localKey: string;
 	},
-	devices: { tuyaDeviceId: string; nodeId: string }[],
+	devices: { tuyaDeviceId: string; nodeId: string; deviceType?: string }[],
 ): Promise<GatewayState> {
 	let state = gatewayConnections.get(gateway.tuyaGatewayId);
 
 	if (!state) {
 		const nodeToTuya = new Map(devices.map((d) => [d.nodeId, d.tuyaDeviceId]));
-		state = buildConnection(gateway, nodeToTuya);
+		const nodeToType = new Map(
+			devices.map((d) => [d.nodeId, d.deviceType ?? ""]),
+		);
+		state = buildConnection(gateway, nodeToTuya, nodeToType);
 		gatewayConnections.set(gateway.tuyaGatewayId, state);
 		await connectState(gateway.tuyaGatewayId, state);
 	}
@@ -139,7 +167,8 @@ export const realTuyaClient: TuyaGatewayClient = {
 		}
 
 		const pollable = devices.filter(
-			(d): d is { tuyaDeviceId: string; nodeId: string } => d.nodeId !== null,
+			(d): d is { tuyaDeviceId: string; nodeId: string; deviceType?: string } =>
+				d.nodeId !== null,
 		);
 		if (pollable.length === 0) return [];
 
@@ -152,13 +181,17 @@ export const realTuyaClient: TuyaGatewayClient = {
 			pollable,
 		);
 
-		// Build readings from whatever has been accumulated so far
+		// Build readings from whatever has been accumulated so far.
+		// DPS key mapping differs by device type:
+		//   sensor (plwbuwzx): "1" = temperature, "2" = humidity
+		//   valve  (ogx8u5z6): "2" = temperature, "4" = setpoint
 		const readings: TuyaDeviceReading[] = [];
 		for (const [cid, dps] of state.latestDps) {
 			const tuyaDeviceId = state.nodeToTuya.get(cid);
 			if (!tuyaDeviceId) continue;
-			const tempRaw = dps["2"];
-			const setpointRaw = dps["4"];
+			const deviceType = state.nodeToType.get(cid) ?? "";
+			const tempRaw = deviceType === "sensor" ? dps["1"] : dps["2"];
+			const setpointRaw = deviceType === "sensor" ? undefined : dps["4"];
 			readings.push({
 				tuyaDeviceId,
 				isOnline: true,

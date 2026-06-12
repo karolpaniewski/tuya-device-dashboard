@@ -12,7 +12,11 @@ export interface TuyaGatewayClient {
 			ipAddress: string | null;
 			localKey: string | null;
 		},
-		devices: { tuyaDeviceId: string; nodeId: string | null }[],
+		devices: {
+			tuyaDeviceId: string;
+			nodeId: string | null;
+			deviceType?: string;
+		}[],
 	): Promise<TuyaDeviceReading[]>;
 
 	sendSetpoint(

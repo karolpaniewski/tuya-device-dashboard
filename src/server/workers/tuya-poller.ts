@@ -28,7 +28,11 @@ export async function pollOnce(): Promise<void> {
 	for (const gateway of allGateways) {
 		try {
 			const gatewayDevices = await db
-				.select({ tuyaDeviceId: devices.tuyaDeviceId, nodeId: devices.nodeId })
+				.select({
+					tuyaDeviceId: devices.tuyaDeviceId,
+					nodeId: devices.nodeId,
+					deviceType: devices.deviceType,
+				})
 				.from(devices)
 				.where(eq(devices.gatewayId, gateway.id));
 
