@@ -1,7 +1,7 @@
 ---
 id: dashboard-redesign
 title: Dashboard & Setup Redesign (S-15)
-status: planned
+status: preparing
 created: 2026-06-12
 updated: 2026-06-12
 roadmap_id: S-15
