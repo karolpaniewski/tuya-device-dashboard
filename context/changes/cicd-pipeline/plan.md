@@ -228,9 +228,9 @@ No application code changes. No database schema changes.
 
 #### Manual
 
-- [ ] 1.3 Push to a branch; `ci` check appears in PR and turns green
-- [ ] 1.4 `.next/cache` is not included in the uploaded artifact
-- [ ] 1.5 Artifact name shows the commit SHA
+- [x] 1.3 Push to a branch; `ci` check appears in PR and turns green — b71030f
+- [x] 1.4 `.next/cache` is not included in the uploaded artifact — b71030f
+- [x] 1.5 Artifact name shows the commit SHA — b71030f
 
 ### Phase 2: Repository Configuration
 
@@ -240,7 +240,7 @@ _(none)_
 
 #### Manual
 
-- [ ] 2.1 All 5 GitHub Secrets added to repository settings
-- [ ] 2.2 Branch protection rule on `main` requires the `ci` check
-- [ ] 2.3 A test PR is blocked by a failing CI check and unblocked when it passes
-- [ ] 2.4 Successful `main` merge produces a `nextjs-build-<sha>` artifact
+- [x] 2.1 All 5 GitHub Secrets added to repository settings — manual
+- [ ] 2.2 Branch protection rule on `main` requires the `ci` check — skipped (requires GitHub Team plan)
+- [x] 2.3 A test PR is blocked by a failing CI check and unblocked when it passes — b71030f
+- [x] 2.4 Successful `main` merge produces a `nextjs-build-<sha>` artifact — b71030f

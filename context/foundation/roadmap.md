@@ -36,7 +36,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-03  | device-filter-search   | filter devices by room, type, or status; search by name                                         | F-01, S-01               | FR-006, FR-007, FR-008, FR-009    | done     |
 | S-04  | valve-setpoint-control | open device detail, adjust heating valve setpoint, see confirmation or specific error            | F-01, S-01               | FR-010, FR-011, FR-012, US-02     | done     |
 | S-05  | room-health-thresholds | configure per-room comfort thresholds; see OK/Too Cold/Too Hot badge + anomaly flags per room    | F-01, F-02, S-01, S-02   | FR-004, Business Logic            | done     |
-| S-06  | cicd-pipeline          | push to main triggers lint + typecheck + Vitest; passing build produces a deployable artifact   | —                        | PRD §Non-Goals (deferred v1)      | proposed |
+| S-06  | cicd-pipeline          | push to main triggers lint + typecheck + Vitest; passing build produces a deployable artifact   | —                        | PRD §Non-Goals (deferred v1)      | done     |
 | S-07  | observability          | structured logging replaces console.log; errors surface with request/user/device context        | —                        | PRD §Non-Goals (deferred v1)      | proposed |
 | S-08  | mobile-responsive      | dashboard usable on 375 px viewport (iOS Safari, Android Chrome) without horizontal scroll      | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
@@ -328,3 +328,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-13       | multi-site             | 2026-06-11  |
 | S-04       | valve-setpoint-control | 2026-06-11  |
 | S-09       | temperature-history    | 2026-06-11  |
+| S-06       | cicd-pipeline          | 2026-06-12  |

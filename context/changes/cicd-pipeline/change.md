@@ -1,8 +1,8 @@
 ---
 id: cicd-pipeline
 title: CI/CD pipeline
-status: implementing
-updated: 2026-06-10
+status: done
+updated: 2026-06-12
 roadmap_id: S-06
 ---
 
