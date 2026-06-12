@@ -6,8 +6,8 @@ import { api, HydrateClient } from "~/trpc/server";
 import { SetupShell } from "../_components/setup/setup-shell";
 
 export default async function SetupPage() {
-	void api.room.list.prefetch();
-	void api.device.overview.prefetch();
+	void api.room.list.prefetch({ siteId: "all" });
+	void api.device.overview.prefetch({ siteId: "all" });
 
 	return (
 		<PageShell

@@ -41,7 +41,12 @@ export function RoomGroup({
 					</span>
 				</h2>
 				{badge && (
-					<Badge className={cn("font-medium", BADGE_STYLE[badge] ?? "")}>
+					<Badge
+						className={cn(
+							"h-auto rounded-lg px-3 py-1 font-semibold text-sm",
+							BADGE_STYLE[badge] ?? "",
+						)}
+					>
 						{badge}
 					</Badge>
 				)}

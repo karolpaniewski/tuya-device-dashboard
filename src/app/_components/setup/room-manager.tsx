@@ -12,11 +12,12 @@ import { RoomThresholdForm } from "./room-threshold-form";
 type RoomItem = RouterOutputs["room"]["list"][number];
 
 interface Props {
+	activeSiteId: string;
 	rooms: RoomItem[];
 	utils: ReturnType<typeof api.useUtils>;
 }
 
-export function RoomManager({ rooms, utils }: Props) {
+export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 	const [newName, setNewName] = useState("");
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editingName, setEditingName] = useState("");
@@ -84,7 +85,7 @@ export function RoomManager({ rooms, utils }: Props) {
 						className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm"
 						key={room.id}
 					>
-						<div className="flex items-center gap-3">
+						<div className="flex items-center gap-1.5 sm:gap-3">
 							{editingId === room.id ? (
 								<Input
 									autoFocus
@@ -177,7 +178,7 @@ export function RoomManager({ rooms, utils }: Props) {
 					const trimmed = newName.trim();
 					if (trimmed) {
 						setError(null);
-						createMutation.mutate({ name: trimmed });
+						createMutation.mutate({ name: trimmed, siteId: activeSiteId });
 					}
 				}}
 			>

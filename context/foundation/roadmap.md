@@ -34,17 +34,17 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-01  | live-device-overview   | see all discovered devices grouped by room, current temperature, online/offline status           | F-01, F-02               | FR-002, FR-003, FR-004, FR-005, US-01 | done     |
 | S-02  | room-assignment-setup  | assign any discovered device to a named room (one-time setup, persisted)                        | F-01, F-02, S-01         | FR-013                            | done     |
 | S-03  | device-filter-search   | filter devices by room, type, or status; search by name                                         | F-01, S-01               | FR-006, FR-007, FR-008, FR-009    | done     |
-| S-04  | valve-setpoint-control | open device detail, adjust heating valve setpoint, see confirmation or specific error            | F-01, S-01               | FR-010, FR-011, FR-012, US-02     | blocked  |
+| S-04  | valve-setpoint-control | open device detail, adjust heating valve setpoint, see confirmation or specific error            | F-01, S-01               | FR-010, FR-011, FR-012, US-02     | done     |
 | S-05  | room-health-thresholds | configure per-room comfort thresholds; see OK/Too Cold/Too Hot badge + anomaly flags per room    | F-01, F-02, S-01, S-02   | FR-004, Business Logic            | done     |
 | S-06  | cicd-pipeline          | push to main triggers lint + typecheck + Vitest; passing build produces a deployable artifact   | —                        | PRD §Non-Goals (deferred v1)      | proposed |
 | S-07  | observability          | structured logging replaces console.log; errors surface with request/user/device context        | —                        | PRD §Non-Goals (deferred v1)      | proposed |
-| S-08  | mobile-responsive      | dashboard usable on 375 px viewport (iOS Safari, Android Chrome) without horizontal scroll      | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | proposed |
+| S-08  | mobile-responsive      | dashboard usable on 375 px viewport (iOS Safari, Android Chrome) without horizontal scroll      | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
-| S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | needs-shaping |
+| S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | done     |
 | S-10  | external-notifications | receive email/SMS/push alert when a room threshold is violated                                  | S-05                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-11  | automation-rules       | create time-based rules (set valve setpoint to X at time Y on days Z)                          | S-01, S-04               | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-12  | automation-history     | view log of automation rule executions (what fired, when, result)                              | S-11                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
-| S-13  | multi-site             | dashboard supports multiple office locations, each with their own device/room tree              | F-01, F-02               | PRD §Non-Goals (deferred v2)      | needs-shaping |
+| S-13  | multi-site             | dashboard supports multiple office locations, each with their own device/room tree              | F-01, F-02               | PRD §Non-Goals (deferred v2)      | done     |
 
 ## Streams
 
@@ -186,7 +186,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Key material (`local_key`) must be explicitly excluded from log serialisation — a structured logger's default deep-serialisation will expose it if the device object is logged naively. This must be enforced via a redaction rule, not convention.
 - **Status:** proposed
 
-### S-08: Mobile browser support
+### S-08: Mobile browser support (done)
 
 - **Outcome:** the full dashboard (device list, room badges, valve control) is usable on a 375 px viewport in iOS Safari and Android Chrome without horizontal scroll; touch targets meet 44 px minimum; no feature is hidden or broken on mobile.
 - **Change ID:** mobile-responsive
@@ -196,7 +196,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Tailwind's responsive utilities are present; most risk is in data-dense tables (device list, room grid) that were designed desktop-first. A card-based or stacked layout on small viewports is almost certainly required — not just a breakpoint tweak.
-- **Status:** proposed
+- **Status:** done
 
 ### S-14: UX/UI polish
 
@@ -324,3 +324,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-03       | device-filter-search   | 2026-06-10  |
 | S-05       | room-health-thresholds | 2026-06-10  |
 | S-14       | ux-polish              | 2026-06-11  |
+| S-08       | mobile-responsive      | 2026-06-11  |
+| S-13       | multi-site             | 2026-06-11  |
+| S-04       | valve-setpoint-control | 2026-06-11  |
+| S-09       | temperature-history    | 2026-06-11  |

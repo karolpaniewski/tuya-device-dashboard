@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
+import { SiteProvider } from "~/components/site-context";
 import { Toaster } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -28,7 +29,9 @@ export default function RootLayout({
 					<div className="absolute -right-20 -bottom-40 h-[500px] w-[500px] rounded-full bg-purple-600/8 blur-3xl" />
 				</div>
 				<TRPCReactProvider>
-					<SessionProvider>{children}</SessionProvider>
+					<SiteProvider>
+						<SessionProvider>{children}</SessionProvider>
+					</SiteProvider>
 				</TRPCReactProvider>
 				<Toaster position="bottom-right" richColors />
 			</body>

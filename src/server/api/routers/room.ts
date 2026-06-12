@@ -5,36 +5,48 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
 	deviceRoomAssignments,
+	devices,
 	rooms,
 	roomThresholds,
 } from "~/server/db/schema";
 
 export const roomRouter = createTRPCRouter({
-	list: protectedProcedure.query(async ({ ctx }) => {
-		const allRooms = await ctx.db.select().from(rooms).orderBy(rooms.createdAt);
+	list: protectedProcedure
+		.input(z.object({ siteId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const allRooms =
+				input.siteId !== "all"
+					? await ctx.db
+							.select()
+							.from(rooms)
+							.where(eq(rooms.siteId, input.siteId))
+							.orderBy(rooms.createdAt)
+					: await ctx.db.select().from(rooms).orderBy(rooms.createdAt);
 
-		const assignments = await ctx.db
-			.select({ roomId: deviceRoomAssignments.roomId })
-			.from(deviceRoomAssignments);
+			const assignments = await ctx.db
+				.select({ roomId: deviceRoomAssignments.roomId })
+				.from(deviceRoomAssignments);
 
-		const countByRoom = new Map<string, number>();
-		for (const a of assignments) {
-			countByRoom.set(a.roomId, (countByRoom.get(a.roomId) ?? 0) + 1);
-		}
+			const countByRoom = new Map<string, number>();
+			for (const a of assignments) {
+				countByRoom.set(a.roomId, (countByRoom.get(a.roomId) ?? 0) + 1);
+			}
 
-		return allRooms.map((room) => ({
-			id: room.id,
-			name: room.name,
-			deviceCount: countByRoom.get(room.id) ?? 0,
-		}));
-	}),
+			return allRooms.map((room) => ({
+				id: room.id,
+				name: room.name,
+				deviceCount: countByRoom.get(room.id) ?? 0,
+			}));
+		}),
 
 	create: protectedProcedure
-		.input(z.object({ name: z.string().min(1).max(255) }))
+		.input(
+			z.object({ name: z.string().min(1).max(255), siteId: z.string().min(1) }),
+		)
 		.mutation(async ({ ctx, input }) => {
 			const [created] = await ctx.db
 				.insert(rooms)
-				.values({ name: input.name })
+				.values({ name: input.name, siteId: input.siteId })
 				.returning({ id: rooms.id, name: rooms.name });
 
 			if (!created) {
@@ -88,7 +100,7 @@ export const roomRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			if (input.roomId !== null) {
 				const [room] = await ctx.db
-					.select({ id: rooms.id })
+					.select({ id: rooms.id, siteId: rooms.siteId })
 					.from(rooms)
 					.where(eq(rooms.id, input.roomId));
 
@@ -96,6 +108,18 @@ export const roomRouter = createTRPCRouter({
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message: "Room not found",
+					});
+				}
+
+				const [device] = await ctx.db
+					.select({ siteId: devices.siteId })
+					.from(devices)
+					.where(eq(devices.id, input.deviceId));
+
+				if (device && room.siteId !== device.siteId) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "CROSS_SITE_ASSIGNMENT",
 					});
 				}
 

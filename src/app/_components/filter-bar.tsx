@@ -52,9 +52,9 @@ export function FilterBar({
 	rooms,
 }: FilterBarProps) {
 	return (
-		<div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
+		<div className="mb-6 flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
 			<Input
-				className="min-w-32 flex-1 text-sm"
+				className="w-full text-sm sm:min-w-32 sm:flex-1"
 				onChange={(e) => onSearchChange(e.target.value)}
 				placeholder="Search by name…"
 				type="text"
@@ -65,7 +65,7 @@ export function FilterBar({
 				onValueChange={(v) => onRoomChange(!v || v === "all" ? "" : v)}
 				value={filters.roomId || "all"}
 			>
-				<SelectTrigger className="w-36">
+				<SelectTrigger className="w-full sm:w-36">
 					<SelectValue />
 				</SelectTrigger>
 				<SelectContent>

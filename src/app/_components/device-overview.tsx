@@ -1,13 +1,17 @@
 "use client";
 
 import { Layers, Search } from "lucide-react";
+import type { ReactNode } from "react";
 import { useState } from "react";
+import { useSiteContext } from "~/components/site-context";
 import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
-import { api } from "~/trpc/react";
+import { api, type RouterOutputs } from "~/trpc/react";
 import { FilterBar, type FilterState } from "./filter-bar";
 import { RoomGroup } from "./room-group";
+
+type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
 
 function matchDevice(
 	device: { deviceType: string; isOnline: boolean; name: string },
@@ -26,11 +30,38 @@ function matchDevice(
 	return true;
 }
 
+function groupBySite(rooms: RoomItem[]): [string, RoomItem[]][] {
+	const map = new Map<string, RoomItem[]>();
+	for (const room of rooms) {
+		const key = room.siteName || "Unknown";
+		const group = map.get(key) ?? [];
+		group.push(room);
+		map.set(key, group);
+	}
+	return Array.from(map.entries());
+}
+
+function SiteSection({
+	children,
+	siteName,
+}: {
+	children: ReactNode;
+	siteName: string;
+}) {
+	return (
+		<section className="flex flex-col gap-4">
+			<h2 className="font-bold text-lg text-white">{siteName}</h2>
+			{children}
+		</section>
+	);
+}
+
 export function DeviceOverview() {
-	const { data, isLoading, error } = api.device.overview.useQuery(undefined, {
-		refetchInterval: 30_000,
-		refetchIntervalInBackground: false,
-	});
+	const { activeSiteId } = useSiteContext();
+	const { data, isLoading, error } = api.device.overview.useQuery(
+		{ siteId: activeSiteId },
+		{ refetchInterval: 30_000, refetchIntervalInBackground: false },
+	);
 
 	const [roomFilter, setRoomFilter] = useState("");
 	const [typeFilter, setTypeFilter] = useState<FilterState["type"]>("");
@@ -99,7 +130,7 @@ export function DeviceOverview() {
 				<p className="text-gray-400 text-sm">
 					LAN-only device monitoring — no cloud required
 				</p>
-				<div className="mt-2 flex gap-2">
+				<div className="mt-2 flex flex-wrap gap-1.5 sm:gap-2">
 					{isLoading ? (
 						<>
 							<Skeleton className="h-6 w-24 rounded-full" />
@@ -149,7 +180,7 @@ export function DeviceOverview() {
 
 			{/* Zero devices (no filter active) */}
 			{isZeroDevices && (
-				<div className="flex flex-col items-center justify-center py-16 text-center">
+				<div className="flex flex-col items-center justify-center py-8 text-center sm:py-16">
 					<Layers className="mb-4 text-gray-600" size={48} />
 					<p className="font-semibold text-white">No devices discovered yet</p>
 					<p className="mt-1 max-w-xs text-gray-400 text-sm">
@@ -178,7 +209,7 @@ export function DeviceOverview() {
 					/>
 
 					{isFilteredEmpty ? (
-						<div className="flex flex-col items-center justify-center py-16 text-center">
+						<div className="flex flex-col items-center justify-center py-8 text-center sm:py-16">
 							<Search className="mb-4 text-gray-600" size={48} />
 							<p className="font-semibold text-white">
 								No devices match your filters
@@ -198,16 +229,31 @@ export function DeviceOverview() {
 						</div>
 					) : (
 						<>
-							{filteredRooms.map((room) => (
-								<RoomGroup
-									anomaly={room.anomaly}
-									badge={room.badge}
-									devices={room.devices}
-									key={room.roomId}
-									roomName={room.roomName}
-									suggestion={room.suggestion}
-								/>
-							))}
+							{activeSiteId === "all"
+								? groupBySite(filteredRooms).map(([siteName, siteRooms]) => (
+										<SiteSection key={siteName} siteName={siteName}>
+											{siteRooms.map((room) => (
+												<RoomGroup
+													anomaly={room.anomaly}
+													badge={room.badge}
+													devices={room.devices}
+													key={room.roomId}
+													roomName={room.roomName}
+													suggestion={room.suggestion}
+												/>
+											))}
+										</SiteSection>
+									))
+								: filteredRooms.map((room) => (
+										<RoomGroup
+											anomaly={room.anomaly}
+											badge={room.badge}
+											devices={room.devices}
+											key={room.roomId}
+											roomName={room.roomName}
+											suggestion={room.suggestion}
+										/>
+									))}
 							{filteredUnassigned.length > 0 && (
 								<RoomGroup
 									devices={filteredUnassigned}

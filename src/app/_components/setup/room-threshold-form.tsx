@@ -49,11 +49,11 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 
 	if (isLoading) {
 		return (
-			<div className="flex flex-wrap items-end gap-4">
-				<Skeleton className="h-9 w-24 rounded-md" />
-				<Skeleton className="h-9 w-24 rounded-md" />
-				<Skeleton className="h-9 w-24 rounded-md" />
-				<Skeleton className="h-9 w-20 rounded-md" />
+			<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-4">
+				<Skeleton className="h-9 w-full rounded-md sm:w-24" />
+				<Skeleton className="h-9 w-full rounded-md sm:w-24" />
+				<Skeleton className="h-9 w-full rounded-md sm:w-24" />
+				<Skeleton className="h-9 w-full rounded-md sm:w-20" />
 			</div>
 		);
 	}
@@ -79,14 +79,14 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 				});
 			}}
 		>
-			<div className="flex flex-wrap items-end gap-4">
+			<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-4">
 				<label
 					className="flex flex-col gap-1 text-sm text-white"
 					htmlFor="threshold-min"
 				>
 					Min °C
 					<Input
-						className="w-24"
+						className="w-full sm:w-24"
 						id="threshold-min"
 						onChange={(e) => setMin(e.target.value)}
 						step="0.5"
@@ -100,7 +100,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 				>
 					Max °C
 					<Input
-						className="w-24"
+						className="w-full sm:w-24"
 						id="threshold-max"
 						onChange={(e) => setMax(e.target.value)}
 						step="0.5"
@@ -114,7 +114,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 				>
 					Anomaly gap °C
 					<Input
-						className="w-24"
+						className="w-full sm:w-24"
 						id="threshold-gap"
 						onChange={(e) => setGap(e.target.value)}
 						step="0.5"

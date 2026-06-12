@@ -3,7 +3,7 @@ import bcryptjs from "bcryptjs";
 import { drizzle } from "drizzle-orm/libsql";
 
 import { encryptLocalKey } from "../lib/crypto";
-import { devices, gateways, users } from "./schema";
+import { devices, gateways, sites, users } from "./schema";
 
 const email = process.env.AUTH_ADMIN_EMAIL;
 const password = process.env.AUTH_ADMIN_PASSWORD;
@@ -38,6 +38,13 @@ try {
 
 	console.log(`✓ Seeded admin user: ${email}`);
 
+	await db
+		.insert(sites)
+		.values({ id: "default", name: "Default" })
+		.onConflictDoNothing();
+
+	console.log("✓ Ensured default site");
+
 	const [gateway] = await db
 		.insert(gateways)
 		.values({
@@ -46,6 +53,7 @@ try {
 			name: "Main Gateway (stub)",
 			ipAddress: "192.168.1.100",
 			localKey: encryptLocalKey("stub-local-key-0000000000000000"),
+			siteId: "default",
 		})
 		.onConflictDoUpdate({
 			target: gateways.tuyaGatewayId,
@@ -71,22 +79,24 @@ try {
 			tuyaDeviceId: "stub-dev-003",
 			name: "Valve A (Room 1)",
 			deviceType: "valve",
+			productKey: "ogx8u5z6",
 		},
 		{
 			tuyaDeviceId: "stub-dev-004",
 			name: "Valve B (Room 2)",
 			deviceType: "valve",
+			productKey: "ogx8u5z6",
 		},
 		{ tuyaDeviceId: "stub-dev-005", name: "Smart Plug 1", deviceType: "plug" },
-	] as const;
+	];
 
 	for (const dev of stubDevices) {
 		await db
 			.insert(devices)
-			.values({ id: crypto.randomUUID(), gatewayId, ...dev })
+			.values({ id: crypto.randomUUID(), gatewayId, siteId: "default", ...dev })
 			.onConflictDoUpdate({
 				target: devices.tuyaDeviceId,
-				set: { name: dev.name, gatewayId },
+				set: { name: dev.name, gatewayId, productKey: dev.productKey ?? null },
 			});
 	}
 

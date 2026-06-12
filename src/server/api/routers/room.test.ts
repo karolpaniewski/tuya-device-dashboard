@@ -22,13 +22,15 @@ describe("room — auth gate", () => {
 	});
 
 	it("room.list throws UNAUTHORIZED", async () => {
-		await expect(caller.room.list()).rejects.toMatchObject({
+		await expect(caller.room.list({ siteId: "all" })).rejects.toMatchObject({
 			code: "UNAUTHORIZED",
 		});
 	});
 
 	it("room.create throws UNAUTHORIZED", async () => {
-		await expect(caller.room.create({ name: "x" })).rejects.toMatchObject({
+		await expect(
+			caller.room.create({ name: "x", siteId: "s1" }),
+		).rejects.toMatchObject({
 			code: "UNAUTHORIZED",
 		});
 	});
@@ -77,7 +79,7 @@ describe("room.list", () => {
 			session,
 			headers: new Headers(),
 		});
-		const result = await caller.room.list();
+		const result = await caller.room.list({ siteId: "all" });
 		expect(result).toEqual([{ id: "r1", name: "Room 1", deviceCount: 2 }]);
 	});
 
@@ -103,7 +105,7 @@ describe("room.list", () => {
 			session,
 			headers: new Headers(),
 		});
-		const result = await caller.room.list();
+		const result = await caller.room.list({ siteId: "all" });
 		expect(result[0]?.deviceCount).toBe(0);
 	});
 });
@@ -126,7 +128,7 @@ describe("room.create", () => {
 			session,
 			headers: new Headers(),
 		});
-		const result = await caller.room.create({ name: "New Room" });
+		const result = await caller.room.create({ name: "New Room", siteId: "s1" });
 		expect(result).toEqual({ id: "r1", name: "New Room" });
 	});
 });
@@ -234,7 +236,7 @@ describe("room.setDeviceRoom", () => {
 		const mockDb = {
 			select: vi.fn().mockReturnValue({
 				from: vi.fn().mockReturnValue({
-					where: vi.fn().mockResolvedValue([{ id: "r1" }]),
+					where: vi.fn().mockResolvedValue([{ id: "r1", siteId: "s1" }]),
 				}),
 			}),
 			insert: vi.fn().mockReturnValue({
@@ -290,5 +292,92 @@ describe("room.setDeviceRoom", () => {
 		await expect(
 			caller.room.setDeviceRoom({ deviceId: "d1", roomId: "bad-room" }),
 		).rejects.toMatchObject({ code: "NOT_FOUND" });
+	});
+
+	it("throws CROSS_SITE_ASSIGNMENT when room and device are in different sites", async () => {
+		const deleteMock = vi.fn();
+		const mockDb = {
+			select: vi
+				.fn()
+				// room select — siteId: "site-a"
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "r1", siteId: "site-a" }]),
+					}),
+				})
+				// device select — siteId: "site-b"
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ siteId: "site-b" }]),
+					}),
+				}),
+			insert: deleteMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+		await expect(
+			caller.room.setDeviceRoom({ deviceId: "d1", roomId: "r1" }),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+			message: "CROSS_SITE_ASSIGNMENT",
+		});
+		expect(deleteMock).not.toHaveBeenCalled();
+	});
+});
+
+// ─── room.list — scoping ─────────────────────────────────────────────────────
+
+describe("room.list — scoping", () => {
+	it("siteId='site-a': returns only rooms from site-a", async () => {
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockReturnValue({
+							orderBy: vi
+								.fn()
+								.mockResolvedValue([
+									{ id: "r1", name: "Room A", createdAt: new Date() },
+								]),
+						}),
+					}),
+				})
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) }),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+		const result = await caller.room.list({ siteId: "site-a" });
+		expect(result).toHaveLength(1);
+		expect(result[0]?.name).toBe("Room A");
+	});
+
+	it("siteId='all': returns rooms from all sites", async () => {
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						orderBy: vi.fn().mockResolvedValue([
+							{ id: "r1", name: "Room A", createdAt: new Date() },
+							{ id: "r2", name: "Room B", createdAt: new Date() },
+						]),
+					}),
+				})
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) }),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+		const result = await caller.room.list({ siteId: "all" });
+		expect(result).toHaveLength(2);
 	});
 });

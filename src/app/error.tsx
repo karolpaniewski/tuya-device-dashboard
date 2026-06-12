@@ -13,7 +13,7 @@ export default function GlobalError({ error, reset }: Props) {
 		error.message.includes(" at ") || error.message.length > 200;
 
 	return (
-		<div className="flex min-h-screen flex-col items-center justify-center gap-4 text-center">
+		<div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 text-center">
 			<AlertTriangle className="text-destructive" size={48} />
 			<h1 className="font-semibold text-white text-xl">Something went wrong</h1>
 			{!isInternal && (

@@ -12,7 +12,7 @@ export default async function LoginPage({
 
 	return (
 		<main className="flex min-h-screen items-center justify-center">
-			<div className="w-full max-w-sm rounded-xl border border-white/10 bg-white/5 p-8 shadow backdrop-blur-sm">
+			<div className="mx-4 w-full max-w-sm rounded-xl border border-white/10 bg-white/5 p-6 shadow backdrop-blur-sm sm:mx-0 sm:p-8">
 				<h1 className="mb-6 font-semibold text-2xl text-white">
 					Tuya Dashboard
 				</h1>
