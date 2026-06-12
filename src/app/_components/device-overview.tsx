@@ -113,7 +113,7 @@ export function DeviceOverview() {
 	const reorderMutation = api.device.reorder.useMutation({
 		onError: () => void utils.device.overview.invalidate(),
 	});
-	const setDeviceRoomMutation = api.room.setDeviceRoom.useMutation({
+	const moveMutation = api.device.move.useMutation({
 		onError: () => void utils.device.overview.invalidate(),
 		onSuccess: () => void utils.device.overview.invalidate(),
 	});
@@ -171,9 +171,10 @@ export function DeviceOverview() {
 					),
 				);
 			}
-			reorderMutation.mutate(
-				reordered.map((d) => ({ id: d.id, sortOrder: d.sortOrder })),
-			);
+			reorderMutation.mutate({
+				siteId: activeSiteId,
+				items: reordered.map((d) => ({ id: d.id, sortOrder: d.sortOrder })),
+			});
 		} else {
 			// Cross-container move
 			const srcItems =
@@ -221,16 +222,15 @@ export function DeviceOverview() {
 				);
 			}
 
-			setDeviceRoomMutation.mutate({
+			moveMutation.mutate({
 				deviceId: activeDeviceId,
 				roomId: destIsUnassigned ? null : destContainer,
-			});
-			reorderMutation.mutate(
-				[...newSrcItems, ...newDestItems].map((d) => ({
+				siteId: activeSiteId,
+				items: [...newSrcItems, ...newDestItems].map((d) => ({
 					id: d.id,
 					sortOrder: d.sortOrder,
 				})),
-			);
+			});
 		}
 	}
 
@@ -550,12 +550,14 @@ export function DeviceOverview() {
 					</div>
 				</div>
 			)}
-			<DeviceModal
-				device={selectedDevice}
-				onClose={() => setSelectedDevice(null)}
-				rooms={roomsListQuery.data ?? []}
-				utils={utils}
-			/>
+			{selectedDevice && (
+				<DeviceModal
+					device={selectedDevice}
+					onClose={() => setSelectedDevice(null)}
+					rooms={roomsListQuery.data ?? []}
+					utils={utils}
+				/>
+			)}
 		</div>
 	);
 }

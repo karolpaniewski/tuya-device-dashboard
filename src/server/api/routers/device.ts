@@ -106,12 +106,18 @@ export const deviceRouter = createTRPCRouter({
 		}),
 
 	rename: protectedProcedure
-		.input(z.object({ id: z.string(), name: z.string().min(1).max(255) }))
+		.input(
+			z.object({
+				id: z.string(),
+				siteId: z.string(),
+				name: z.string().min(1).max(255),
+			}),
+		)
 		.mutation(async ({ ctx, input }) => {
 			const [updated] = await ctx.db
 				.update(devices)
 				.set({ name: input.name, updatedAt: new Date() })
-				.where(eq(devices.id, input.id))
+				.where(and(eq(devices.id, input.id), eq(devices.siteId, input.siteId)))
 				.returning({ id: devices.id });
 			if (!updated) {
 				throw new TRPCError({ code: "NOT_FOUND", message: "Device not found" });
@@ -121,15 +127,22 @@ export const deviceRouter = createTRPCRouter({
 
 	reorder: protectedProcedure
 		.input(
-			z.array(z.object({ id: z.string(), sortOrder: z.number().int().min(0) })),
+			z.object({
+				siteId: z.string(),
+				items: z
+					.array(
+						z.object({ id: z.string(), sortOrder: z.number().int().min(0) }),
+					)
+					.max(200),
+			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			if (input.length === 0) return { success: true as const };
-			const ids = input.map((d) => d.id);
+			if (input.items.length === 0) return { success: true as const };
+			const ids = input.items.map((d) => d.id);
 			const existing = await ctx.db
 				.select({ id: devices.id })
 				.from(devices)
-				.where(inArray(devices.id, ids));
+				.where(and(inArray(devices.id, ids), eq(devices.siteId, input.siteId)));
 			if (existing.length !== ids.length) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
@@ -137,11 +150,67 @@ export const deviceRouter = createTRPCRouter({
 				});
 			}
 			await ctx.db.transaction(async (tx) => {
-				for (const { id, sortOrder } of input) {
+				for (const { id, sortOrder } of input.items) {
 					await tx
 						.update(devices)
 						.set({ sortOrder, updatedAt: new Date() })
-						.where(eq(devices.id, id));
+						.where(
+							and(eq(devices.id, id), eq(devices.siteId, input.siteId)),
+						);
+				}
+			});
+			return { success: true as const };
+		}),
+
+	move: protectedProcedure
+		.input(
+			z.object({
+				deviceId: z.string(),
+				roomId: z.string().nullable(),
+				siteId: z.string(),
+				items: z
+					.array(
+						z.object({ id: z.string(), sortOrder: z.number().int().min(0) }),
+					)
+					.max(200),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			if (input.roomId !== null) {
+				const [room] = await ctx.db
+					.select({ id: rooms.id, siteId: rooms.siteId })
+					.from(rooms)
+					.where(eq(rooms.id, input.roomId));
+				if (!room) {
+					throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
+				}
+				if (room.siteId !== input.siteId) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "CROSS_SITE_ASSIGNMENT",
+					});
+				}
+			}
+
+			await ctx.db.transaction(async (tx) => {
+				if (input.roomId !== null) {
+					await tx
+						.insert(deviceRoomAssignments)
+						.values({ deviceId: input.deviceId, roomId: input.roomId })
+						.onConflictDoUpdate({
+							target: deviceRoomAssignments.deviceId,
+							set: { roomId: input.roomId },
+						});
+				} else {
+					await tx
+						.delete(deviceRoomAssignments)
+						.where(eq(deviceRoomAssignments.deviceId, input.deviceId));
+				}
+				for (const { id, sortOrder } of input.items) {
+					await tx
+						.update(devices)
+						.set({ sortOrder, updatedAt: new Date() })
+						.where(and(eq(devices.id, id), eq(devices.siteId, input.siteId)));
 				}
 			});
 			return { success: true as const };

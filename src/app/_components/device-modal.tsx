@@ -29,7 +29,7 @@ type DeviceItem =
 type RoomItem = RouterOutputs["room"]["list"][number];
 
 interface Props {
-	device: DeviceItem | null;
+	device: DeviceItem;
 	rooms: Pick<RoomItem, "id" | "name">[];
 	utils: ReturnType<typeof api.useUtils>;
 	onClose: () => void;
@@ -37,14 +37,12 @@ interface Props {
 
 export function DeviceModal({ device, rooms, utils, onClose }: Props) {
 	return (
-		<Dialog onOpenChange={(open) => !open && onClose()} open={device !== null}>
-			{device && (
-				<DeviceModalContent
-					device={device}
-					rooms={rooms}
-					utils={utils}
-				/>
-			)}
+		<Dialog onOpenChange={(isOpen) => !isOpen && onClose()} defaultOpen>
+			<DeviceModalContent
+				device={device}
+				rooms={rooms}
+				utils={utils}
+			/>
 		</Dialog>
 	);
 }
@@ -65,6 +63,9 @@ function DeviceModalContent({
 	);
 	const [setpointSaving, setSetpointSaving] = useState(false);
 	const [roomSaving, setRoomSaving] = useState(false);
+	const [optimisticSetpoint, setOptimisticSetpoint] = useState(
+		device.setpointC,
+	);
 
 	const rename = api.device.rename.useMutation({
 		onSuccess: () => {
@@ -77,7 +78,7 @@ function DeviceModalContent({
 
 	const setpoint = api.device.setpoint.useMutation({
 		onSuccess: (r) => {
-			deviceStateHint.setpointC = r.setpointC;
+			setOptimisticSetpoint(r.setpointC);
 			void utils.device.overview.invalidate();
 			toast.success(`Setpoint set to ${r.setpointC.toFixed(1)} °C`);
 		},
@@ -94,13 +95,10 @@ function DeviceModalContent({
 		onSettled: () => setRoomSaving(false),
 	});
 
-	// local hint so setpointC display updates after mutation without waiting for refetch
-	const deviceStateHint = { setpointC: device.setpointC };
-
 	function handleRename() {
 		if (name === device.name || !name.trim()) return;
 		setNameSaving(true);
-		rename.mutate({ id: device.id, name: name.trim() });
+		rename.mutate({ id: device.id, siteId: device.siteId, name: name.trim() });
 	}
 
 	function handleSetpoint() {
@@ -178,8 +176,8 @@ function DeviceModalContent({
 									icon={<Thermometer className="text-orange-400" size={14} />}
 									label="Setpoint"
 									value={
-										device.setpointC !== null
-											? `${device.setpointC.toFixed(1)} °C`
+										optimisticSetpoint !== null
+											? `${optimisticSetpoint.toFixed(1)} °C`
 											: "—"
 									}
 								/>
@@ -189,20 +187,24 @@ function DeviceModalContent({
 						{/* Setpoint control — valves only */}
 						{device.deviceType === "valve" && (
 							<div>
-								<p className="mb-2 font-medium text-sm text-white/60">
-									Set temperature
-								</p>
-								<div className="flex gap-2">
+								<div className="mb-2 flex items-center justify-between">
+									<p className="font-medium text-sm text-white/60">
+										Set temperature
+									</p>
+									<span className="font-medium text-sm text-white">
+										{setpointInput ? `${Number(setpointInput).toFixed(1)} °C` : "—"}
+									</span>
+								</div>
+								<div className="flex gap-3">
 									<input
-										className="w-28 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-white/20"
+										className="h-2 flex-1 cursor-pointer accent-blue-500 disabled:opacity-40"
 										disabled={setpointSaving}
 										max={35}
 										min={5}
 										onChange={(e) => setSetpointInput(e.target.value)}
-										placeholder="20.0"
 										step={0.5}
-										type="number"
-										value={setpointInput}
+										type="range"
+										value={setpointInput || "20"}
 									/>
 									<button
 										className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-sm text-white transition-colors hover:bg-blue-500 disabled:opacity-40"

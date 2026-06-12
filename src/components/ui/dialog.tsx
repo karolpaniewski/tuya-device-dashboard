@@ -38,9 +38,9 @@ function DialogContent({
 			<DialogBackdrop />
 			<DialogPrimitive.Popup
 				className={cn(
-					"fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
-					"rounded-2xl border border-white/10 bg-gray-900/95 shadow-2xl backdrop-blur-xl",
-					"transition-all data-[ending-style]:scale-95 data-[starting-style]:scale-95 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",
+					"fixed top-1/2 left-1/2 z-[60] w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
+					"rounded-2xl border border-white/10 bg-gray-900/95 shadow-2xl",
+					"transition-all data-[ending-style]:scale-95 data-[ending-style]:opacity-0",
 					className,
 				)}
 				{...props}

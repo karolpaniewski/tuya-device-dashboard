@@ -73,6 +73,7 @@ function buildConnection(
 			`[tuya-poller] gateway ${gateway.tuyaGatewayId} disconnected — reconnecting in ${RECONNECT_DELAY_MS}ms`,
 		);
 		state.isConnected = false;
+		if (state.reconnectTimer) clearTimeout(state.reconnectTimer);
 		state.reconnectTimer = setTimeout(() => {
 			void connectState(gateway.tuyaGatewayId, state);
 		}, RECONNECT_DELAY_MS);
@@ -107,7 +108,10 @@ async function connectState(
 			`[tuya-poller] gateway ${tuyaGatewayId} connect failed:`,
 			err,
 		);
+		// Abort any in-flight connect so stale event listeners don't fire.
+		try { state.tuyaGateway.disconnect(); } catch { /* ignore */ }
 		// Retry after delay
+		if (state.reconnectTimer) clearTimeout(state.reconnectTimer);
 		state.reconnectTimer = setTimeout(() => {
 			void connectState(tuyaGatewayId, state);
 		}, RECONNECT_DELAY_MS);
@@ -210,24 +214,16 @@ export const realTuyaClient: TuyaGatewayClient = {
 	},
 
 	async sendSetpoint(gateway, command) {
-		if (!gateway.localKey)
-			throw new Error("localKey is required for sendSetpoint");
-		const device = new TuyAPI({
-			id: gateway.tuyaGatewayId,
-			key: gateway.localKey,
-			ip: gateway.ipAddress ?? undefined,
-			version: "3.5",
+		const state = gatewayConnections.get(gateway.tuyaGatewayId);
+		if (!state?.isConnected)
+			throw new Error(
+				`Gateway ${gateway.tuyaGatewayId} is not connected — poller must run before sendSetpoint`,
+			);
+		await state.tuyaGateway.set({
+			dps: command.dps,
+			set: command.set,
+			shouldWaitForResponse: true,
+			...(command.cid ? { cid: command.cid } : {}),
 		});
-		await device.connect();
-		try {
-			await device.set({
-				dps: command.dps,
-				set: command.set,
-				shouldWaitForResponse: true,
-				...(command.cid ? { cid: command.cid } : {}),
-			});
-		} finally {
-			await device.disconnect();
-		}
 	},
 };
