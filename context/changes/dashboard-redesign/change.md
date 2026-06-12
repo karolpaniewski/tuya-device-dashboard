@@ -1,10 +1,11 @@
 ---
 id: dashboard-redesign
 title: Dashboard & Setup Redesign (S-15)
-status: preparing
+status: planned
 created: 2026-06-12
 updated: 2026-06-12
 roadmap_id: S-15
+plan: context/changes/dashboard-redesign/plan.md
 ---
 
 Pełny redesign dashboardu i okna Setup w kierunku klasycznego, nowoczesnego dashboardu.

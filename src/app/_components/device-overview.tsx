@@ -1,6 +1,13 @@
 "use client";
 
-import { Layers, Search } from "lucide-react";
+import {
+	CheckCircle2,
+	Flame,
+	Layers,
+	Search,
+	Thermometer,
+	Wifi,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { useSiteContext } from "~/components/site-context";
@@ -10,6 +17,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { FilterBar, type FilterState } from "./filter-bar";
 import { RoomGroup } from "./room-group";
+import { RoomSidebar } from "./room-sidebar";
 
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
 
@@ -80,7 +88,28 @@ export function DeviceOverview() {
 		: [];
 	const totalDevices = allDevices.length;
 	const onlineCount = allDevices.filter((d) => d.isOnline).length;
+	const offlineCount = totalDevices - onlineCount;
 	const roomCount = data?.rooms.length ?? 0;
+	const roomsOk = data?.rooms.filter((r) => r.badge === "OK").length ?? 0;
+	const roomsTooHot =
+		data?.rooms.filter((r) => r.badge === "Too Hot").length ?? 0;
+	const roomsTooCold =
+		data?.rooms.filter((r) => r.badge === "Too Cold").length ?? 0;
+	const avgTempReadings =
+		data?.rooms
+			.flatMap((r) => r.devices)
+			.filter(
+				(d) =>
+					d.deviceType === "sensor" &&
+					d.isOnline &&
+					!d.isStale &&
+					d.temperatureC !== null,
+			)
+			.map((d) => d.temperatureC as number) ?? [];
+	const avgTempC =
+		avgTempReadings.length > 0
+			? avgTempReadings.reduce((a, b) => a + b, 0) / avgTempReadings.length
+			: null;
 
 	const activeFilterCount =
 		(roomFilter ? 1 : 0) +
@@ -125,32 +154,64 @@ export function DeviceOverview() {
 
 	return (
 		<div className="flex flex-col gap-8">
-			{/* Hero */}
-			<div>
-				<p className="text-gray-400 text-sm">
-					LAN-only device monitoring — no cloud required
-				</p>
-				<div className="mt-2 flex flex-wrap gap-1.5 sm:gap-2">
-					{isLoading ? (
-						<>
-							<Skeleton className="h-6 w-24 rounded-full" />
-							<Skeleton className="h-6 w-20 rounded-full" />
-							<Skeleton className="h-6 w-20 rounded-full" />
-						</>
-					) : data ? (
-						<>
-							<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-gray-300 text-xs">
-								{totalDevices} devices
-							</span>
-							<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-gray-300 text-xs">
-								{onlineCount} online
-							</span>
-							<span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-gray-300 text-xs">
-								{roomCount} rooms
-							</span>
-						</>
-					) : null}
-				</div>
+			{/* KPI Row */}
+			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+				{isLoading
+					? Array.from({ length: 4 }).map((_, i) => (
+							<div
+								className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px]"
+								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+								key={i}
+							>
+								<Skeleton className="mb-2 h-3 w-16" />
+								<Skeleton className="mb-1 h-7 w-12" />
+								<Skeleton className="h-3 w-24" />
+							</div>
+						))
+					: data
+						? (
+								[
+									{
+										icon: <Wifi className="h-4 w-4" />,
+										label: "Devices",
+										sub: `${onlineCount} online · ${offlineCount} offline`,
+										value: totalDevices,
+									},
+									{
+										icon: <Thermometer className="h-4 w-4" />,
+										label: "Avg Temp",
+										sub: "online sensors",
+										value: avgTempC !== null ? `${avgTempC.toFixed(1)}°C` : "—",
+									},
+									{
+										icon: <CheckCircle2 className="h-4 w-4 text-green-400" />,
+										label: "Rooms OK",
+										sub: `of ${roomCount} rooms`,
+										value: roomsOk,
+									},
+									{
+										icon: <Flame className="h-4 w-4 text-orange-400" />,
+										label: "Alerts",
+										sub: `${roomsTooHot} too hot · ${roomsTooCold} too cold`,
+										value: roomsTooHot + roomsTooCold,
+									},
+								] as const
+							).map(({ label, value, sub, icon }) => (
+								<div
+									className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px]"
+									key={label}
+								>
+									<div className="mb-1 flex items-center gap-2 text-white/50 text-xs">
+										{icon}
+										{label}
+									</div>
+									<div className="font-semibold text-2xl text-white">
+										{value}
+									</div>
+									<div className="mt-0.5 text-white/40 text-xs">{sub}</div>
+								</div>
+							))
+						: null}
 			</div>
 
 			{/* Loading skeleton grid */}
@@ -191,79 +252,113 @@ export function DeviceOverview() {
 
 			{/* Filter bar + device list (data present, not zero-devices) */}
 			{!isLoading && !error && data && !isZeroDevices && (
-				<>
-					<FilterBar
-						activeFilterCount={activeFilterCount}
-						filters={{
-							roomId: roomFilter,
-							search: nameSearch,
-							status: statusFilter,
-							type: typeFilter,
-						}}
-						onClear={clearFilters}
-						onRoomChange={setRoomFilter}
-						onSearchChange={setNameSearch}
-						onStatusChange={setStatusFilter}
-						onTypeChange={setTypeFilter}
-						rooms={rooms}
-					/>
+				<div className="flex gap-6">
+					{/* Sidebar — desktop only */}
+					<aside className="hidden sm:block">
+						<RoomSidebar
+							activeRoomId={roomFilter || null}
+							onSelect={(id) => setRoomFilter(id ?? "")}
+							rooms={data.rooms.map((r) => ({
+								badge: r.badge,
+								roomId: r.roomId,
+								roomName: r.roomName,
+							}))}
+						/>
+					</aside>
 
-					{isFilteredEmpty ? (
-						<div className="flex flex-col items-center justify-center py-8 text-center sm:py-16">
-							<Search className="mb-4 text-gray-600" size={48} />
-							<p className="font-semibold text-white">
-								No devices match your filters
-							</p>
-							<p className="mt-1 max-w-xs text-gray-400 text-sm">
-								Try adjusting or clearing your filters.
-							</p>
-							<Button
-								className="mt-4"
-								onClick={clearFilters}
-								size="sm"
-								type="button"
-								variant="ghost"
-							>
-								Clear filters
-							</Button>
-						</div>
-					) : (
-						<>
-							{activeSiteId === "all"
-								? groupBySite(filteredRooms).map(([siteName, siteRooms]) => (
-										<SiteSection key={siteName} siteName={siteName}>
-											{siteRooms.map((room) => (
-												<RoomGroup
-													anomaly={room.anomaly}
-													badge={room.badge}
-													devices={room.devices}
-													key={room.roomId}
-													roomName={room.roomName}
-													suggestion={room.suggestion}
-												/>
-											))}
-										</SiteSection>
-									))
-								: filteredRooms.map((room) => (
-										<RoomGroup
-											anomaly={room.anomaly}
-											badge={room.badge}
-											devices={room.devices}
-											key={room.roomId}
-											roomName={room.roomName}
-											suggestion={room.suggestion}
-										/>
-									))}
-							{filteredUnassigned.length > 0 && (
-								<RoomGroup
-									devices={filteredUnassigned}
-									isUnassigned
-									roomName="Unassigned"
-								/>
-							)}
-						</>
-					)}
-				</>
+					{/* Main content */}
+					<div className="flex min-w-0 flex-1 flex-col gap-8">
+						<FilterBar
+							activeFilterCount={activeFilterCount}
+							filters={{
+								roomId: roomFilter,
+								search: nameSearch,
+								status: statusFilter,
+								type: typeFilter,
+							}}
+							hideRoomFilter
+							onClear={clearFilters}
+							onRoomChange={setRoomFilter}
+							onSearchChange={setNameSearch}
+							onStatusChange={setStatusFilter}
+							onTypeChange={setTypeFilter}
+							rooms={rooms}
+						/>
+
+						{isFilteredEmpty ? (
+							<div className="flex flex-col items-center justify-center py-8 text-center sm:py-16">
+								<Search className="mb-4 text-gray-600" size={48} />
+								<p className="font-semibold text-white">
+									No devices match your filters
+								</p>
+								<p className="mt-1 max-w-xs text-gray-400 text-sm">
+									Try adjusting or clearing your filters.
+								</p>
+								<Button
+									className="mt-4"
+									onClick={clearFilters}
+									size="sm"
+									type="button"
+									variant="ghost"
+								>
+									Clear filters
+								</Button>
+							</div>
+						) : (
+							<>
+								{activeSiteId === "all"
+									? groupBySite(filteredRooms).map(([siteName, siteRooms]) => (
+											<SiteSection key={siteName} siteName={siteName}>
+												{siteRooms.map((room) => (
+													<RoomGroup
+														anomaly={room.anomaly}
+														badge={room.badge}
+														devices={room.devices}
+														key={room.roomId}
+														primarySensorId={
+															room.devices.find(
+																(d) => d.deviceType === "sensor" && d.isOnline,
+															)?.tuyaDeviceId ??
+															room.devices.find(
+																(d) => d.deviceType === "sensor",
+															)?.tuyaDeviceId ??
+															null
+														}
+														roomName={room.roomName}
+														suggestion={room.suggestion}
+													/>
+												))}
+											</SiteSection>
+										))
+									: filteredRooms.map((room) => (
+											<RoomGroup
+												anomaly={room.anomaly}
+												badge={room.badge}
+												devices={room.devices}
+												key={room.roomId}
+												primarySensorId={
+													room.devices.find(
+														(d) => d.deviceType === "sensor" && d.isOnline,
+													)?.id ??
+													room.devices.find((d) => d.deviceType === "sensor")
+														?.id ??
+													null
+												}
+												roomName={room.roomName}
+												suggestion={room.suggestion}
+											/>
+										))}
+								{filteredUnassigned.length > 0 && (
+									<RoomGroup
+										devices={filteredUnassigned}
+										isUnassigned
+										roomName="Unassigned"
+									/>
+								)}
+							</>
+						)}
+					</div>
+				</div>
 			)}
 		</div>
 	);

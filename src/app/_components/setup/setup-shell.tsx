@@ -3,8 +3,9 @@
 import { useSiteContext } from "~/components/site-context";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { api } from "~/trpc/react";
-import { DeviceAssignmentGrid } from "./device-assignment-grid";
+import { DeviceTable } from "./device-table";
 import { RoomManager } from "./room-manager";
 import { SiteManager } from "./site-manager";
 
@@ -38,10 +39,33 @@ export function SetupShell() {
 	];
 
 	return (
-		<div className="flex flex-col gap-10">
-			<SiteManager utils={utils} />
-			<RoomManager activeSiteId={activeSiteId} rooms={rooms} utils={utils} />
-			<DeviceAssignmentGrid devices={allDevices} rooms={rooms} utils={utils} />
-		</div>
+		<Tabs defaultValue="rooms">
+			<TabsList className="mb-6">
+				<TabsTrigger value="rooms">Rooms</TabsTrigger>
+				<TabsTrigger value="devices">Devices</TabsTrigger>
+				<TabsTrigger disabled value="automations">
+					Automations
+				</TabsTrigger>
+				<TabsTrigger value="sites">Sites</TabsTrigger>
+			</TabsList>
+
+			<TabsContent value="rooms">
+				<RoomManager activeSiteId={activeSiteId} rooms={rooms} utils={utils} />
+			</TabsContent>
+
+			<TabsContent value="devices">
+				<DeviceTable devices={allDevices} rooms={rooms} utils={utils} />
+			</TabsContent>
+
+			<TabsContent value="automations">
+				<p className="text-sm text-white/40">
+					Automation rules are coming in a future update.
+				</p>
+			</TabsContent>
+
+			<TabsContent value="sites">
+				<SiteManager utils={utils} />
+			</TabsContent>
+		</Tabs>
 	);
 }

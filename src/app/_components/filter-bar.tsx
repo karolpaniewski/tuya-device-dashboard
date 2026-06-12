@@ -20,6 +20,7 @@ export interface FilterState {
 interface FilterBarProps {
 	activeFilterCount: number;
 	filters: FilterState;
+	hideRoomFilter?: boolean;
 	onClear: () => void;
 	onRoomChange: (roomId: string) => void;
 	onSearchChange: (search: string) => void;
@@ -44,6 +45,7 @@ const STATUSES: { label: string; value: FilterState["status"] }[] = [
 export function FilterBar({
 	activeFilterCount,
 	filters,
+	hideRoomFilter,
 	onClear,
 	onRoomChange,
 	onSearchChange,
@@ -61,22 +63,24 @@ export function FilterBar({
 				value={filters.search}
 			/>
 
-			<Select
-				onValueChange={(v) => onRoomChange(!v || v === "all" ? "" : v)}
-				value={filters.roomId || "all"}
-			>
-				<SelectTrigger className="w-full sm:w-36">
-					<SelectValue />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectItem value="all">All Rooms</SelectItem>
-					{rooms.map((room) => (
-						<SelectItem key={room.roomId} value={room.roomId}>
-							{room.roomName}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+			{!hideRoomFilter && (
+				<Select
+					onValueChange={(v) => onRoomChange(!v || v === "all" ? "" : v)}
+					value={filters.roomId || "all"}
+				>
+					<SelectTrigger className="w-full sm:w-36">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Rooms</SelectItem>
+						{rooms.map((room) => (
+							<SelectItem key={room.roomId} value={room.roomId}>
+								{room.roomName}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			)}
 
 			<fieldset className="m-0 flex items-center gap-1 border-0 p-0">
 				{TYPES.map((t) => (
