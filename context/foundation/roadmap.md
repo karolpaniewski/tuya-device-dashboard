@@ -42,9 +42,10 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | done     |
 | S-10  | external-notifications | receive email/SMS/push alert when a room threshold is violated                                  | S-05                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
-| S-11  | automation-rules       | create time-based rules (set valve setpoint to X at time Y on days Z)                          | S-01, S-04               | PRD §Non-Goals (deferred v2)      | needs-shaping |
+| S-11  | automation-rules       | create temperature+time rules linking sensor to valve; system maintains comfort temp in office hours, economy mode outside | S-01, S-04 | PRD §Non-Goals (deferred v2) | shaped |
 | S-12  | automation-history     | view log of automation rule executions (what fired, when, result)                              | S-11                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-13  | multi-site             | dashboard supports multiple office locations, each with their own device/room tree              | F-01, F-02               | PRD §Non-Goals (deferred v2)      | done     |
+| S-15  | dashboard-redesign     | KPI summary row, inline sparkline charts per room, sidebar navigation, tabbed setup (Rooms/Devices/Automations/Sites), sortable device table | S-01, S-05, S-09, S-14 | user-requested v2 | planned |
 
 ## Streams
 

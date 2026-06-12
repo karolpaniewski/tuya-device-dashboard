@@ -1,167 +1,168 @@
 ---
-project: Tuya Device Dashboard
-updated: 2026-05-28
-context_type: greenfield
+project: Tuya Device Dashboard — S-11 Automation Rules
+updated: 2026-06-12
+context_type: brownfield
 product_type: web-app
 target_scale:
   users: small
 timeline_budget:
-  mvp_weeks: 3
+  delivery_weeks: 3
   hard_deadline: null
-  soft_target: "2026-06-10"
   after_hours_only: true
 checkpoint:
   current_phase: 8
   phases_completed: [1, 2, 3, 4, 5, 6, 7]
-  frs_drafted: 13
+  frs_drafted: 9
   quality_check_status: accepted
 ---
 
-> Seed idea: "I would like to create web app / dashboard for tuya devices in my company. I want to have a place where I can find all czujniki temperatury, głowice grzewcze and read temperatures, automations etc."
+> Seed idea: S-11 automation-rules — "automatyzacja która umożliwia uruchamianie zależności głowica → sensor temperatury, optymalizacja kosztów ogrzewania biura"
+
+## Current System
+
+Tuya Device Dashboard — działający brownfield z:
+- Live device overview (30s polling worker, custom Next.js server)
+- Valve setpoint control (S-04) — tRPC mutation wysyłająca DP command przez TuyaGatewayClient
+- Room health scoring — scoreRoom() ewaluuje sensor vs threshold per poll cycle
+- Temperature history — SQLite append, purge 30 dni
+- Multi-site support — siteId na wszystkich tabelach
+
+**Tech stack:** Next.js 15, tRPC v11, Drizzle ORM + libsql (SQLite), Vitest, Biome, GitHub Actions CI.
+
+**Must preserve:** polling loop (30s), ręczne sterowanie zaworami, room health scoring, temperature history, multi-site scoping.
 
 ## Vision & Problem Statement
 
-A small team of facility managers (2–5 people) needs to monitor and control all Tuya smart devices across company office rooms — temperature sensors (czujniki temperatury) and heating valves (głowice grzewcze) — from a single web dashboard, without relying on the Tuya cloud or requiring internet access.
+Facility managerowie muszą ręcznie dostosowywać setpointy zaworów grzewczych — biuro ogrzewa się bez związku z faktyczną temperaturą i godzinami użytkowania. Koszty są nieoptymalne.
 
-Today they manage devices one by one in the Tuya mobile app. There is no fleet view, no cross-room temperature comparison, and no way to act quickly across multiple devices. Tuya's own web portal requires an internet connection, which the company cannot or will not provide for this use case.
+**Zmiana:** Dashboard pozwala tworzyć reguły automatyzacji wiążące sensor temperatury z głowicą grzewczą — system sam utrzymuje zadaną temperaturę komfortu w godzinach pracy i przełącza na tryb ekonomiczny poza nimi.
 
-**Insight:** The gap is not just UX — it is architectural. Tuya's cloud portal is categorically unavailable in a LAN-only environment. This is not a convenience improvement over an existing tool; it replaces a dependency that does not work in the company's network model.
-
-**Pain category:** Missing capability (no fleet view) + workflow friction (one-by-one mobile app management)
+**Insight:** Infrastruktura jest gotowa: polling worker co 30s dostarcza odczyty sensorów, TuyaGatewayClient obsługuje komendy setpoint, Drizzle + SQLite przechowuje konfigurację. Brakuje wyłącznie warstwy reguł i schedulera oceniającego je na każdym cyklu.
 
 ## User & Persona
 
-**Primary persona:** Facility manager (or small admin team, 2–5 people, flat permissions — no role separation needed for MVP)
+**Primary persona:** Facility manager (2–5 osób, płaskie uprawnienia — bez zmian od v1)
 
-- Needs to glance at current temperatures across all rooms without switching between devices
-- Needs to adjust heating valve settings without picking up a phone or navigating device-by-device
-- Works on a company LAN; no expectation of remote/internet access for this tool
-- Under 50 devices total across a few rooms
+- Chce ustawić "temperatura w pokoju A powinna być 21°C w godzinach 7:00–18:00, pon–pt"
+- Nie chce ręcznie zmieniać setpointów każdego dnia
+- Oczekuje że poza godzinami biuro przejdzie w tryb ekonomiczny automatycznie
 
 ## Access Control
 
-Authentication: Login required — individual or shared credentials (email + password). Prevents accidental access from anyone on the LAN.
+**Bez zmian** — istniejący model auth (email + password, flat permissions). Wszystkie sesje mają identyczny dostęp do tworzenia, edycji i usuwania reguł automatyzacji.
 
-Role model: Flat — all authenticated users have identical access (view and control). No role separation in MVP.
-
-LAN-only: The dashboard is not exposed to the internet; access is restricted to the company network.
+`No changes planned — current model preserved.`
 
 ## Success Criteria
 
 ### Primary
-The facility manager can open the dashboard on the company LAN, log in, see all Tuya devices (temperature sensors and heating valves) with their current temperature and online/offline status, drill into any device, and adjust its temperature setpoint — with the change confirmed in the UI immediately.
+Admin otwiera sekcję Automations, tworzy regułę wiążącą sensor z głowicą (próg temperatury, setpoint komfortu, setpoint ekonomiczny, godziny pracy, dni tygodnia). System co 60s ewaluuje reguły i wysyła komendy — biuro utrzymuje zadaną temperaturę bez ręcznej interwencji.
 
 MVP flow:
-1. Manager opens browser on company LAN
-2. Logs in with credentials
-3. Sees all devices: name, room, current temperature, online/offline status
-4. Drills into one device, adjusts temperature setpoint
-5. Change reflects in the dashboard immediately (or error shown on failure)
-
-Scoped out of v1 (deferred to v2): historical temperature data, automation history, automation creation.
+1. Admin otwiera /automations
+2. Tworzy regułę: wybiera sensor → głowicę → ustawia próg, oba setpointy, godziny, dni
+3. UI ostrzega jeśli inna reguła aktywna na tej samej głowicy w tym samym oknie
+4. Reguła zapisana — widoczna na liście z togglem enable/disable
+5. Scheduler (co 60s): jeśli w godzinach pracy i temp < (próg − 0.5°C) → wyślij setpoint_komfort; poza godzinami → wyślij setpoint_ekono
+6. Każde dispatched polecenie logowane (umożliwia S-12)
 
 ### Secondary
-Devices grouped by room/floor in the dashboard UI.
+Reguły można duplikować (skopiuj ustawienia jako punkt startowy dla nowej).
 
 ### Guardrails
-- **Command feedback**: if a control command fails, the user sees a clear error — never silent failure, never unknown device state.
-- **LAN-only**: zero outbound calls to Tuya cloud or any external service. No data leaves the company network.
-- **Auth required**: dashboard is inaccessible without valid login credentials, even from within the LAN.
+- **Existing manual control preserved:** ręczne ustawienie setpointa przez użytkownika nigdy nie jest nadpisywane bez pełnego cyklu schedulera (scheduler działa co 60s, nie natychmiast)
+- **No silent failures:** każda komenda wyslana przez scheduler jest logowana z wynikiem (sukces / błąd)
+- **Conflict gate:** system nie pozwala zapisać reguły nakładającej się czasowo na tej samej głowicy bez potwierdzenia przez użytkownika
 
 ## Functional Requirements
 
-### Authentication
-- FR-001: User can log in with credentials (email + password). Priority: must-have
-  > Socrates: No counter-argument; login is the access gate for a shared internal tool.
+### Rule Management
+- FR-001: User can create an automation rule specifying: source sensor, target valve, temperature threshold (°C), comfort setpoint (°C), economy setpoint (°C), active days of week, and working-hours window (start and end time HH:MM). Priority: must-have. Change: new
+  > Socrates: Counter-argument: "room already has threshold config from S-05 — should automation reuse that?" Resolution: kept separate. S-05 threshold is for display scoring only; automation threshold is the trigger for action. Different semantic — conflating them would make S-05 config surprising to edit.
 
-### Device Discovery
-- FR-002: System automatically discovers all Tuya Zigbee gateway hubs (centralki) on the LAN. Priority: must-have
-  > Socrates: Counter-argument considered: "auto-discovery requires knowing each device's local encryption key — this can't be fully automated." Resolution: acceptable. Admin inputs local keys once during initial setup (standard tinytuya workflow); discovery is automatic after that. One-time manual key setup is an accepted cost.
-- FR-003: System enumerates all devices attached to each discovered hub (temperature sensors, heating valves, smart plugs). Priority: must-have
-  > Socrates: No counter-argument; enumerating hub devices is prerequisite to any other feature.
+- FR-002: System evaluates all active automation rules every 60 seconds, reading the latest sensor temperature from the in-memory device state. Priority: must-have. Change: new
+  > Socrates: Counter-argument: "60s is too slow — temperature could overshoot." Resolution: acceptable. Tuya polling is already 30s; 60s evaluation keeps the scheduler lightweight. Overshoot risk is low for heating (thermal inertia of a room >> 60s).
 
-### Device Overview
-- FR-004: User can see all devices in one view showing name, assigned room, current temperature (where applicable), and online/offline status. Priority: must-have
-  > Socrates: No counter-argument; this is the primary success criterion.
-- FR-005: User can browse devices grouped by room/floor. Priority: must-have
-  > Socrates: Counter-argument considered: "filtering alone covers the same navigation need; grouping adds complexity." Resolution: kept as must-have. Spatial grouping is the core UX — a flat filtered list doesn't replace the at-a-glance room overview.
-- FR-006: User can filter the device list by room/zone. Priority: must-have
-  > Socrates: No counter-argument; complements grouping for quick isolation.
-- FR-007: User can filter the device list by device type (sensor / valve / plug). Priority: must-have
-  > Socrates: Counter-argument considered: "room grouping covers navigation; type filter is redundant." Resolution: kept. "Show only valves" is a distinct diagnostic use case from room browsing.
-- FR-008: User can filter the device list by status (online / offline). Priority: must-have
-  > Socrates: Kept; offline/online filter is the primary diagnostic tool for infrastructure problems.
-- FR-009: User can search devices by name. Priority: must-have
-  > Socrates: Counter-argument considered: "50 devices + room filter is enough; search may never be used." Resolution: kept. Searching by name is faster when the device name is known; small implementation cost.
+- FR-003: Within working hours: if sensor temperature is below (threshold − 0.5°C), system sends comfort setpoint to target valve; if above (threshold + 0.5°C), no command is sent (hysteresis band prevents rapid cycling). Priority: must-have. Change: new
+  > Socrates: Counter-argument: "fixed 0.5°C hysteresis may be too tight for some rooms." Resolution: kept fixed for MVP — configurable hysteresis is a nice-to-have for v2. 0.5°C matches typical sensor precision.
 
-### Device Detail & Control
-- FR-010: User can view the current state of a single device (temperature reading, setpoint, online/offline status). Priority: must-have
-  > Socrates: No counter-argument; prerequisite to control.
-- FR-011: User can adjust the temperature setpoint of a heating valve from the device detail view. Priority: must-have. **Caveat:** control is implemented for confirmed device models with known Tuya DP mappings; devices with unrecognised DP codes display status but are flagged as "unsupported" for control.
-  > Socrates: Counter-argument considered: "Tuya local protocol DP codes vary by manufacturer — control may silently fail on some valves." Resolution: added unsupported-device caveat. Control works for known models; unknown devices surface status only and are explicitly flagged.
-- FR-012: User sees immediate confirmation or a clear error message after every control command — no silent failures. Priority: must-have
-  > Socrates: No counter-argument; this is a named guardrail.
+- FR-004: Outside working hours window, system sends economy setpoint to target valve regardless of current temperature. Priority: must-have. Change: new
+  > Socrates: Counter-argument: "sending economy setpoint every 60s outside hours means many redundant commands to the valve." Resolution: optimise: only send economy command once when window closes (on transition), not every cycle. Noted as implementation constraint.
 
-### Setup & Configuration
-- FR-013: Admin can assign each discovered device to a named room individually (one-time setup after initial discovery; persisted). Priority: must-have
-  > Socrates: Counter-argument considered: "bulk per-hub assignment would save time." Resolution: per-device assignment kept because one hub can span multiple rooms — bulk hub-to-room mapping doesn't hold.
+- FR-005: User can view all automation rules in a list showing: sensor name, valve name, threshold, working hours, active days, enable/disable status. Priority: must-have. Change: new
+  > Socrates: No counter-argument; list view is prerequisite to managing rules.
+
+- FR-006: User can toggle a rule between active and inactive without deleting it. Priority: must-have. Change: new
+  > Socrates: No counter-argument; essential for temporary disable (e.g. office closed for holiday).
+
+- FR-007: User can edit or delete an existing automation rule. Priority: must-have. Change: new
+  > Socrates: Counter-argument: "delete is destructive — should soft-delete be used?" Resolution: hard delete for MVP. Execution log (FR-009) already preserves history via rule_id reference; soft-delete adds complexity without user value at this scale.
+
+- FR-008: When saving a rule whose active-days + working-hours window overlaps with an existing active rule on the same target valve, UI displays a warning requiring explicit user confirmation before saving. Priority: must-have. Change: new
+  > Socrates: Counter-argument: "blocking on any overlap is too strict — one rule for comfort, one for economy on same valve should be allowed." Resolution: clarified. The conflict check is for SAME trigger type / overlapping time window on same valve, not between comfort + economy modes of the same logical rule. Design implication: comfort + economy are fields of ONE rule, not two rules. FR-008 stands.
+
+- FR-009: System appends a log entry for each scheduler cycle that results in a dispatched command: timestamp, rule_id, sensor_reading_celsius, target_setpoint, valve_id, success/error. Priority: must-have. Change: new
+  > Socrates: Counter-argument: "logging every command at 60s intervals for N rules = heavy write load." Resolution: log only on dispatch (when a command is actually sent), not on every evaluation cycle. No-op evaluations (temp in band, outside hours with economy already set) are not logged.
 
 ## User Stories
 
-### US-01: Live device overview
-**Given** I am logged into the dashboard on the company LAN,  
-**When** I open the main view,  
-**Then** I see all discovered devices grouped by room, each showing current temperature and online/offline status — with no internet connection required.
+### US-01: Create and activate an automation rule
+**Given** I am logged into the dashboard,
+**When** I navigate to Automations, create a rule linking Sensor A to Valve B with threshold 20°C, comfort setpoint 22°C, economy setpoint 16°C, Mon–Fri 07:00–18:00, and save it,
+**Then** the rule appears in the list as active, and within 60 seconds the scheduler begins evaluating it and sending setpoint commands based on current temperature and time.
 
 ## Business Logic
 
-**Domain rule (one sentence):** The app evaluates each room's current temperature against configurable per-room thresholds, scores the room as OK / too cold / too hot, flags threshold violations, detects when a room's temperature is significantly below its heating valve's setpoint, and suggests specific valve adjustments.
+**Domain rule (one sentence):** The app evaluates each active automation rule on a 60-second cycle — it compares the assigned sensor's latest reading against the rule's threshold (with ±0.5°C hysteresis), checks whether current time falls within the rule's working-hours window, and dispatches a comfort or economy setpoint command to the target valve only when a state transition is warranted.
 
 **Inputs the rule consumes (as the user sees them):**
-- Current temperature reading from sensors in each room
-- Current setpoint configured on each heating valve
-- Per-room comfort thresholds set by admin (min and max acceptable temperature)
+- Latest temperature reading from the assigned sensor (from 30s polling state)
+- Current server time (compared against working-hours window and active days)
+- Rule configuration: threshold, comfort setpoint, economy setpoint, hours, days
 
 **Output the user encounters:**
-- A status badge per room: OK / Too Cold / Too Hot
-- Alert flags on devices violating thresholds
-- Suggested action: "Room X is Y°C below setpoint — consider raising valve to Z°C"
-- Anomaly flag: current temperature is significantly below the valve's current setpoint (threshold-based, no historical tracking in v1)
+- Valve setpoint changes automatically without manual intervention
+- Execution log entry per dispatched command (feeds S-12 history view)
+- UI: last-evaluated timestamp and last-sent command visible on rule list row (nice-to-have)
 
-**Rule simplification for v1:** Anomaly detection uses live data only — if current temp < (setpoint − configured threshold), the room is flagged. No time-based drift tracking (deferred to v2).
+**State machine per rule (per evaluation cycle):**
+```
+if disabled → skip
+if current time NOT in (active_days × working_hours) → send economy_setpoint (on transition only)
+if current time in window:
+  if sensor_temp < threshold − 0.5 → send comfort_setpoint
+  if sensor_temp > threshold + 0.5 → no command (already warm)
+  if threshold − 0.5 ≤ sensor_temp ≤ threshold + 0.5 → no command (hysteresis band)
+```
 
-**Rule configuration:** All thresholds (comfort band min/max, anomaly gap threshold) are configurable per room by an admin through the dashboard UI. A global default applies to rooms with no override.
+## Constraints & Preserved Behavior
 
-**Data polling:** Dashboard polls all Tuya hubs every 30 seconds to refresh device state. Rules are evaluated on each poll cycle.
+- **Polling worker continuity:** the existing 30s polling loop must not be modified — scheduler reads from its in-memory state store, does not add its own device polling
+- **TuyaGatewayClient reuse:** automation dispatches setpoint commands through the same TuyaGatewayClient path as manual control (S-04), not a parallel path
+- **siteId scoping:** automation rules are scoped to a site (inherit from the valve's room's siteId)
+- **Existing valve control unaffected:** manual setpoint control from device detail view remains fully functional; automation is additive, not replacing
+- **SQLite only:** no new database engine; automation_rules and automation_logs tables added via Drizzle migration
 
 ## Non-Functional Requirements
 
-- **Persistence:** Configuration data (room assignments, per-room thresholds, user credentials) survives server restarts — stored to disk, not held in memory only.
-- **Performance:** Dashboard loads within 3 seconds on the company LAN with up to 50 devices present.
-- **Privacy:** No third-party analytics, tracking scripts, or external service calls of any kind. The app makes zero outbound network requests.
-- **Offline operation:** Full functionality when there is no internet connection (LAN-only by design).
-- **Browser support:** Works in current versions of Chrome, Firefox, and Edge on desktop. No mobile browser optimisation required for v1.
-
-## Quality Cross-Check
-
-All elements present. One resolved tension:
-- **Timeline:** June 10 confirmed as a soft target, not a hard deadline. No gap remains.
+- **Scheduler reliability:** rule evaluation must complete within the 60s cycle even with 50 devices and 20 rules; no blocking I/O in the evaluation loop
+- **Log retention:** automation_logs purged after 30 days (same policy as temperature_history)
+- **No silent failures:** dispatch errors are caught and logged; they do not crash the scheduler or the polling worker
 
 ## Non-Goals
 
-- **No historical temperature data** — no charts, graphs, or time-series views in v1. Temperature history deferred to v2. *(Scoped out in Phase 3.)*
-- **No automation creation or scheduling** — users cannot create time-based rules (e.g. "heat room at 7am") in v1. Automation features deferred to v2. *(Scoped out in Phase 3.)*
-- **No automation execution history** — no log of past automation runs. Deferred to v2. *(Scoped out in Phase 3.)*
-- **No external notifications** — threshold alerts and anomaly flags appear in the dashboard UI only. No email, SMS, or push notifications in v1. *(Explicitly confirmed.)*
-- **No multi-site support** — single office location only. No multi-tenant or multi-building architecture.
-
-### US-02: Adjust heating valve
-**Given** I am on the device list and I identify a heating valve,  
-**When** I open its detail view and submit a new temperature setpoint,  
-**Then** the command is sent locally, and I see either a success confirmation or a specific error — the device is never left in an ambiguous state.
+- **No complex triggers:** humidity, CO2, motion, or occupancy sensors — temperature + time only in v1
+- **No rule chaining / dependencies:** rules are independent; one rule cannot trigger another
+- **No push / email notifications** on rule execution — execution log only (S-12 covers history UI)
+- **No mobile optimisation** for automations UI — desktop-first (consistent with existing scope)
+- **Automation history UI (S-12)** is a separate slice — this slice writes the log, S-12 reads it
 
 ## Open Questions
 
-- **Timeline:** MVP estimated at 3 weeks after-hours; soft target is 2026-06-10 (13 days from shape session). June 10 is not a hard gate — scope is fixed, deadline is flexible.
-- **Device model list:** Control (FR-011) is scoped to confirmed device models with known Tuya DP mappings. The specific models in use need to be documented before implementation begins.
-- **Local key provisioning:** Device local encryption keys must be obtained from the Tuya IoT Platform or extracted via tinytuya's key-scanning tool. This is a prerequisite for discovery (FR-002/003) and must be done before development of the discovery feature.
+- **Transition command deduplication:** when valve already has economy setpoint from previous cycle, should the scheduler skip the command or send it anyway? Recommendation: skip (compare last-sent value); avoids unnecessary Tuya commands. Confirm during plan.
+- **Rule name field:** should rules have a user-defined name, or auto-generate from "Sensor X → Valve Y"? Lean toward user-defined for readability on the list.
+
+## Forward: technical-roadmap
+
+- S-12 automation-history: read-only log view on top of automation_logs table written by this slice
+- v2 nice-to-haves: configurable hysteresis per rule, rule duplication, "test rule" dry-run mode
