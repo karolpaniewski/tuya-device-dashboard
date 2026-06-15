@@ -47,6 +47,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-13  | multi-site             | dashboard supports multiple office locations, each with their own device/room tree              | F-01, F-02               | PRD §Non-Goals (deferred v2)      | done     |
 | S-15  | dashboard-redesign     | KPI summary row, inline sparkline charts per room, sidebar navigation, tabbed setup (Rooms/Devices/Automations/Sites), sortable device table | S-01, S-05, S-09, S-14 | user-requested v2 | done    |
 | S-16  | device-dnd-modal       | drag-and-drop devices to reorder within a room or move between rooms (persisted); click any device card to open management modal with setpoint, rename, room, history chart, humidity | S-01, S-09, S-15 | user-requested v2 | done |
+| S-17  | visual-ux-redesign     | full dark/light mode toggle (no FOUC), CSS token system replacing glass-morphism dark: variants (Turbopack-safe), device-type icons + watermark on cards, per-room 24h temperature overview panel, donut KPI card for device distribution by room | S-15, S-16 | user-requested v2 | done |
 
 ## Streams
 
@@ -333,3 +334,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-06       | cicd-pipeline          | 2026-06-12  |
 | S-15       | dashboard-redesign     | 2026-06-13  |
 | S-16       | device-dnd-modal       | 2026-06-14  |
+| S-17       | visual-ux-redesign     | 2026-06-15  |
