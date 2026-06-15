@@ -418,26 +418,26 @@ Add a 5th KPI card in `device-overview.tsx` containing a donut chart showing dev
 ### Phase 4: Temperature Overview Panel
 
 #### Automated
-- [x] 4.1 `npm run typecheck` passes
-- [x] 4.2 `npm run lint` passes
+- [x] 4.1 `npm run typecheck` passes — aadcac8
+- [x] 4.2 `npm run lint` passes — aadcac8
 
 #### Manual
-- [x] 4.3 Panel renders above room cards with room names
-- [x] 4.4 24h charts show data; "No sensors" placeholder for sensor-less rooms
-- [x] 4.5 Responsive: 1 col mobile / 2 tablet / 3 desktop
-- [x] 4.6 Theme-correct chart colors in both modes
-- [x] 4.7 Collapsible toggle works
+- [x] 4.3 Panel renders above room cards with room names — aadcac8
+- [x] 4.4 24h charts show data; "No sensors" placeholder for sensor-less rooms — aadcac8
+- [x] 4.5 Responsive: 1 col mobile / 2 tablet / 3 desktop — aadcac8
+- [x] 4.6 Theme-correct chart colors in both modes — aadcac8
+- [x] 4.7 Collapsible toggle works — aadcac8
 
 ### Phase 5: Pie Chart KPI Card
 
 #### Automated
-- [ ] 5.1 `npm run typecheck` passes
-- [ ] 5.2 `npm run lint` passes
-- [ ] 5.3 `npm run build` succeeds (full production build)
+- [x] 5.1 `npm run typecheck` passes
+- [x] 5.2 `npm run lint` passes
+- [x] 5.3 `npm run build` succeeds (full production build)
 
 #### Manual
-- [ ] 5.4 Donut chart renders with correct room distribution
-- [ ] 5.5 Tooltip: room name + device count on hover
-- [ ] 5.6 Chart segments use distinct colors
-- [ ] 5.7 KPI row responsive on mobile and lg viewports
-- [ ] 5.8 Chart colors adapt in both modes
+- [x] 5.4 Donut chart renders with correct room distribution
+- [x] 5.5 Tooltip: room name + device count on hover
+- [x] 5.6 Chart segments use distinct colors
+- [x] 5.7 KPI row responsive on mobile and lg viewports
+- [x] 5.8 Chart colors adapt in both modes

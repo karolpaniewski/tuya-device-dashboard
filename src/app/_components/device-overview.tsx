@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useSiteContext } from "~/components/site-context";
 import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
@@ -34,6 +35,14 @@ import { RoomSidebar } from "./room-sidebar";
 import { RoomTemperaturePanel } from "./room-temperature-panel";
 
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
+
+const CHART_COLORS = [
+	"var(--color-chart-1)",
+	"var(--color-chart-2)",
+	"var(--color-chart-3)",
+	"var(--color-chart-4)",
+	"var(--color-chart-5)",
+];
 type DeviceItem = RoomItem["devices"][number];
 
 function matchDevice(
@@ -279,6 +288,11 @@ export function DeviceOverview() {
 	const rooms =
 		data?.rooms.map((r) => ({ roomId: r.roomId, roomName: r.roomName })) ?? [];
 
+	const roomDeviceCounts =
+		data?.rooms
+			.map((r) => ({ name: r.roomName, count: r.devices.length }))
+			.filter((r) => r.count > 0) ?? [];
+
 	// Use localRooms/localUnassigned (DnD-aware) as base for filtering
 	const filteredRooms = localRooms
 		.filter((room) => !roomFilter || room.roomId === roomFilter)
@@ -325,65 +339,115 @@ export function DeviceOverview() {
 	return (
 		<div className="flex flex-col gap-8">
 			{/* KPI Row */}
-			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-				{isLoading
-					? Array.from({ length: 4 }).map((_, i) => (
+			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+				{isLoading ? (
+					Array.from({ length: 5 }).map((_, i) => (
+						<div
+							className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+							key={i}
+						>
+							<Skeleton className="mb-2 h-3 w-16" />
+							<Skeleton className="mb-1 h-7 w-12" />
+							<Skeleton className="h-3 w-24" />
+						</div>
+					))
+				) : data ? (
+					<>
+						{(
+							[
+								{
+									icon: <Wifi className="h-4 w-4" />,
+									label: "Devices",
+									sub: `${onlineCount} online · ${offlineCount} offline`,
+									value: totalDevices,
+								},
+								{
+									icon: <Thermometer className="h-4 w-4" />,
+									label: "Avg Temp",
+									sub: "online sensors",
+									value: avgTempC !== null ? `${avgTempC.toFixed(1)}°C` : "—",
+								},
+								{
+									icon: <CheckCircle2 className="h-4 w-4 text-green-400" />,
+									label: "Rooms OK",
+									sub: `of ${roomCount} rooms`,
+									value: roomsOk,
+								},
+								{
+									icon: <Flame className="h-4 w-4 text-orange-400" />,
+									label: "Alerts",
+									sub: `${roomsTooHot} too hot · ${roomsTooCold} too cold`,
+									value: roomsTooHot + roomsTooCold,
+								},
+							] as const
+						).map(({ label, value, sub, icon }) => (
 							<div
 								className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
-								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-								key={i}
+								key={label}
 							>
-								<Skeleton className="mb-2 h-3 w-16" />
-								<Skeleton className="mb-1 h-7 w-12" />
-								<Skeleton className="h-3 w-24" />
-							</div>
-						))
-					: data
-						? (
-								[
-									{
-										icon: <Wifi className="h-4 w-4" />,
-										label: "Devices",
-										sub: `${onlineCount} online · ${offlineCount} offline`,
-										value: totalDevices,
-									},
-									{
-										icon: <Thermometer className="h-4 w-4" />,
-										label: "Avg Temp",
-										sub: "online sensors",
-										value: avgTempC !== null ? `${avgTempC.toFixed(1)}°C` : "—",
-									},
-									{
-										icon: <CheckCircle2 className="h-4 w-4 text-green-400" />,
-										label: "Rooms OK",
-										sub: `of ${roomCount} rooms`,
-										value: roomsOk,
-									},
-									{
-										icon: <Flame className="h-4 w-4 text-orange-400" />,
-										label: "Alerts",
-										sub: `${roomsTooHot} too hot · ${roomsTooCold} too cold`,
-										value: roomsTooHot + roomsTooCold,
-									},
-								] as const
-							).map(({ label, value, sub, icon }) => (
-								<div
-									className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
-									key={label}
-								>
-									<div className="mb-1 flex items-center gap-2 text-[var(--s-text-muted)] text-xs">
-										{icon}
-										{label}
-									</div>
-									<div className="font-semibold text-2xl text-foreground">
-										{value}
-									</div>
-									<div className="mt-0.5 text-[var(--s-text-dim)] text-xs">
-										{sub}
-									</div>
+								<div className="mb-1 flex items-center gap-2 text-[var(--s-text-muted)] text-xs">
+									{icon}
+									{label}
 								</div>
-							))
-						: null}
+								<div className="font-semibold text-2xl text-foreground">
+									{value}
+								</div>
+								<div className="mt-0.5 text-[var(--s-text-dim)] text-xs">
+									{sub}
+								</div>
+							</div>
+						))}
+						{/* 5th KPI card — donut chart by room */}
+						<div className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]">
+							<div className="mb-1 text-[var(--s-text-muted)] text-xs">
+								By Room
+							</div>
+							{roomDeviceCounts.length > 0 ? (
+								<ResponsiveContainer height={80} width="100%">
+									<PieChart>
+										<Pie
+											cx="50%"
+											cy="50%"
+											data={roomDeviceCounts}
+											dataKey="count"
+											innerRadius={24}
+											nameKey="name"
+											outerRadius={36}
+										>
+											{roomDeviceCounts.map((_, i) => (
+												<Cell
+													// biome-ignore lint/suspicious/noArrayIndexKey: chart segment index
+													key={i}
+													style={{
+														fill: CHART_COLORS[i % CHART_COLORS.length],
+													}}
+												/>
+											))}
+										</Pie>
+										<Tooltip
+											contentStyle={{
+												background: "var(--popover)",
+												border: "1px solid var(--border)",
+												borderRadius: "8px",
+												color: "var(--popover-foreground)",
+												fontSize: 12,
+											}}
+											formatter={(val: unknown, name: unknown) => [
+												`${val} devices`,
+												String(name),
+											]}
+										/>
+									</PieChart>
+								</ResponsiveContainer>
+							) : (
+								<div className="flex h-20 items-center justify-center text-[var(--s-text-dim)] text-xs">
+									No rooms
+								</div>
+							)}
+						</div>
+					</>
+				) : null}
 			</div>
 
 			{/* Temperature Overview Panel */}
