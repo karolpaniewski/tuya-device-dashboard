@@ -1,41 +1,41 @@
 {
-  "version": "7",
-  "dialect": "sqlite",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "6",
-      "when": 1781003889333,
-      "tag": "0000_mushy_wasp",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1781166831491,
-      "tag": "0001_familiar_baron_zemo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1781171221197,
-      "tag": "0002_fine_mongoose",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1781185010151,
-      "tag": "0003_broad_kingpin",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1781256463784,
-      "tag": "0004_light_penance",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "sqlite",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "6",
+			"when": 1781003889333,
+			"tag": "0000_mushy_wasp",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "6",
+			"when": 1781166831491,
+			"tag": "0001_familiar_baron_zemo",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "6",
+			"when": 1781171221197,
+			"tag": "0002_fine_mongoose",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "6",
+			"when": 1781185010151,
+			"tag": "0003_broad_kingpin",
+			"breakpoints": true
+		},
+		{
+			"idx": 4,
+			"version": "6",
+			"when": 1781256463784,
+			"tag": "0004_light_penance",
+			"breakpoints": true
+		}
+	]
 }

@@ -8,6 +8,7 @@ import {
 	devices,
 	rooms,
 	roomThresholds,
+	sites,
 } from "~/server/db/schema";
 
 export const roomRouter = createTRPCRouter({
@@ -44,6 +45,15 @@ export const roomRouter = createTRPCRouter({
 			z.object({ name: z.string().min(1).max(255), siteId: z.string().min(1) }),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const [site] = await ctx.db
+				.select({ id: sites.id })
+				.from(sites)
+				.where(eq(sites.id, input.siteId));
+
+			if (!site) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Site not found" });
+			}
+
 			const [created] = await ctx.db
 				.insert(rooms)
 				.values({ name: input.name, siteId: input.siteId })

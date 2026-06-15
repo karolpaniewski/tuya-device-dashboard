@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useSiteContext } from "~/components/site-context";
+import { ThemeToggle } from "~/components/theme-toggle";
 import {
 	Select,
 	SelectContent,
@@ -20,9 +21,11 @@ export function PageShell({ children, rightContent, title }: PageShellProps) {
 	const { activeSiteId, sites, setActiveSite } = useSiteContext();
 
 	return (
-		<main className="min-h-screen px-4 py-8 text-white sm:px-6">
+		<main className="min-h-screen px-4 py-8 text-foreground sm:px-6">
 			<div className="mb-8 flex items-center justify-between">
-				<h1 className="font-bold text-white text-xl sm:text-2xl">{title}</h1>
+				<h1 className="font-bold text-foreground text-xl sm:text-2xl">
+					{title}
+				</h1>
 				<div className="flex items-center gap-3">
 					{sites.length > 1 && (
 						<Select
@@ -44,6 +47,7 @@ export function PageShell({ children, rightContent, title }: PageShellProps) {
 							</SelectContent>
 						</Select>
 					)}
+					<ThemeToggle />
 					{rightContent}
 				</div>
 			</div>

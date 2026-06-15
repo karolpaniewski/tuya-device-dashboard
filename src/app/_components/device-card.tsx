@@ -161,7 +161,7 @@ export function DeviceCard({
 			<div className="flex items-center justify-between gap-1 text-sm">
 				<span
 					className={cn(
-						"text-xs font-medium",
+						"font-medium text-xs",
 						device.isOnline ? "text-emerald-400" : "text-gray-600",
 					)}
 				>

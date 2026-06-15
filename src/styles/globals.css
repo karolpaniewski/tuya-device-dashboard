@@ -86,6 +86,9 @@
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.708 0 0);
+	--page-bg: oklch(0.97 0 0);
+	--blob-1: rgb(37 99 235 / 0.05);
+	--blob-2: rgb(147 51 234 / 0.04);
 }
 
 .dark {
@@ -120,6 +123,9 @@
 	--sidebar-accent-foreground: oklch(0.985 0 0);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.556 0 0);
+	--page-bg: oklch(0.145 0 0);
+	--blob-1: rgb(37 99 235 / 0.1);
+	--blob-2: rgb(147 51 234 / 0.08);
 }
 
 @layer base {

@@ -154,9 +154,7 @@ export const deviceRouter = createTRPCRouter({
 					await tx
 						.update(devices)
 						.set({ sortOrder, updatedAt: new Date() })
-						.where(
-							and(eq(devices.id, id), eq(devices.siteId, input.siteId)),
-						);
+						.where(and(eq(devices.id, id), eq(devices.siteId, input.siteId)));
 				}
 			});
 			return { success: true as const };

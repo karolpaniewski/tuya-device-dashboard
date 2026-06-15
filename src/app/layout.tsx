@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
+import { ThemeProvider } from "next-themes";
 import { SiteProvider } from "~/components/site-context";
 import { Toaster } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -22,15 +23,29 @@ export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<html className={`${geist.variable} dark`} lang="en">
+		<html className={geist.variable} lang="en" suppressHydrationWarning>
+			<head>
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `(function(){try{var t=localStorage.getItem('theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))}catch(e){}})()`,
+					}}
+				/>
+			</head>
 			<body>
-				<div className="fixed inset-0 -z-10 overflow-hidden bg-gray-950">
-					<div className="absolute -top-40 -left-20 h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-3xl" />
-					<div className="absolute -right-20 -bottom-40 h-[500px] w-[500px] rounded-full bg-purple-600/8 blur-3xl" />
+				<div className="fixed inset-0 -z-10 overflow-hidden bg-[var(--page-bg)]">
+					<div className="absolute -top-40 -left-20 h-[500px] w-[500px] rounded-full bg-[var(--blob-1)] blur-3xl" />
+					<div className="absolute -right-20 -bottom-40 h-[500px] w-[500px] rounded-full bg-[var(--blob-2)] blur-3xl" />
 				</div>
 				<TRPCReactProvider>
 					<SiteProvider>
-						<SessionProvider>{children}</SessionProvider>
+						<ThemeProvider
+							attribute="class"
+							defaultTheme="dark"
+							disableTransitionOnChange
+							storageKey="theme"
+						>
+							<SessionProvider>{children}</SessionProvider>
+						</ThemeProvider>
 					</SiteProvider>
 				</TRPCReactProvider>
 				<Toaster position="bottom-right" richColors />

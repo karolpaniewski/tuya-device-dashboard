@@ -45,7 +45,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-11  | automation-rules       | create temperature+time rules linking sensor to valve; system maintains comfort temp in office hours, economy mode outside | S-01, S-04 | PRD §Non-Goals (deferred v2) | shaped |
 | S-12  | automation-history     | view log of automation rule executions (what fired, when, result)                              | S-11                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-13  | multi-site             | dashboard supports multiple office locations, each with their own device/room tree              | F-01, F-02               | PRD §Non-Goals (deferred v2)      | done     |
-| S-15  | dashboard-redesign     | KPI summary row, inline sparkline charts per room, sidebar navigation, tabbed setup (Rooms/Devices/Automations/Sites), sortable device table | S-01, S-05, S-09, S-14 | user-requested v2 | planned |
+| S-15  | dashboard-redesign     | KPI summary row, inline sparkline charts per room, sidebar navigation, tabbed setup (Rooms/Devices/Automations/Sites), sortable device table | S-01, S-05, S-09, S-14 | user-requested v2 | done    |
 | S-16  | device-dnd-modal       | drag-and-drop devices to reorder within a room or move between rooms (persisted); click any device card to open management modal with setpoint, rename, room, history chart, humidity | S-01, S-09, S-15 | user-requested v2 | done |
 
 ## Streams
@@ -331,3 +331,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-04       | valve-setpoint-control | 2026-06-11  |
 | S-09       | temperature-history    | 2026-06-11  |
 | S-06       | cicd-pipeline          | 2026-06-12  |
+| S-15       | dashboard-redesign     | 2026-06-13  |
+| S-16       | device-dnd-modal       | 2026-06-14  |

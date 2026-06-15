@@ -35,6 +35,18 @@
 			}
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["src/app/layout.tsx"],
+			"linter": {
+				"rules": {
+					"security": {
+						"noDangerouslySetInnerHtml": "off"
+					}
+				}
+			}
+		}
+	],
 	"html": {
 		"formatter": {
 			"enabled": true

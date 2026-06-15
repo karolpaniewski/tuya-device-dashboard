@@ -171,30 +171,36 @@ export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 				)}
 			</ul>
 
-			<form
-				className="mt-4 flex gap-2"
-				onSubmit={(e) => {
-					e.preventDefault();
-					const trimmed = newName.trim();
-					if (trimmed) {
-						setError(null);
-						createMutation.mutate({ name: trimmed, siteId: activeSiteId });
-					}
-				}}
-			>
-				<Input
-					className="flex-1 text-sm"
-					onChange={(e) => setNewName(e.target.value)}
-					placeholder="New room name"
-					value={newName}
-				/>
-				<Button
-					disabled={createMutation.isPending || !newName.trim()}
-					type="submit"
+			{activeSiteId === "all" ? (
+				<p className="mt-4 text-gray-400 text-sm">
+					Select a specific site to add a room.
+				</p>
+			) : (
+				<form
+					className="mt-4 flex gap-2"
+					onSubmit={(e) => {
+						e.preventDefault();
+						const trimmed = newName.trim();
+						if (trimmed) {
+							setError(null);
+							createMutation.mutate({ name: trimmed, siteId: activeSiteId });
+						}
+					}}
 				>
-					{createMutation.isPending ? "Adding…" : "Add"}
-				</Button>
-			</form>
+					<Input
+						className="flex-1 text-sm"
+						onChange={(e) => setNewName(e.target.value)}
+						placeholder="New room name"
+						value={newName}
+					/>
+					<Button
+						disabled={createMutation.isPending || !newName.trim()}
+						type="submit"
+					>
+						{createMutation.isPending ? "Adding…" : "Add"}
+					</Button>
+				</form>
+			)}
 		</section>
 	);
 }

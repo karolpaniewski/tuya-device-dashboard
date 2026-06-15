@@ -109,7 +109,11 @@ async function connectState(
 			err,
 		);
 		// Abort any in-flight connect so stale event listeners don't fire.
-		try { state.tuyaGateway.disconnect(); } catch { /* ignore */ }
+		try {
+			state.tuyaGateway.disconnect();
+		} catch {
+			/* ignore */
+		}
 		// Retry after delay
 		if (state.reconnectTimer) clearTimeout(state.reconnectTimer);
 		state.reconnectTimer = setTimeout(() => {

@@ -37,12 +37,8 @@ interface Props {
 
 export function DeviceModal({ device, rooms, utils, onClose }: Props) {
 	return (
-		<Dialog onOpenChange={(isOpen) => !isOpen && onClose()} defaultOpen>
-			<DeviceModalContent
-				device={device}
-				rooms={rooms}
-				utils={utils}
-			/>
+		<Dialog defaultOpen onOpenChange={(isOpen) => !isOpen && onClose()}>
+			<DeviceModalContent device={device} rooms={rooms} utils={utils} />
 		</Dialog>
 	);
 }
@@ -192,7 +188,9 @@ function DeviceModalContent({
 										Set temperature
 									</p>
 									<span className="font-medium text-sm text-white">
-										{setpointInput ? `${Number(setpointInput).toFixed(1)} °C` : "—"}
+										{setpointInput
+											? `${Number(setpointInput).toFixed(1)} °C`
+											: "—"}
 									</span>
 								</div>
 								<div className="flex gap-3">
