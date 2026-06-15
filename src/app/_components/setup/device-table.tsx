@@ -1,6 +1,6 @@
 "use client";
 
-import { Wifi } from "lucide-react";
+import { Gauge, Plug, Thermometer, Wifi } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -27,6 +27,12 @@ const TYPE_BADGE: Record<string, string> = {
 	valve: "bg-orange-600 text-orange-100",
 	plug: "bg-gray-600 text-gray-100",
 };
+
+const TYPE_ICON = {
+	sensor: Thermometer,
+	valve: Gauge,
+	plug: Plug,
+} as const;
 
 const PAGE_SIZE = 20;
 
@@ -156,6 +162,11 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 												"bg-gray-600 text-gray-100",
 										)}
 									>
+										{(() => {
+											const Icon =
+												TYPE_ICON[device.deviceType as keyof typeof TYPE_ICON];
+											return Icon ? <Icon className="shrink-0" /> : null;
+										})()}
 										{device.deviceType}
 									</Badge>
 								</td>

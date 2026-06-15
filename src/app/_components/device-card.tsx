@@ -1,5 +1,6 @@
 "use client";
 
+import { Gauge, Plug, Thermometer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
@@ -15,6 +16,12 @@ const TYPE_BADGE: Record<string, string> = {
 	valve: "bg-orange-600 text-orange-100",
 	plug: "bg-gray-600 text-gray-100",
 };
+
+const TYPE_ICON = {
+	sensor: Thermometer,
+	valve: Gauge,
+	plug: Plug,
+} as const;
 
 function SetpointControl({
 	deviceId,
@@ -92,12 +99,14 @@ export function DeviceCard({
 	const supportsSetpoint =
 		device.deviceType === "valve" && device.setpointC !== null;
 
+	const BgIcon = TYPE_ICON[device.deviceType as keyof typeof TYPE_ICON] ?? null;
+
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: card contains nested interactive controls (SetpointControl), preventing use of a <button> wrapper
 		// biome-ignore lint/a11y/useKeyWithClickEvents: supplementary action; primary keyboard interaction is via drag handle
 		<div
 			className={cn(
-				"fade-in slide-in-from-bottom-2 flex animate-in cursor-pointer flex-col gap-2 rounded-xl border p-4 transition-all duration-300",
+				"fade-in slide-in-from-bottom-2 relative flex animate-in cursor-pointer flex-col gap-2 overflow-hidden rounded-xl border p-4 transition-all duration-300",
 				device.isOnline
 					? "border-[var(--s-border-card)] bg-[var(--s-bg-card)] shadow-[var(--s-shadow)] hover:border-[var(--s-border-card-hov)] hover:bg-[var(--s-bg-card-hov)]"
 					: "border-[var(--s-border-alt)] bg-[var(--s-bg-off)] opacity-50",
@@ -106,7 +115,23 @@ export function DeviceCard({
 			role="button"
 			tabIndex={0}
 		>
-			<div className="flex items-center justify-between gap-2">
+			{BgIcon && (
+				<BgIcon
+					aria-hidden="true"
+					size={100}
+					strokeWidth={1}
+					style={{
+						position: "absolute",
+						right: "1.625rem",
+						top: "50%",
+						transform: "translateY(-50%)",
+						opacity: 0.15,
+						pointerEvents: "none",
+					}}
+				/>
+			)}
+
+			<div className="relative flex items-center justify-between gap-2">
 				<div className="flex min-w-0 items-center gap-2">
 					<span
 						className={cn(
@@ -135,11 +160,15 @@ export function DeviceCard({
 							: "bg-gray-700 text-gray-400",
 					)}
 				>
+					{(() => {
+						const Icon = TYPE_ICON[device.deviceType as keyof typeof TYPE_ICON];
+						return Icon ? <Icon className="shrink-0" /> : null;
+					})()}
 					{device.deviceType}
 				</Badge>
 			</div>
 
-			<div className="flex items-center justify-between">
+			<div className="relative flex items-center justify-between">
 				<div
 					className={cn(
 						"font-bold text-2xl",
@@ -160,7 +189,7 @@ export function DeviceCard({
 				)}
 			</div>
 
-			<div className="flex items-center justify-between gap-1 text-sm">
+			<div className="relative flex items-center justify-between gap-1 text-sm">
 				<span
 					className={cn(
 						"font-medium text-xs",

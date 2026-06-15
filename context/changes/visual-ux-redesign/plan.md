@@ -396,24 +396,24 @@ Add a 5th KPI card in `device-overview.tsx` containing a donut chart showing dev
 ### Phase 2: Light Mode Color Audit
 
 #### Automated
-- [x] 2.1 `npm run typecheck` passes
-- [x] 2.2 `npm run lint` passes
+- [x] 2.1 `npm run typecheck` passes — d5c61f6
+- [x] 2.2 `npm run lint` passes — d5c61f6
 
 #### Manual
-- [x] 2.3 Light mode: all text legible, cards white with gray border
-- [x] 2.4 Dark mode: appearance unchanged from pre-S-17
+- [x] 2.3 Light mode: all text legible, cards white with gray border — d5c61f6
+- [x] 2.4 Dark mode: appearance unchanged from pre-S-17 — d5c61f6
 
 ### Phase 3: Device Type Icons
 
 #### Automated
-- [ ] 3.1 `npm run typecheck` passes
-- [ ] 3.2 `npm run lint` passes
+- [x] 3.1 `npm run typecheck` passes
+- [x] 3.2 `npm run lint` passes
 
 #### Manual
-- [ ] 3.3 Correct icon per device type in DeviceCard badge
-- [ ] 3.4 Icons visible in both modes
-- [ ] 3.5 Device table type column shows icon
-- [ ] 3.6 No layout shift on device cards
+- [x] 3.3 Correct icon per device type in DeviceCard badge
+- [x] 3.4 Icons visible in both modes
+- [x] 3.5 Device table type column shows icon
+- [x] 3.6 No layout shift on device cards
 
 ### Phase 4: Temperature Overview Panel
 
