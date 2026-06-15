@@ -31,6 +31,7 @@ import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
 import { RoomGroup } from "./room-group";
 import { RoomSidebar } from "./room-sidebar";
+import { RoomTemperaturePanel } from "./room-temperature-panel";
 
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
 type DeviceItem = RoomItem["devices"][number];
@@ -384,6 +385,11 @@ export function DeviceOverview() {
 							))
 						: null}
 			</div>
+
+			{/* Temperature Overview Panel */}
+			{!isLoading && data && data.rooms.length > 0 && (
+				<RoomTemperaturePanel rooms={data.rooms} />
+			)}
 
 			{/* Loading skeleton grid */}
 			{isLoading && (

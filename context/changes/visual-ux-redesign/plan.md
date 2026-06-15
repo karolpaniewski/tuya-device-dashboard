@@ -406,27 +406,27 @@ Add a 5th KPI card in `device-overview.tsx` containing a donut chart showing dev
 ### Phase 3: Device Type Icons
 
 #### Automated
-- [x] 3.1 `npm run typecheck` passes
-- [x] 3.2 `npm run lint` passes
+- [x] 3.1 `npm run typecheck` passes — db9b87e
+- [x] 3.2 `npm run lint` passes — db9b87e
 
 #### Manual
-- [x] 3.3 Correct icon per device type in DeviceCard badge
-- [x] 3.4 Icons visible in both modes
-- [x] 3.5 Device table type column shows icon
-- [x] 3.6 No layout shift on device cards
+- [x] 3.3 Correct icon per device type in DeviceCard badge — db9b87e
+- [x] 3.4 Icons visible in both modes — db9b87e
+- [x] 3.5 Device table type column shows icon — db9b87e
+- [x] 3.6 No layout shift on device cards — db9b87e
 
 ### Phase 4: Temperature Overview Panel
 
 #### Automated
-- [ ] 4.1 `npm run typecheck` passes
-- [ ] 4.2 `npm run lint` passes
+- [x] 4.1 `npm run typecheck` passes
+- [x] 4.2 `npm run lint` passes
 
 #### Manual
-- [ ] 4.3 Panel renders above room cards with room names
-- [ ] 4.4 24h charts show data; "No sensors" placeholder for sensor-less rooms
-- [ ] 4.5 Responsive: 1 col mobile / 2 tablet / 3 desktop
-- [ ] 4.6 Theme-correct chart colors in both modes
-- [ ] 4.7 Collapsible toggle works
+- [x] 4.3 Panel renders above room cards with room names
+- [x] 4.4 24h charts show data; "No sensors" placeholder for sensor-less rooms
+- [x] 4.5 Responsive: 1 col mobile / 2 tablet / 3 desktop
+- [x] 4.6 Theme-correct chart colors in both modes
+- [x] 4.7 Collapsible toggle works
 
 ### Phase 5: Pie Chart KPI Card
 
