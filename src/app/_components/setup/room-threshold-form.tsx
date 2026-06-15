@@ -60,7 +60,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 
 	return (
 		<form
-			className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm"
+			className="flex flex-col gap-3 rounded-xl border border-[var(--s-border)] bg-[var(--s-bg-alt)] p-3"
 			onSubmit={(e) => {
 				e.preventDefault();
 				const minVal = parseFloat(min);
@@ -81,7 +81,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 		>
 			<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-4">
 				<label
-					className="flex flex-col gap-1 text-sm text-white"
+					className="flex flex-col gap-1 text-foreground text-sm"
 					htmlFor="threshold-min"
 				>
 					Min °C
@@ -95,7 +95,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 					/>
 				</label>
 				<label
-					className="flex flex-col gap-1 text-sm text-white"
+					className="flex flex-col gap-1 text-foreground text-sm"
 					htmlFor="threshold-max"
 				>
 					Max °C
@@ -109,7 +109,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 					/>
 				</label>
 				<label
-					className="flex flex-col gap-1 text-sm text-white"
+					className="flex flex-col gap-1 text-foreground text-sm"
 					htmlFor="threshold-gap"
 				>
 					Anomaly gap °C

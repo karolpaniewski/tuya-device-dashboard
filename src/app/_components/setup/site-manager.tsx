@@ -68,7 +68,7 @@ export function SiteManager({ utils }: Props) {
 
 	return (
 		<section>
-			<h2 className="mb-4 font-semibold text-lg text-white">Sites</h2>
+			<h2 className="mb-4 font-semibold text-foreground text-lg">Sites</h2>
 			{error && (
 				<div className="mb-3">
 					<ErrorMessage message={error} variant="banner" />
@@ -77,7 +77,7 @@ export function SiteManager({ utils }: Props) {
 			<ul className="flex flex-col gap-2">
 				{sites.map((site) => (
 					<li
-						className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm sm:gap-3"
+						className="flex items-center gap-1.5 rounded-xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] px-4 py-3 sm:gap-3"
 						key={site.id}
 					>
 						{editingId === site.id ? (
@@ -93,7 +93,7 @@ export function SiteManager({ utils }: Props) {
 								value={editingName}
 							/>
 						) : (
-							<span className="flex-1 text-white">{site.name}</span>
+							<span className="flex-1 text-foreground">{site.name}</span>
 						)}
 						<Button
 							onClick={() => startRename(site)}
@@ -122,7 +122,7 @@ export function SiteManager({ utils }: Props) {
 				{sites.length === 0 && (
 					<li className="flex flex-col items-center justify-center py-16 text-center">
 						<Globe className="mb-4 text-gray-600" size={48} />
-						<p className="font-semibold text-white">No sites yet</p>
+						<p className="font-semibold text-foreground">No sites yet</p>
 					</li>
 				)}
 			</ul>

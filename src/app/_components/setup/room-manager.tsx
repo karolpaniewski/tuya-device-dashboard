@@ -73,7 +73,7 @@ export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 
 	return (
 		<section>
-			<h2 className="mb-4 font-semibold text-lg text-white">Rooms</h2>
+			<h2 className="mb-4 font-semibold text-foreground text-lg">Rooms</h2>
 			{error && (
 				<div className="mb-3">
 					<ErrorMessage message={error} variant="banner" />
@@ -82,7 +82,7 @@ export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 			<ul className="flex flex-col gap-2">
 				{rooms.map((room) => (
 					<li
-						className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm"
+						className="flex flex-col gap-2 rounded-xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] px-4 py-3"
 						key={room.id}
 					>
 						<div className="flex items-center gap-1.5 sm:gap-3">
@@ -99,9 +99,9 @@ export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 									value={editingName}
 								/>
 							) : (
-								<span className="flex-1 text-white">{room.name}</span>
+								<span className="flex-1 text-foreground">{room.name}</span>
 							)}
-							<span className="rounded bg-gray-700 px-2 py-0.5 text-gray-400 text-xs">
+							<span className="rounded bg-[var(--s-badge-bg)] px-2 py-0.5 text-[var(--s-badge-text)] text-xs">
 								{room.deviceCount}{" "}
 								{room.deviceCount === 1 ? "device" : "devices"}
 							</span>
@@ -163,7 +163,7 @@ export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 				{rooms.length === 0 && (
 					<li className="flex flex-col items-center justify-center py-16 text-center">
 						<Building2 className="mb-4 text-gray-600" size={48} />
-						<p className="font-semibold text-white">No rooms yet</p>
+						<p className="font-semibold text-foreground">No rooms yet</p>
 						<p className="mt-1 max-w-xs text-gray-400 text-sm">
 							Add a room below to start organizing your devices.
 						</p>

@@ -122,10 +122,13 @@ function DeviceModalContent({
 					{device.isOnline ? (
 						<Wifi className="shrink-0 text-green-400" size={14} />
 					) : (
-						<WifiOff className="shrink-0 text-white/30" size={14} />
+						<WifiOff
+							className="shrink-0 text-[var(--s-text-ghost)]"
+							size={14}
+						/>
 					)}
 					<DialogTitle>{device.name}</DialogTitle>
-					<span className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-white/40 text-xs">
+					<span className="rounded bg-[var(--s-bg-dim)] px-1.5 py-0.5 font-mono text-[var(--s-text-dim)] text-xs">
 						{device.deviceType}
 					</span>
 				</div>
@@ -133,7 +136,7 @@ function DeviceModalContent({
 			</DialogHeader>
 
 			<Tabs defaultValue="overview">
-				<div className="border-white/10 border-b px-6">
+				<div className="border-[var(--s-border)] border-b px-6">
 					<TabsList>
 						<TabsTrigger value="overview">Overview</TabsTrigger>
 						<TabsTrigger value="history">History</TabsTrigger>
@@ -184,10 +187,10 @@ function DeviceModalContent({
 						{device.deviceType === "valve" && (
 							<div>
 								<div className="mb-2 flex items-center justify-between">
-									<p className="font-medium text-sm text-white/60">
+									<p className="font-medium text-[var(--s-text-muted)] text-sm">
 										Set temperature
 									</p>
-									<span className="font-medium text-sm text-white">
+									<span className="font-medium text-foreground text-sm">
 										{setpointInput
 											? `${Number(setpointInput).toFixed(1)} °C`
 											: "—"}
@@ -218,9 +221,11 @@ function DeviceModalContent({
 
 						{/* Room assignment */}
 						<div>
-							<p className="mb-2 font-medium text-sm text-white/60">Room</p>
+							<p className="mb-2 font-medium text-[var(--s-text-muted)] text-sm">
+								Room
+							</p>
 							<select
-								className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-40"
+								className="w-full rounded-lg border border-[var(--s-border)] bg-[var(--s-input-bg)] px-3 py-2 text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-[var(--s-input-ring)] disabled:opacity-40"
 								disabled={roomSaving}
 								onChange={(e) => handleRoomChange(e.target.value)}
 								value={device.roomId ?? "unassigned"}
@@ -236,17 +241,19 @@ function DeviceModalContent({
 
 						{/* Rename */}
 						<div>
-							<p className="mb-2 font-medium text-sm text-white/60">Name</p>
+							<p className="mb-2 font-medium text-[var(--s-text-muted)] text-sm">
+								Name
+							</p>
 							<div className="flex gap-2">
 								<input
-									className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/20"
+									className="flex-1 rounded-lg border border-[var(--s-border)] bg-[var(--s-input-bg)] px-3 py-2 text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-[var(--s-input-ring)]"
 									disabled={nameSaving}
 									onChange={(e) => setName(e.target.value)}
 									onKeyDown={(e) => e.key === "Enter" && handleRename()}
 									value={name}
 								/>
 								<button
-									className="rounded-lg border border-white/10 px-4 py-2 text-sm text-white/60 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-40"
+									className="rounded-lg border border-[var(--s-border)] px-4 py-2 text-[var(--s-text-secondary)] text-sm transition-colors hover:bg-[var(--s-bg-alt)] hover:text-[var(--s-text-secondary-hov)] disabled:opacity-40"
 									disabled={nameSaving || name === device.name}
 									onClick={handleRename}
 									type="button"
@@ -266,7 +273,7 @@ function DeviceModalContent({
 
 				<TabsContent value="automations">
 					<DialogBody>
-						<p className="text-center text-sm text-white/40">
+						<p className="text-center text-[var(--s-text-dim)] text-sm">
 							Automation rules are coming in a future update.
 						</p>
 					</DialogBody>
@@ -286,12 +293,12 @@ function ReadingCard({
 	value: string;
 }) {
 	return (
-		<div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-			<div className="mb-1 flex items-center gap-1.5 text-white/40 text-xs">
+		<div className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] px-4 py-3 shadow-[var(--s-shadow)]">
+			<div className="mb-1 flex items-center gap-1.5 text-[var(--s-text-dim)] text-xs">
 				{icon}
 				{label}
 			</div>
-			<p className="font-semibold text-lg text-white">{value}</p>
+			<p className="font-semibold text-foreground text-lg">{value}</p>
 		</div>
 	);
 }
@@ -323,15 +330,17 @@ function TemperatureChart({ tuyaDeviceId }: { tuyaDeviceId: string }) {
 	return (
 		<div>
 			<div className="mb-4 flex items-center justify-between">
-				<p className="font-medium text-sm text-white/60">Temperature history</p>
+				<p className="font-medium text-[var(--s-text-muted)] text-sm">
+					Temperature history
+				</p>
 				<div className="flex gap-1">
 					{(["1h", "24h", "7d"] as const).map((r) => (
 						<button
 							className={cn(
 								"rounded px-2 py-1 text-xs transition-colors",
 								range === r
-									? "bg-white/10 text-white"
-									: "text-white/40 hover:text-white/60",
+									? "bg-[var(--s-bg-dim)] text-foreground"
+									: "text-[var(--s-text-dim)] hover:text-[var(--s-text-muted)]",
 							)}
 							key={r}
 							onClick={() => setRange(r)}
@@ -344,11 +353,11 @@ function TemperatureChart({ tuyaDeviceId }: { tuyaDeviceId: string }) {
 			</div>
 
 			{isLoading ? (
-				<div className="flex h-48 items-center justify-center text-sm text-white/30">
+				<div className="flex h-48 items-center justify-center text-[var(--s-text-dim)] text-sm">
 					Loading…
 				</div>
 			) : chartData.length === 0 ? (
-				<div className="flex h-48 items-center justify-center text-sm text-white/30">
+				<div className="flex h-48 items-center justify-center text-[var(--s-text-dim)] text-sm">
 					No data for this period
 				</div>
 			) : (
@@ -358,29 +367,31 @@ function TemperatureChart({ tuyaDeviceId }: { tuyaDeviceId: string }) {
 						margin={{ bottom: 0, left: 0, right: 8, top: 4 }}
 					>
 						<CartesianGrid
-							stroke="rgba(255,255,255,0.05)"
+							className="text-[var(--s-grid-line)]"
+							stroke="currentColor"
 							strokeDasharray="4 4"
 						/>
 						<XAxis
 							axisLine={false}
 							dataKey="ts"
-							tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }}
+							tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
 							tickFormatter={formatTs}
 							tickLine={false}
 						/>
 						<YAxis
 							axisLine={false}
 							domain={["auto", "auto"]}
-							tick={{ fill: "rgba(255,255,255,0.3)", fontSize: 10 }}
+							tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
 							tickFormatter={(v: number) => `${v}°`}
 							tickLine={false}
 							width={28}
 						/>
 						<Tooltip
 							contentStyle={{
-								background: "rgba(15,15,15,0.95)",
-								border: "1px solid rgba(255,255,255,0.1)",
+								background: "var(--popover)",
+								border: "1px solid var(--border)",
 								borderRadius: "8px",
+								color: "var(--popover-foreground)",
 								fontSize: 12,
 							}}
 							formatter={(val: unknown) => [
@@ -396,7 +407,7 @@ function TemperatureChart({ tuyaDeviceId }: { tuyaDeviceId: string }) {
 							dot={false}
 							isAnimationActive={false}
 							name="Temperature"
-							stroke="#60a5fa"
+							stroke="var(--color-chart-1)"
 							strokeWidth={1.5}
 							type="monotone"
 						/>

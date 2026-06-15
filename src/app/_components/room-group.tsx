@@ -28,7 +28,7 @@ function RoomSparkline({ deviceId }: { deviceId: string }) {
 		ts: new Date(r.recordedAt).getTime(),
 	}));
 	return (
-		<div className="mb-3 rounded-lg border border-white/5 bg-white/[0.02] px-2">
+		<div className="mb-3 rounded-lg border border-[var(--s-border-spark)] bg-[var(--s-bg-spark)] px-2">
 			<ResponsiveContainer height={56} width="100%">
 				<LineChart
 					data={chartData}
@@ -39,7 +39,7 @@ function RoomSparkline({ deviceId }: { deviceId: string }) {
 						dataKey="temperatureC"
 						dot={false}
 						isAnimationActive={false}
-						stroke="#60a5fa"
+						stroke="var(--color-chart-1)"
 						strokeWidth={1.5}
 						type="monotone"
 					/>
@@ -80,7 +80,9 @@ export function RoomGroup({
 		<div
 			className={cn(
 				"grid min-h-[80px] grid-cols-1 gap-4 rounded-xl p-1 transition-colors sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
-				isOver && dndEnabled ? "bg-white/[0.04] ring-1 ring-white/20" : "",
+				isOver && dndEnabled
+					? "bg-[var(--s-bg-dnd)] ring-1 ring-[var(--s-border-dnd)]"
+					: "",
 			)}
 			ref={setNodeRef}
 		>
@@ -113,7 +115,7 @@ export function RoomGroup({
 		<section className="flex flex-col gap-4">
 			<div className="flex items-center justify-between">
 				<h2
-					className={`font-semibold text-xl ${isUnassigned ? "text-gray-400" : "text-white"}`}
+					className={`font-semibold text-xl ${isUnassigned ? "text-[var(--s-text-dim)]" : "text-foreground"}`}
 				>
 					{roomName}
 					<span className="ml-2 font-normal text-gray-500 text-sm">

@@ -384,24 +384,24 @@ Add a 5th KPI card in `device-overview.tsx` containing a donut chart showing dev
 ### Phase 1: Theme Infrastructure
 
 #### Automated
-- [x] 1.1 `npm run typecheck` passes
-- [x] 1.2 `npm run lint` passes
+- [x] 1.1 `npm run typecheck` passes — 45bd54c
+- [x] 1.2 `npm run lint` passes — 45bd54c
 
 #### Manual
-- [x] 1.3 Toggle button visible in header on all pages
-- [x] 1.4 dark → light → dark cycle works
-- [x] 1.5 No FOUC on refresh in light mode
-- [x] 1.6 Background adapts (dark = near-black blobs; light = gray-50 subtle blobs)
+- [x] 1.3 Toggle button visible in header on all pages — 45bd54c
+- [x] 1.4 dark → light → dark cycle works — 45bd54c
+- [x] 1.5 No FOUC on refresh in light mode — 45bd54c
+- [x] 1.6 Background adapts (dark = near-black blobs; light = gray-50 subtle blobs) — 45bd54c
 
 ### Phase 2: Light Mode Color Audit
 
 #### Automated
-- [ ] 2.1 `npm run typecheck` passes
-- [ ] 2.2 `npm run lint` passes
+- [x] 2.1 `npm run typecheck` passes
+- [x] 2.2 `npm run lint` passes
 
 #### Manual
-- [ ] 2.3 Light mode: all text legible, cards white with gray border
-- [ ] 2.4 Dark mode: appearance unchanged from pre-S-17
+- [x] 2.3 Light mode: all text legible, cards white with gray border
+- [x] 2.4 Dark mode: appearance unchanged from pre-S-17
 
 ### Phase 3: Device Type Icons
 

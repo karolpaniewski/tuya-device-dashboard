@@ -58,7 +58,7 @@ function SetpointControl({
 			>
 				−
 			</Button>
-			<span className="w-14 text-center font-semibold text-sm text-white">
+			<span className="w-14 text-center font-semibold text-foreground text-sm">
 				{displayed !== null ? `${displayed}°C` : "—"}
 			</span>
 			<Button
@@ -99,8 +99,8 @@ export function DeviceCard({
 			className={cn(
 				"fade-in slide-in-from-bottom-2 flex animate-in cursor-pointer flex-col gap-2 rounded-xl border p-4 transition-all duration-300",
 				device.isOnline
-					? "border-white/20 bg-white/[0.13] hover:border-white/30 hover:bg-white/[0.18]"
-					: "border-white/10 bg-white/[0.04] opacity-50",
+					? "border-[var(--s-border-card)] bg-[var(--s-bg-card)] shadow-[var(--s-shadow)] hover:border-[var(--s-border-card-hov)] hover:bg-[var(--s-bg-card-hov)]"
+					: "border-[var(--s-border-alt)] bg-[var(--s-bg-off)] opacity-50",
 			)}
 			onClick={onClick}
 			role="button"
@@ -113,13 +113,15 @@ export function DeviceCard({
 							"mt-px h-2 w-2 shrink-0 rounded-full",
 							device.isOnline
 								? "animate-pulse bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.5)]"
-								: "bg-gray-600",
+								: "bg-[var(--s-dot-offline)]",
 						)}
 					/>
 					<span
 						className={cn(
 							"truncate font-semibold",
-							device.isOnline ? "text-white" : "text-gray-400",
+							device.isOnline
+								? "text-foreground"
+								: "text-[var(--s-text-muted)]",
 						)}
 					>
 						{device.name}
@@ -141,7 +143,7 @@ export function DeviceCard({
 				<div
 					className={cn(
 						"font-bold text-2xl",
-						device.isOnline ? "text-white" : "text-gray-500",
+						device.isOnline ? "text-foreground" : "text-gray-500",
 					)}
 				>
 					{device.temperatureC !== null ? `${device.temperatureC}°C` : "—"}
@@ -169,11 +171,11 @@ export function DeviceCard({
 				</span>
 				<div className="flex items-center gap-1">
 					{device.isStale && (
-						<span className="rounded border border-yellow-700/40 bg-yellow-900/40 px-1 text-xs text-yellow-300">
+						<span className="rounded border border-[var(--s-stale-border)] bg-[var(--s-stale-bg)] px-1 text-[var(--s-stale-text)] text-xs">
 							Outdated
 						</span>
 					)}
-					<span className="text-gray-500 text-xs">
+					<span className="text-[var(--s-text-secondary)] text-xs">
 						{secsAgo !== null ? `${secsAgo}s ago` : "—"}
 					</span>
 				</div>

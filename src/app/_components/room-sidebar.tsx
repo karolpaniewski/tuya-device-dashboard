@@ -31,8 +31,8 @@ export function RoomSidebar({
 				className={cn(
 					"flex cursor-pointer items-center rounded-lg px-3 py-2 text-left text-sm transition-colors",
 					activeRoomId === null
-						? "bg-white/10 text-white"
-						: "text-white/60 hover:bg-white/5 hover:text-white/80",
+						? "bg-[var(--s-bg-dim)] text-foreground"
+						: "text-[var(--s-text-secondary)] hover:bg-[var(--s-bg-dim)] hover:text-[var(--s-text-secondary-hov)]",
 				)}
 				onClick={() => onSelect(null)}
 				type="button"
@@ -44,8 +44,8 @@ export function RoomSidebar({
 					className={cn(
 						"flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
 						activeRoomId === room.roomId
-							? "bg-white/10 text-white"
-							: "text-white/60 hover:bg-white/5 hover:text-white/80",
+							? "bg-[var(--s-bg-dim)] text-foreground"
+							: "text-[var(--s-text-secondary)] hover:bg-[var(--s-bg-dim)] hover:text-[var(--s-text-secondary-hov)]",
 					)}
 					key={room.roomId}
 					onClick={() => onSelect(room.roomId)}
@@ -54,7 +54,7 @@ export function RoomSidebar({
 					<span
 						className={cn(
 							"h-2 w-2 shrink-0 rounded-full",
-							room.badge ? BADGE_DOT[room.badge] : "bg-white/20",
+							room.badge ? BADGE_DOT[room.badge] : "bg-[var(--s-sidebar-dot)]",
 						)}
 					/>
 					<span className="truncate">{room.roomName}</span>

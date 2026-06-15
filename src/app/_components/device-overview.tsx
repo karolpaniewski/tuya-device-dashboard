@@ -72,7 +72,7 @@ function SiteSection({
 }) {
 	return (
 		<section className="flex flex-col gap-4">
-			<h2 className="font-bold text-lg text-white">{siteName}</h2>
+			<h2 className="font-bold text-foreground text-lg">{siteName}</h2>
 			{children}
 		</section>
 	);
@@ -328,7 +328,7 @@ export function DeviceOverview() {
 				{isLoading
 					? Array.from({ length: 4 }).map((_, i) => (
 							<div
-								className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px]"
+								className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
 								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
 								key={i}
 							>
@@ -367,17 +367,19 @@ export function DeviceOverview() {
 								] as const
 							).map(({ label, value, sub, icon }) => (
 								<div
-									className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px]"
+									className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
 									key={label}
 								>
-									<div className="mb-1 flex items-center gap-2 text-white/50 text-xs">
+									<div className="mb-1 flex items-center gap-2 text-[var(--s-text-muted)] text-xs">
 										{icon}
 										{label}
 									</div>
-									<div className="font-semibold text-2xl text-white">
+									<div className="font-semibold text-2xl text-foreground">
 										{value}
 									</div>
-									<div className="mt-0.5 text-white/40 text-xs">{sub}</div>
+									<div className="mt-0.5 text-[var(--s-text-dim)] text-xs">
+										{sub}
+									</div>
 								</div>
 							))
 						: null}
@@ -388,7 +390,7 @@ export function DeviceOverview() {
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 					{Array.from({ length: 6 }).map((_, i) => (
 						<div
-							className="flex h-32 flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-[2px]"
+							className="flex h-32 flex-col gap-3 rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
 							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
 							key={i}
 						>
@@ -412,7 +414,9 @@ export function DeviceOverview() {
 			{isZeroDevices && (
 				<div className="flex flex-col items-center justify-center py-8 text-center sm:py-16">
 					<Layers className="mb-4 text-gray-600" size={48} />
-					<p className="font-semibold text-white">No devices discovered yet</p>
+					<p className="font-semibold text-foreground">
+						No devices discovered yet
+					</p>
 					<p className="mt-1 max-w-xs text-gray-400 text-sm">
 						The polling worker will surface devices as they respond on the LAN.
 					</p>
@@ -457,7 +461,7 @@ export function DeviceOverview() {
 						{isFilteredEmpty ? (
 							<div className="flex flex-col items-center justify-center py-8 text-center sm:py-16">
 								<Search className="mb-4 text-gray-600" size={48} />
-								<p className="font-semibold text-white">
+								<p className="font-semibold text-foreground">
 									No devices match your filters
 								</p>
 								<p className="mt-1 max-w-xs text-gray-400 text-sm">

@@ -95,7 +95,7 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 		return (
 			<div className="flex flex-col items-center justify-center py-16 text-center">
 				<Wifi className="mb-4 text-gray-600" size={48} />
-				<p className="font-semibold text-white">No devices discovered</p>
+				<p className="font-semibold text-foreground">No devices discovered</p>
 				<p className="mt-1 max-w-xs text-gray-400 text-sm">
 					Devices will appear here once the polling worker finds them on the
 					LAN.
@@ -124,19 +124,19 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 				value={search}
 			/>
 
-			<div className="overflow-hidden rounded-xl border border-white/10">
+			<div className="overflow-hidden rounded-xl border border-[var(--s-border)]">
 				<table className="w-full text-sm">
-					<thead className="border-white/10 border-b bg-white/5">
+					<thead className="border-[var(--s-border)] border-b bg-[var(--s-bg-alt)]">
 						<tr>
 							{COLS.map(({ key, label }) => (
 								<th
-									className="cursor-pointer px-4 py-3 text-left font-medium text-white/60 capitalize hover:text-white/80"
+									className="cursor-pointer px-4 py-3 text-left font-medium text-[var(--s-text-muted)] capitalize hover:text-[var(--s-text-secondary-hov)]"
 									key={key}
 									onClick={() => toggleSort(key)}
 								>
 									{label}
 									{sortBy === key && (
-										<span className="ml-1 text-white/40">
+										<span className="ml-1 text-[var(--s-text-dim)]">
 											{sortDir === "asc" ? "↑" : "↓"}
 										</span>
 									)}
@@ -144,10 +144,10 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 							))}
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-white/5">
+					<tbody className="divide-y divide-[var(--s-divide)]">
 						{paged.map((device) => (
-							<tr className="hover:bg-white/[0.03]" key={device.id}>
-								<td className="px-4 py-3 text-white">{device.name}</td>
+							<tr className="hover:bg-[var(--s-row-hov)]" key={device.id}>
+								<td className="px-4 py-3 text-foreground">{device.name}</td>
 								<td className="px-4 py-3">
 									<Badge
 										className={cn(
@@ -213,7 +213,7 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 					>
 						Prev
 					</Button>
-					<span className="text-white/40 text-xs">
+					<span className="text-[var(--s-text-dim)] text-xs">
 						{page + 1} / {totalPages}
 					</span>
 					<Button
