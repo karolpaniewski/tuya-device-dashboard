@@ -1,7 +1,7 @@
 ---
 id: visual-ux-redesign
 title: S-17 Visual & UX Redesign
-status: implementing
+status: implemented
 created: 2026-06-15
 updated: 2026-06-15
 roadmap_ref: S-17

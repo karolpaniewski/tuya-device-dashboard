@@ -431,13 +431,13 @@ Add a 5th KPI card in `device-overview.tsx` containing a donut chart showing dev
 ### Phase 5: Pie Chart KPI Card
 
 #### Automated
-- [x] 5.1 `npm run typecheck` passes
-- [x] 5.2 `npm run lint` passes
-- [x] 5.3 `npm run build` succeeds (full production build)
+- [x] 5.1 `npm run typecheck` passes — 8de2c9f
+- [x] 5.2 `npm run lint` passes — 8de2c9f
+- [x] 5.3 `npm run build` succeeds (full production build) — 8de2c9f
 
 #### Manual
-- [x] 5.4 Donut chart renders with correct room distribution
-- [x] 5.5 Tooltip: room name + device count on hover
-- [x] 5.6 Chart segments use distinct colors
-- [x] 5.7 KPI row responsive on mobile and lg viewports
-- [x] 5.8 Chart colors adapt in both modes
+- [x] 5.4 Donut chart renders with correct room distribution — 8de2c9f
+- [x] 5.5 Tooltip: room name + device count on hover — 8de2c9f
+- [x] 5.6 Chart segments use distinct colors — 8de2c9f
+- [x] 5.7 KPI row responsive on mobile and lg viewports — 8de2c9f
+- [x] 5.8 Chart colors adapt in both modes — 8de2c9f
