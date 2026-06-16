@@ -530,11 +530,11 @@ Two new tables; no existing data is migrated. The migration is purely additive �
 
 #### Automated
 
-- [x] 6.1 All new tests pass: `npm run test`
-- [x] 6.2 Type checking passes: `npm run typecheck`
-- [x] 6.3 Linting passes: `npm run check`
-- [x] 6.4 CI script passes: `npm run ci` (biome, tsc, and `next build` all pass standalone; `vitest run` is blocked only by the pre-existing, documented, out-of-scope `room.test.ts` failure recorded in `change.md` — accepted per user decision)
+- [x] 6.1 All new tests pass: `npm run test` — e3c886f
+- [x] 6.2 Type checking passes: `npm run typecheck` — e3c886f
+- [x] 6.3 Linting passes: `npm run check` — e3c886f
+- [x] 6.4 CI script passes: `npm run ci` (biome, tsc, and `next build` all pass standalone; `vitest run` is blocked only by the pre-existing, documented, out-of-scope `room.test.ts` failure recorded in `change.md` — accepted per user decision) — e3c886f
 
 #### Manual
 
-- [x] 6.5 All new test names visible in passing list, no skipped tests
+- [x] 6.5 All new test names visible in passing list, no skipped tests — e3c886f

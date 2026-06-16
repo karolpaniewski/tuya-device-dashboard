@@ -1,7 +1,7 @@
 ---
 change_id: automation-rules
 title: Time and temperature automation rules for valve setpoint control
-status: implementing
+status: implemented
 created: 2026-06-12
 updated: 2026-06-16
 archived_at: null
