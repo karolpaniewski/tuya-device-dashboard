@@ -276,3 +276,16 @@ export const automationExecutionLogs = createTable(
 		),
 	],
 );
+
+export const dashboardLayout = createTable("dashboard_layout", (d) => ({
+	// Always the literal string "default" — singleton row, no per-user scoping
+	// (see context/changes/dashboard-personalization/frame.md).
+	id: d.text({ length: 255 }).primaryKey(),
+	// JSON array of widget id strings, e.g. '["kpi-total","kpi-online",...]'
+	widgetOrder: d.text("widget_order").notNull(),
+	// JSON array of hidden widget id strings
+	hiddenWidgets: d.text("hidden_widgets").notNull().default("[]"),
+	// JSON array of room id strings, global order applied within whichever grouping is rendered
+	roomOrder: d.text("room_order").notNull().default("[]"),
+	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+}));

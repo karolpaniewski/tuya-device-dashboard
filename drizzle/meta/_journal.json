@@ -43,6 +43,13 @@
 			"when": 1781594072852,
 			"tag": "0005_fair_carlie_cooper",
 			"breakpoints": true
+		},
+		{
+			"idx": 6,
+			"version": "6",
+			"when": 1781617879089,
+			"tag": "0006_soft_northstar",
+			"breakpoints": true
 		}
 	]
 }
