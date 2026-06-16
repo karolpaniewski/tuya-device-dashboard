@@ -461,21 +461,21 @@ Two new tables; no existing data is migrated. The migration is purely additive �
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly: `npm run db:generate && npm run db:migrate`
-- [x] 1.2 Type checking passes: `npm run typecheck`
+- [x] 1.1 Migration applies cleanly: `npm run db:generate && npm run db:migrate` — 932a7c2
+- [x] 1.2 Type checking passes: `npm run typecheck` — 932a7c2
 
 #### Manual
 
-- [ ] 1.3 Both new tables visible in Drizzle Studio with expected columns
-- [ ] 1.4 Test row insert/read via Drizzle Studio succeeds
+- [x] 1.3 Both new tables visible in Drizzle Studio with expected columns — 932a7c2
+- [x] 1.4 Test row insert/read via Drizzle Studio succeeds — 932a7c2
 
 ### Phase 2: Shared Valve-Control Helper
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run typecheck`
-- [ ] 2.2 Linting passes: `npm run check`
-- [ ] 2.3 Existing setpoint-related tests pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck`
+- [x] 2.2 Linting passes: `npm run check`
+- [x] 2.3 Existing setpoint-related tests pass: `npm run test`
 
 #### Manual
 

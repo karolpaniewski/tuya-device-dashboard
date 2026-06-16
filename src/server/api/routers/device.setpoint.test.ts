@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Mocks are hoisted by Vitest before import resolution.
 vi.mock("~/server/auth", () => ({ auth: vi.fn() }));
-vi.mock("~/server/db", () => ({ db: {} }));
+vi.mock("~/server/db", () => ({ db: { select: vi.fn() } }));
 vi.mock("~/server/lib/tuya", () => ({ getTuyaClient: vi.fn() }));
 vi.mock("~/server/lib/crypto", () => ({
 	decryptLocalKey: vi.fn().mockReturnValue("plaintext-key"),
@@ -12,6 +12,7 @@ vi.mock("~/server/lib/tuya/dp-codes", () => ({
 }));
 
 import { createCaller } from "~/server/api/root";
+import { db } from "~/server/db";
 import { decryptLocalKey } from "~/server/lib/crypto";
 import { getTuyaClient } from "~/server/lib/tuya";
 
@@ -39,34 +40,36 @@ const MOCK_GATEWAY = {
 
 const AUTH_SESSION = { user: { id: "u1", email: "test@test.com" } };
 
-// Builds a db mock where select() is called once for device, once for gateway.
-function makeDb(
+// Queues two db.select() resolutions: device lookup, then gateway lookup —
+// matches the two sequential selects inside sendSetpointCommand.
+function mockDbSelect(
 	deviceRows: unknown[],
 	gatewayRows: unknown[] = [MOCK_GATEWAY],
 ) {
-	return {
-		select: vi
-			.fn()
-			.mockReturnValueOnce({
-				from: vi.fn().mockReturnValue({
-					where: vi.fn().mockResolvedValue(deviceRows),
-				}),
-			})
-			.mockReturnValueOnce({
-				from: vi.fn().mockReturnValue({
-					where: vi.fn().mockResolvedValue(gatewayRows),
-				}),
+	vi.mocked(db.select)
+		.mockReturnValueOnce({
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue(deviceRows),
 			}),
-	};
+		} as never)
+		.mockReturnValueOnce({
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue(gatewayRows),
+			}),
+		} as never);
+}
+
+function makeCaller(session: unknown = AUTH_SESSION) {
+	return createCaller({
+		db: {} as never,
+		session: session as never,
+		headers: new Headers(),
+	});
 }
 
 describe("device.setpoint — auth gate", () => {
 	it("throws UNAUTHORIZED when session null", async () => {
-		const caller = createCaller({
-			db: {} as never,
-			session: null,
-			headers: new Headers(),
-		});
+		const caller = makeCaller(null);
 		await expect(
 			caller.device.setpoint({ deviceId: "dev-1", setpointC: 22 }),
 		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
@@ -78,11 +81,8 @@ describe("device.setpoint — DP validation (BAD_REQUEST)", () => {
 
 	it("throws BAD_REQUEST for unknown productKey", async () => {
 		const device = { ...MOCK_DEVICE_BASE, productKey: "unknown-key" };
-		const caller = createCaller({
-			db: makeDb([device]) as never,
-			session: AUTH_SESSION as never,
-			headers: new Headers(),
-		});
+		mockDbSelect([device]);
+		const caller = makeCaller();
 		await expect(
 			caller.device.setpoint({ deviceId: "dev-1", setpointC: 22 }),
 		).rejects.toMatchObject({ code: "BAD_REQUEST" });
@@ -95,11 +95,8 @@ describe("device.setpoint — DP validation (BAD_REQUEST)", () => {
 		} as never);
 
 		const device = { ...MOCK_DEVICE_BASE, productKey: "unknown-key" };
-		const caller = createCaller({
-			db: makeDb([device]) as never,
-			session: AUTH_SESSION as never,
-			headers: new Headers(),
-		});
+		mockDbSelect([device]);
+		const caller = makeCaller();
 
 		await expect(
 			caller.device.setpoint({ deviceId: "dev-1", setpointC: 22 }),
@@ -110,11 +107,8 @@ describe("device.setpoint — DP validation (BAD_REQUEST)", () => {
 
 	it("throws BAD_REQUEST for null productKey", async () => {
 		const device = { ...MOCK_DEVICE_BASE, productKey: null };
-		const caller = createCaller({
-			db: makeDb([device]) as never,
-			session: AUTH_SESSION as never,
-			headers: new Headers(),
-		});
+		mockDbSelect([device]);
+		const caller = makeCaller();
 		await expect(
 			caller.device.setpoint({ deviceId: "dev-1", setpointC: 22 }),
 		).rejects.toMatchObject({ code: "BAD_REQUEST" });
@@ -124,11 +118,8 @@ describe("device.setpoint — DP validation (BAD_REQUEST)", () => {
 describe("device.setpoint — gateway config (BAD_REQUEST)", () => {
 	it("throws BAD_REQUEST GATEWAY_KEY_NOT_SET when gateway.localKey is null", async () => {
 		const device = { ...MOCK_DEVICE_BASE, productKey: "test-product-key" };
-		const caller = createCaller({
-			db: makeDb([device], [{ ...MOCK_GATEWAY, localKey: null }]) as never,
-			session: AUTH_SESSION as never,
-			headers: new Headers(),
-		});
+		mockDbSelect([device], [{ ...MOCK_GATEWAY, localKey: null }]);
+		const caller = makeCaller();
 		await expect(
 			caller.device.setpoint({ deviceId: "dev-1", setpointC: 22 }),
 		).rejects.toMatchObject({
@@ -148,11 +139,8 @@ describe("device.setpoint — command failure", () => {
 		} as never);
 
 		const device = { ...MOCK_DEVICE_BASE, productKey: "test-product-key" };
-		const caller = createCaller({
-			db: makeDb([device]) as never,
-			session: AUTH_SESSION as never,
-			headers: new Headers(),
-		});
+		mockDbSelect([device]);
+		const caller = makeCaller();
 		await expect(
 			caller.device.setpoint({ deviceId: "dev-1", setpointC: 22 }),
 		).rejects.toMatchObject({ code: "INTERNAL_SERVER_ERROR" });
@@ -170,11 +158,8 @@ describe("device.setpoint — success", () => {
 		} as never);
 
 		const device = { ...MOCK_DEVICE_BASE, productKey: "test-product-key" };
-		const caller = createCaller({
-			db: makeDb([device]) as never,
-			session: AUTH_SESSION as never,
-			headers: new Headers(),
-		});
+		mockDbSelect([device]);
+		const caller = makeCaller();
 		const result = await caller.device.setpoint({
 			deviceId: "dev-1",
 			setpointC: 22,

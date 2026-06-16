@@ -7,16 +7,13 @@ import {
 	deviceRoomAssignments,
 	devices,
 	deviceTemperatureReadings,
-	gateways,
 	rooms,
 	roomThresholds,
 	sites,
 } from "~/server/db/schema";
-import { decryptLocalKey } from "~/server/lib/crypto";
 import { deviceStateStore } from "~/server/lib/device-state-store";
 import { type RoomBadge, scoreRoom } from "~/server/lib/scoring";
-import { getTuyaClient } from "~/server/lib/tuya";
-import { DP_CODE_MAP } from "~/server/lib/tuya/dp-codes";
+import { sendSetpointCommand } from "~/server/lib/valve-control";
 
 const STALE_THRESHOLD_MS = 60_000;
 const DEFAULT_THRESHOLDS = { anomalyGapC: 3, maxTempC: 24, minTempC: 18 };
@@ -26,80 +23,48 @@ export const deviceRouter = createTRPCRouter({
 		.input(
 			z.object({ deviceId: z.string(), setpointC: z.number().min(5).max(35) }),
 		)
-		.mutation(async ({ ctx, input }) => {
-			const [device] = await ctx.db
-				.select()
-				.from(devices)
-				.where(eq(devices.id, input.deviceId));
-
-			if (!device) {
-				throw new TRPCError({ code: "NOT_FOUND", message: "Device not found" });
-			}
-
-			if (device.productKey === null || !(device.productKey in DP_CODE_MAP)) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "UNSUPPORTED_DEVICE",
-				});
-			}
-			// biome-ignore lint/style/noNonNullAssertion: productKey presence in DP_CODE_MAP validated by guard above
-			const dps = DP_CODE_MAP[device.productKey]!;
-
-			if (device.gatewayId === null) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "DEVICE_NOT_PAIRED",
-				});
-			}
-
-			const [gateway] = await ctx.db
-				.select()
-				.from(gateways)
-				.where(eq(gateways.id, device.gatewayId));
-
-			if (!gateway) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Gateway not found",
-				});
-			}
-
-			if (!gateway.localKey) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "GATEWAY_KEY_NOT_SET",
-				});
-			}
-
-			let plainKey: string;
+		.mutation(async ({ input }) => {
 			try {
-				plainKey = decryptLocalKey(gateway.localKey);
-			} catch {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "KEY_DECRYPT_FAILED",
-				});
-			}
-
-			const client = getTuyaClient();
-			try {
-				await client.sendSetpoint(
-					{
-						tuyaGatewayId: gateway.tuyaGatewayId,
-						ipAddress: gateway.ipAddress ?? null,
-						localKey: plainKey,
-					},
-					{
-						dps,
-						set: Math.round(input.setpointC * 10),
-						cid: device.nodeId ?? undefined,
-					},
-				);
-			} catch {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "COMMAND_FAILED",
-				});
+				await sendSetpointCommand(input.deviceId, input.setpointC);
+			} catch (err) {
+				const message = err instanceof Error ? err.message : "COMMAND_FAILED";
+				switch (message) {
+					case "DEVICE_NOT_FOUND":
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: "Device not found",
+						});
+					case "UNSUPPORTED_DEVICE":
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "UNSUPPORTED_DEVICE",
+						});
+					case "DEVICE_NOT_PAIRED":
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "DEVICE_NOT_PAIRED",
+						});
+					case "GATEWAY_NOT_FOUND":
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: "Gateway not found",
+						});
+					case "GATEWAY_KEY_NOT_SET":
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "GATEWAY_KEY_NOT_SET",
+						});
+					case "KEY_DECRYPT_FAILED":
+						throw new TRPCError({
+							code: "INTERNAL_SERVER_ERROR",
+							message: "KEY_DECRYPT_FAILED",
+						});
+					default:
+						throw new TRPCError({
+							code: "INTERNAL_SERVER_ERROR",
+							message: "COMMAND_FAILED",
+						});
+				}
 			}
 
 			return { success: true as const, setpointC: input.setpointC };

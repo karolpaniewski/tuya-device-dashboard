@@ -239,10 +239,7 @@ export const automationRules = createTable(
 	}),
 	(t) => [
 		index("automation_rule_device_idx").on(t.deviceId),
-		check(
-			"automation_rule_hour_check",
-			sql`${t.fireHour} BETWEEN 0 AND 23`,
-		),
+		check("automation_rule_hour_check", sql`${t.fireHour} BETWEEN 0 AND 23`),
 		check(
 			"automation_rule_minute_check",
 			sql`${t.fireMinute} BETWEEN 0 AND 59`,
