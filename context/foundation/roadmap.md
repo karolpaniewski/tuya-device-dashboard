@@ -3,7 +3,7 @@ project: Tuya Device Dashboard
 version: 1
 status: draft
 created: 2026-06-08
-updated: 2026-06-10
+updated: 2026-06-16
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -42,12 +42,13 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | done     |
 | S-10  | external-notifications | receive email/SMS/push alert when a room threshold is violated                                  | S-05                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
-| S-11  | automation-rules       | create temperature+time rules linking sensor to valve; system maintains comfort temp in office hours, economy mode outside | S-01, S-04 | PRD §Non-Goals (deferred v2) | shaped |
+| S-11  | automation-rules       | create temperature+time rules linking sensor to valve; system maintains comfort temp in office hours, economy mode outside | S-01, S-04 | PRD §Non-Goals (deferred v2) | done |
 | S-12  | automation-history     | view log of automation rule executions (what fired, when, result)                              | S-11                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
 | S-13  | multi-site             | dashboard supports multiple office locations, each with their own device/room tree              | F-01, F-02               | PRD §Non-Goals (deferred v2)      | done     |
 | S-15  | dashboard-redesign     | KPI summary row, inline sparkline charts per room, sidebar navigation, tabbed setup (Rooms/Devices/Automations/Sites), sortable device table | S-01, S-05, S-09, S-14 | user-requested v2 | done    |
 | S-16  | device-dnd-modal       | drag-and-drop devices to reorder within a room or move between rooms (persisted); click any device card to open management modal with setpoint, rename, room, history chart, humidity | S-01, S-09, S-15 | user-requested v2 | done |
 | S-17  | visual-ux-redesign     | full dark/light mode toggle (no FOUC), CSS token system replacing glass-morphism dark: variants (Turbopack-safe), device-type icons + watermark on cards, per-room 24h temperature overview panel, donut KPI card for device distribution by room | S-15, S-16 | user-requested v2 | done |
+| S-18  | room-site-reassignment | move a room — and its assigned devices and, if exclusive to it, its gateway — to a different site in one atomic operation, via a confirmation-gated picker in Setup → Rooms | S-13 | user-requested v2 | done |
 
 ## Streams
 
@@ -249,14 +250,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** automation-rules
 - **PRD refs:** PRD §Non-Goals ("no time-based rules in v1; deferred to v2")
 - **Prerequisites:** S-01, S-04
-- **Parallel with:** S-10 (after S-04 unblocks)
-- **Blockers:** S-04 (blocked on DP codes) — automation rules that control valves cannot be implemented until valve control itself is working.
-- **Unknowns:**
-  - Rule schema: which trigger types to support (time-of-day, day-of-week, temperature condition). Owner: user. Block: yes.
-  - Conflict resolution: two rules targeting the same device at the same time. Owner: user. Block: yes.
-  - Rule execution model: in-process scheduler (node-cron) vs. OS-level cron. Owner: user. Block: yes.
-- **Risk:** Time-based rules interact with the polling worker and valve control pipeline — both must be stable before this slice lands. Running automation while S-04 is still blocked is not possible.
-- **Status:** needs-shaping
+- **Parallel with:** S-10
+- **Blockers:** — (S-04 unblocked and shipped before this slice started)
+- **Unknowns:** — (rule schema, conflict resolution, and the execution model were all resolved during shaping/implementation; see `context/changes/automation-rules/plan.md`)
+- **Risk:** Time-based rules interact with the polling worker and valve control pipeline — both had to be stable before this slice landed. Shipped across 6 phases with a scheduler worker, conflict detection, and full unit-test coverage.
+- **Status:** done
 
 ### S-12: Automation history
 
@@ -302,7 +300,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-14       | ux-polish              | Feature: skeleton states, empty states, toast feedback, error UX, visual polish | yes      | Run `/10x-plan ux-polish`                                             |
 | S-09       | temperature-history    | Feature: temperature chart per device/room over configurable range| no                    | Run `/10x-shape` first — storage strategy + retention policy needed   |
 | S-10       | external-notifications | Feature: email/SMS/push on threshold violation                    | no                    | Run `/10x-shape` first — channel, provider, throttle rule needed      |
-| S-11       | automation-rules       | Feature: time-based valve setpoint rules                          | no                    | Run `/10x-shape` first + S-04 must unblock                            |
+| S-11       | automation-rules       | Feature: time-based valve setpoint rules                          | done                  | —                                                                      |
 | S-12       | automation-history     | Feature: log of automation rule executions                        | no                    | Needs S-11 first                                                      |
 | S-13       | multi-site             | Feature: multiple office locations in one dashboard               | no                    | Run `/10x-shape` first — architecture decision needed                 |
 
@@ -335,3 +333,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-15       | dashboard-redesign     | 2026-06-13  |
 | S-16       | device-dnd-modal       | 2026-06-14  |
 | S-17       | visual-ux-redesign     | 2026-06-15  |
+| S-11       | automation-rules       | 2026-06-16  |
+| S-18       | room-site-reassignment | 2026-06-16  |
