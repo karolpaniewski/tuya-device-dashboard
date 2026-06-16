@@ -5,6 +5,7 @@ import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { api } from "~/trpc/react";
+import { AutomationManager } from "./automation-manager";
 import { DeviceTable } from "./device-table";
 import { RoomManager } from "./room-manager";
 import { SiteManager } from "./site-manager";
@@ -37,15 +38,14 @@ export function SetupShell() {
 		...(devicesQuery.data?.rooms.flatMap((r) => r.devices) ?? []),
 		...(devicesQuery.data?.unassigned ?? []),
 	];
+	const valveDevices = allDevices.filter((d) => d.deviceType === "valve");
 
 	return (
 		<Tabs defaultValue="rooms">
 			<TabsList className="mb-6">
 				<TabsTrigger value="rooms">Rooms</TabsTrigger>
 				<TabsTrigger value="devices">Devices</TabsTrigger>
-				<TabsTrigger disabled value="automations">
-					Automations
-				</TabsTrigger>
+				<TabsTrigger value="automations">Automations</TabsTrigger>
 				<TabsTrigger value="sites">Sites</TabsTrigger>
 			</TabsList>
 
@@ -58,9 +58,11 @@ export function SetupShell() {
 			</TabsContent>
 
 			<TabsContent value="automations">
-				<p className="text-sm text-white/40">
-					Automation rules are coming in a future update.
-				</p>
+				<AutomationManager
+					activeSiteId={activeSiteId}
+					utils={utils}
+					valveDevices={valveDevices}
+				/>
 			</TabsContent>
 
 			<TabsContent value="sites">

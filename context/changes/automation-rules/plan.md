@@ -500,31 +500,31 @@ Two new tables; no existing data is migrated. The migration is purely additive �
 
 #### Automated
 
-- [x] 4.1 Type checking passes: `npm run typecheck`
-- [x] 4.2 Linting passes: `npm run check`
-- [x] 4.3 All existing tests pass: `npm run test`
+- [x] 4.1 Type checking passes: `npm run typecheck` — f5a98c3
+- [x] 4.2 Linting passes: `npm run check` — f5a98c3
+- [x] 4.3 All existing tests pass: `npm run test` — f5a98c3
 
 #### Manual
 
-- [x] 4.4 `[automation-scheduler] tick` log appears at the top of each minute
-- [x] 4.5 Test rule fires and produces `success` or `failed` execution log row
-- [x] 4.6 Temperature-guarded rule produces `skipped` row when condition not met
+- [x] 4.4 `[automation-scheduler] tick` log appears at the top of each minute — f5a98c3
+- [x] 4.5 Test rule fires and produces `success` or `failed` execution log row — f5a98c3
+- [x] 4.6 Temperature-guarded rule produces `skipped` row when condition not met — f5a98c3
 
 ### Phase 5: Frontend UI
 
 #### Automated
 
-- [ ] 5.1 Type checking passes: `npm run typecheck`
-- [ ] 5.2 Linting passes: `npm run check`
+- [x] 5.1 Type checking passes: `npm run typecheck`
+- [x] 5.2 Linting passes: `npm run check`
 
 #### Manual
 
-- [ ] 5.3 Automations tab accessible (not disabled)
-- [ ] 5.4 Empty state message displayed with no rules
-- [ ] 5.5 Rule creation populates list
-- [ ] 5.6 Conflict error message shown on duplicate time/room
-- [ ] 5.7 Toggle and delete work correctly
-- [ ] 5.8 Optional temperature threshold field works (empty = always fire)
+- [x] 5.3 Automations tab accessible (not disabled)
+- [x] 5.4 Empty state message displayed with no rules
+- [x] 5.5 Rule creation populates list
+- [x] 5.6 Conflict error message shown on duplicate time/room
+- [x] 5.7 Toggle and delete work correctly
+- [x] 5.8 Optional temperature threshold field works (empty = always fire)
 
 ### Phase 6: Unit Tests
 
