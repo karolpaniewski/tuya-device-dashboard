@@ -365,22 +365,22 @@ columns introduced by the `multi-site` change; no new tables or columns.
 
 #### Automated
 
-- [x] 2.1 New tests pass: `npm run test`
-- [x] 2.2 Type checking passes: `npm run typecheck`
-- [x] 2.3 Linting passes: `npm run check`
+- [x] 2.1 New tests pass: `npm run test` — 75255b9
+- [x] 2.2 Type checking passes: `npm run typecheck` — 75255b9
+- [x] 2.3 Linting passes: `npm run check` — 75255b9
 
 ### Phase 3: UI — move-to-site picker in Setup → Rooms
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run typecheck`
-- [ ] 3.2 Linting passes: `npm run check`
-- [ ] 3.3 All existing tests pass: `npm run test`
+- [x] 3.1 Type checking passes: `npm run typecheck`
+- [x] 3.2 Linting passes: `npm run check`
+- [x] 3.3 All existing tests pass: `npm run test`
 
 #### Manual
 
-- [ ] 3.4 Move a room with devices via the UI; confirm dialog text matches room/device count; confirm; room disappears from current site's list; toast confirms success
-- [ ] 3.5 Verify moved room's devices show the new site in the Dashboard (`device.overview`)
-- [ ] 3.6 Verify a room sharing a gateway with another room's device shows the `GATEWAY_SHARED_WITH_OTHER_ROOM` error inline and nothing changes
-- [ ] 3.7 Verify the current site never appears as an option in the room's own move-to-site picker
-- [ ] 3.8 Verify the picker is hidden entirely when only one site exists
+- [x] 3.4 Move a room with devices via the UI; confirm dialog text matches room/device count; confirm; room disappears from current site's list; toast confirms success
+- [x] 3.5 Verify moved room's devices show the new site in the Dashboard (`device.overview`)
+- [x] 3.6 Verify a room sharing a gateway with another room's device shows the `GATEWAY_SHARED_WITH_OTHER_ROOM` error inline and nothing changes
+- [x] 3.7 Verify the current site never appears as an option in the room's own move-to-site picker
+- [x] 3.8 Verify the picker is hidden entirely when only one site exists

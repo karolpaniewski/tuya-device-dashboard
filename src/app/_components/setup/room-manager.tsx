@@ -4,25 +4,48 @@ import { Building2, Pencil, Settings, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import {
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "~/components/ui/dialog";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Input } from "~/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "~/components/ui/select";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { RoomThresholdForm } from "./room-threshold-form";
 
 type RoomItem = RouterOutputs["room"]["list"][number];
+type SiteItem = RouterOutputs["site"]["list"][number];
+
+interface MoveTarget {
+	room: RoomItem;
+	siteId: string;
+	siteName: string;
+}
 
 interface Props {
 	activeSiteId: string;
 	rooms: RoomItem[];
+	sites: SiteItem[];
 	utils: ReturnType<typeof api.useUtils>;
 }
 
-export function RoomManager({ activeSiteId, rooms, utils }: Props) {
+export function RoomManager({ activeSiteId, rooms, sites, utils }: Props) {
 	const [newName, setNewName] = useState("");
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editingName, setEditingName] = useState("");
 	const [thresholdRoomId, setThresholdRoomId] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const [moveTarget, setMoveTarget] = useState<MoveTarget | null>(null);
 
 	const invalidate = () => {
 		void utils.room.list.invalidate();
@@ -51,6 +74,15 @@ export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 		onError: (e) => setError(e.message),
 		onSuccess: () => {
 			toast.success("Room deleted");
+			invalidate();
+		},
+	});
+
+	const setSiteMutation = api.room.setSite.useMutation({
+		onError: (e) => setError(e.message),
+		onSuccess: () => {
+			toast.success("Room moved");
+			setMoveTarget(null);
 			invalidate();
 		},
 	});
@@ -105,6 +137,40 @@ export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 								{room.deviceCount}{" "}
 								{room.deviceCount === 1 ? "device" : "devices"}
 							</span>
+							{sites.length > 1 && (
+								<Select
+									items={Object.fromEntries(
+										sites
+											.filter((site) => site.id !== room.siteId)
+											.map((site) => [site.id, site.name]),
+									)}
+									onValueChange={(val) => {
+										if (!val) return;
+										const site = sites.find((s) => s.id === val);
+										if (!site) return;
+										setError(null);
+										setMoveTarget({
+											room,
+											siteId: site.id,
+											siteName: site.name,
+										});
+									}}
+									value=""
+								>
+									<SelectTrigger className="text-sm">
+										<SelectValue placeholder="Move to site…" />
+									</SelectTrigger>
+									<SelectContent>
+										{sites
+											.filter((site) => site.id !== room.siteId)
+											.map((site) => (
+												<SelectItem key={site.id} value={site.id}>
+													{site.name}
+												</SelectItem>
+											))}
+									</SelectContent>
+								</Select>
+							)}
 							<Button
 								className={
 									thresholdRoomId === room.id ? "text-blue-400" : undefined
@@ -201,6 +267,51 @@ export function RoomManager({ activeSiteId, rooms, utils }: Props) {
 					</Button>
 				</form>
 			)}
+
+			<Dialog
+				onOpenChange={(isOpen) => {
+					if (!isOpen) setMoveTarget(null);
+				}}
+				open={moveTarget !== null}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Move room</DialogTitle>
+					</DialogHeader>
+					<DialogBody>
+						{moveTarget && (
+							<p className="text-sm text-white/70">
+								Move "{moveTarget.room.name}" and its{" "}
+								{moveTarget.room.deviceCount} device(s) to {moveTarget.siteName}
+								?
+							</p>
+						)}
+						<div className="mt-4 flex justify-end gap-2">
+							<Button
+								onClick={() => setMoveTarget(null)}
+								type="button"
+								variant="ghost"
+							>
+								Cancel
+							</Button>
+							<Button
+								disabled={setSiteMutation.isPending}
+								onClick={() => {
+									if (!moveTarget) return;
+									setError(null);
+									setSiteMutation.mutate({
+										roomId: moveTarget.room.id,
+										targetSiteId: moveTarget.siteId,
+									});
+								}}
+								type="button"
+							>
+								{setSiteMutation.isPending ? "Moving…" : "Confirm"}
+							</Button>
+						</div>
+					</DialogBody>
+				</DialogContent>
+			</Dialog>
 		</section>
 	);
 }

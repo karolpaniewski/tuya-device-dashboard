@@ -50,7 +50,12 @@ export function SetupShell() {
 			</TabsList>
 
 			<TabsContent value="rooms">
-				<RoomManager activeSiteId={activeSiteId} rooms={rooms} utils={utils} />
+				<RoomManager
+					activeSiteId={activeSiteId}
+					rooms={rooms}
+					sites={sitesQuery.data ?? []}
+					utils={utils}
+				/>
 			</TabsContent>
 
 			<TabsContent value="devices">
