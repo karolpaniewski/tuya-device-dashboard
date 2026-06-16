@@ -354,20 +354,20 @@ columns introduced by the `multi-site` change; no new tables or columns.
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run typecheck`
-- [x] 1.2 Linting passes: `npm run check`
+- [x] 1.1 Type checking passes: `npm run typecheck` — 582f57c
+- [x] 1.2 Linting passes: `npm run check` — 582f57c
 
 #### Manual
 
-- [x] 1.3 `npm run db:studio` — manually move a room with devices and confirm `room`, `device`, and `gateway` rows all show the new `site_id`
+- [x] 1.3 `npm run db:studio` — manually move a room with devices and confirm `room`, `device`, and `gateway` rows all show the new `site_id` — 582f57c
 
 ### Phase 2: Tests for `room.setSite`
 
 #### Automated
 
-- [ ] 2.1 New tests pass: `npm run test`
-- [ ] 2.2 Type checking passes: `npm run typecheck`
-- [ ] 2.3 Linting passes: `npm run check`
+- [x] 2.1 New tests pass: `npm run test`
+- [x] 2.2 Type checking passes: `npm run typecheck`
+- [x] 2.3 Linting passes: `npm run check`
 
 ### Phase 3: UI — move-to-site picker in Setup → Rooms
 

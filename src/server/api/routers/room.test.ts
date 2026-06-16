@@ -5,6 +5,7 @@ vi.mock("~/server/auth", () => ({ auth: vi.fn() }));
 vi.mock("~/server/db", () => ({ db: {} }));
 
 import { createCaller } from "~/server/api/root";
+import { devices, gateways, rooms } from "~/server/db/schema";
 
 const session = {
 	user: { id: "u1", email: "test@test.com" },
@@ -50,6 +51,12 @@ describe("room — auth gate", () => {
 	it("room.setDeviceRoom throws UNAUTHORIZED", async () => {
 		await expect(
 			caller.room.setDeviceRoom({ deviceId: "d1", roomId: "r1" }),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+	});
+
+	it("room.setSite throws UNAUTHORIZED", async () => {
+		await expect(
+			caller.room.setSite({ roomId: "r1", targetSiteId: "s2" }),
 		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
 	});
 });
@@ -379,5 +386,330 @@ describe("room.list — scoping", () => {
 		});
 		const result = await caller.room.list({ siteId: "all" });
 		expect(result).toHaveLength(2);
+	});
+});
+
+// ─── room.setSite ────────────────────────────────────────────────────────────
+
+describe("room.setSite", () => {
+	it("happy path: cascades rooms, devices, and gateway updates when the gateway is exclusive to this room", async () => {
+		const setMock = vi
+			.fn()
+			.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const txUpdateMock = vi.fn().mockReturnValue({ set: setMock });
+		const transactionMock = vi.fn(async (cb) => cb({ update: txUpdateMock }));
+		const mockDb = {
+			select: vi
+				.fn()
+				// target site exists
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "s2" }]),
+					}),
+				})
+				// room exists, currently on s1
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "r1", siteId: "s1" }]),
+					}),
+				})
+				// assigned devices
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi
+							.fn()
+							.mockResolvedValue([{ deviceId: "d1" }, { deviceId: "d2" }]),
+					}),
+				})
+				// devices' gatewayIds
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi
+							.fn()
+							.mockResolvedValue([{ gatewayId: "g1" }, { gatewayId: "g1" }]),
+					}),
+				})
+				// gateway exclusivity check — every device on g1 belongs to r1
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([
+								{ deviceId: "d1", gatewayId: "g1", roomId: "r1" },
+								{ deviceId: "d2", gatewayId: "g1", roomId: "r1" },
+							]),
+						}),
+					}),
+				}),
+			transaction: transactionMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.room.setSite({
+			roomId: "r1",
+			targetSiteId: "s2",
+		});
+
+		expect(result).toEqual({ success: true });
+		expect(transactionMock).toHaveBeenCalled();
+		expect(txUpdateMock).toHaveBeenCalledTimes(3);
+		expect(txUpdateMock).toHaveBeenNthCalledWith(1, rooms);
+		expect(txUpdateMock).toHaveBeenNthCalledWith(2, devices);
+		expect(txUpdateMock).toHaveBeenNthCalledWith(3, gateways);
+		expect(setMock).toHaveBeenCalledTimes(3);
+		expect(setMock).toHaveBeenNthCalledWith(1, { siteId: "s2" });
+		expect(setMock).toHaveBeenNthCalledWith(2, { siteId: "s2" });
+		expect(setMock).toHaveBeenNthCalledWith(3, { siteId: "s2" });
+	});
+
+	it("same-site rejection: targetSiteId === room.siteId throws BAD_REQUEST, no update runs", async () => {
+		const transactionMock = vi.fn();
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "s1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "r1", siteId: "s1" }]),
+					}),
+				}),
+			transaction: transactionMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.room.setSite({ roomId: "r1", targetSiteId: "s1" }),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+			message: "Room is already assigned to this site",
+		});
+		expect(transactionMock).not.toHaveBeenCalled();
+	});
+
+	it("target site not found: throws BAD_REQUEST, no update runs", async () => {
+		const transactionMock = vi.fn();
+		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([]),
+				}),
+			}),
+			transaction: transactionMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.room.setSite({ roomId: "r1", targetSiteId: "bad-site" }),
+		).rejects.toMatchObject({ code: "BAD_REQUEST", message: "Site not found" });
+		expect(transactionMock).not.toHaveBeenCalled();
+	});
+
+	it("gateway shared with a different room: throws BAD_REQUEST GATEWAY_SHARED_WITH_OTHER_ROOM, no update runs", async () => {
+		const transactionMock = vi.fn();
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "s2" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "r1", siteId: "s1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ deviceId: "d1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ gatewayId: "g1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([
+								{ deviceId: "d1", gatewayId: "g1", roomId: "r1" },
+								{ deviceId: "d2", gatewayId: "g1", roomId: "r-other" },
+							]),
+						}),
+					}),
+				}),
+			transaction: transactionMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.room.setSite({ roomId: "r1", targetSiteId: "s2" }),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+			message: "GATEWAY_SHARED_WITH_OTHER_ROOM",
+		});
+		expect(transactionMock).not.toHaveBeenCalled();
+	});
+
+	it("gateway shared with an unassigned device (no room): throws BAD_REQUEST GATEWAY_SHARED_WITH_OTHER_ROOM, no update runs", async () => {
+		const transactionMock = vi.fn();
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "s2" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "r1", siteId: "s1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ deviceId: "d1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ gatewayId: "g1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([
+								{ deviceId: "d1", gatewayId: "g1", roomId: "r1" },
+								{ deviceId: "d2", gatewayId: "g1", roomId: null },
+							]),
+						}),
+					}),
+				}),
+			transaction: transactionMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.room.setSite({ roomId: "r1", targetSiteId: "s2" }),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+			message: "GATEWAY_SHARED_WITH_OTHER_ROOM",
+		});
+		expect(transactionMock).not.toHaveBeenCalled();
+	});
+
+	it("no-gateway room: devices have gatewayId null — succeeds, updates rooms and devices only", async () => {
+		const setMock = vi
+			.fn()
+			.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const txUpdateMock = vi.fn().mockReturnValue({ set: setMock });
+		const transactionMock = vi.fn(async (cb) => cb({ update: txUpdateMock }));
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "s2" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "r1", siteId: "s1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ deviceId: "d1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ gatewayId: null }]),
+					}),
+				}),
+			transaction: transactionMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.room.setSite({
+			roomId: "r1",
+			targetSiteId: "s2",
+		});
+
+		expect(result).toEqual({ success: true });
+		expect(txUpdateMock).toHaveBeenCalledTimes(2);
+		expect(txUpdateMock).toHaveBeenNthCalledWith(1, rooms);
+		expect(txUpdateMock).toHaveBeenNthCalledWith(2, devices);
+	});
+
+	it("no-devices room: succeeds, only the rooms update runs", async () => {
+		const setMock = vi
+			.fn()
+			.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const txUpdateMock = vi.fn().mockReturnValue({ set: setMock });
+		const transactionMock = vi.fn(async (cb) => cb({ update: txUpdateMock }));
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "s2" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "r1", siteId: "s1" }]),
+					}),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([]),
+					}),
+				}),
+			transaction: transactionMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.room.setSite({
+			roomId: "r1",
+			targetSiteId: "s2",
+		});
+
+		expect(result).toEqual({ success: true });
+		expect(txUpdateMock).toHaveBeenCalledTimes(1);
+		expect(txUpdateMock).toHaveBeenNthCalledWith(1, rooms);
 	});
 });
