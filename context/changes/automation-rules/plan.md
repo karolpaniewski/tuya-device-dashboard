@@ -473,28 +473,28 @@ Two new tables; no existing data is migrated. The migration is purely additive �
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Linting passes: `npm run check`
-- [x] 2.3 Existing setpoint-related tests pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck` — e244f8a
+- [x] 2.2 Linting passes: `npm run check` — e244f8a
+- [x] 2.3 Existing setpoint-related tests pass: `npm run test` — e244f8a
 
 #### Manual
 
-- [ ] 2.4 Device modal setpoint adjustment still works (success toast)
-- [ ] 2.5 Unsupported-device error still surfaces correctly
+- [x] 2.4 Device modal setpoint adjustment still works (success toast) — e244f8a
+- [x] 2.5 Unsupported-device error still surfaces correctly — e244f8a
 
 ### Phase 3: tRPC Automation Router
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run typecheck`
-- [ ] 3.2 Linting passes: `npm run check`
-- [ ] 3.3 All existing tests pass: `npm run test`
+- [x] 3.1 Type checking passes: `npm run typecheck`
+- [x] 3.2 Linting passes: `npm run check`
+- [x] 3.3 All existing tests pass: `npm run test`
 
 #### Manual
 
-- [ ] 3.4 `automation.list` returns rules from DB
-- [ ] 3.5 Conflicting rule creation returns `RULE_CONFLICT`
-- [ ] 3.6 Non-valve device target returns `NOT_A_VALVE`
+- [x] 3.4 `automation.list` returns rules from DB
+- [x] 3.5 Conflicting rule creation returns `RULE_CONFLICT`
+- [x] 3.6 Non-valve device target returns `NOT_A_VALVE`
 
 ### Phase 4: Automation Scheduler Worker
 
