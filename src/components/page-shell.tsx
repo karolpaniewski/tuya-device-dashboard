@@ -20,6 +20,11 @@ interface PageShellProps {
 export function PageShell({ children, rightContent, title }: PageShellProps) {
 	const { activeSiteId, sites, setActiveSite } = useSiteContext();
 
+	const siteItems = Object.fromEntries([
+		...sites.map((site) => [site.id, site.name]),
+		["all", "All Sites"],
+	]);
+
 	return (
 		<main className="min-h-screen px-4 py-8 text-foreground sm:px-6">
 			<div className="mb-8 flex items-center justify-between">
@@ -29,6 +34,7 @@ export function PageShell({ children, rightContent, title }: PageShellProps) {
 				<div className="flex items-center gap-3">
 					{sites.length > 1 && (
 						<Select
+							items={siteItems}
 							onValueChange={(val) => {
 								if (val) setActiveSite(val);
 							}}

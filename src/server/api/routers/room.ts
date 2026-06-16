@@ -1,11 +1,12 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
 	deviceRoomAssignments,
 	devices,
+	gateways,
 	rooms,
 	roomThresholds,
 	sites,
@@ -36,6 +37,7 @@ export const roomRouter = createTRPCRouter({
 			return allRooms.map((room) => ({
 				id: room.id,
 				name: room.name,
+				siteId: room.siteId,
 				deviceCount: countByRoom.get(room.id) ?? 0,
 			}));
 		}),
@@ -145,6 +147,112 @@ export const roomRouter = createTRPCRouter({
 					.delete(deviceRoomAssignments)
 					.where(eq(deviceRoomAssignments.deviceId, input.deviceId));
 			}
+
+			return { success: true as const };
+		}),
+
+	setSite: protectedProcedure
+		.input(z.object({ roomId: z.string(), targetSiteId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const [targetSite] = await ctx.db
+				.select({ id: sites.id })
+				.from(sites)
+				.where(eq(sites.id, input.targetSiteId));
+
+			if (!targetSite) {
+				throw new TRPCError({ code: "BAD_REQUEST", message: "Site not found" });
+			}
+
+			const [room] = await ctx.db
+				.select({ id: rooms.id, siteId: rooms.siteId })
+				.from(rooms)
+				.where(eq(rooms.id, input.roomId));
+
+			if (!room) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
+			}
+
+			if (room.siteId === input.targetSiteId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Room is already assigned to this site",
+				});
+			}
+
+			const assignedDevices = await ctx.db
+				.select({ deviceId: deviceRoomAssignments.deviceId })
+				.from(deviceRoomAssignments)
+				.where(eq(deviceRoomAssignments.roomId, input.roomId));
+
+			const deviceIds = assignedDevices.map((a) => a.deviceId);
+
+			let gatewayIds: string[] = [];
+			if (deviceIds.length > 0) {
+				const deviceRows = await ctx.db
+					.select({ gatewayId: devices.gatewayId })
+					.from(devices)
+					.where(inArray(devices.id, deviceIds));
+
+				gatewayIds = [
+					...new Set(
+						deviceRows
+							.map((d) => d.gatewayId)
+							.filter((id): id is string => id !== null),
+					),
+				];
+			}
+
+			// A gateway only moves with the room if every device on it is
+			// assigned to this room — a device on the same gateway that is
+			// unassigned or assigned elsewhere blocks the whole move, since
+			// cascading the gateway's siteId would otherwise leave that
+			// device's siteId silently inconsistent with its gateway.
+			if (gatewayIds.length > 0) {
+				const gatewayDeviceRows = await ctx.db
+					.select({
+						deviceId: devices.id,
+						gatewayId: devices.gatewayId,
+						roomId: deviceRoomAssignments.roomId,
+					})
+					.from(devices)
+					.leftJoin(
+						deviceRoomAssignments,
+						eq(deviceRoomAssignments.deviceId, devices.id),
+					)
+					.where(inArray(devices.gatewayId, gatewayIds));
+
+				const sharedGateway = gatewayDeviceRows.some(
+					(row) => row.roomId !== input.roomId,
+				);
+
+				if (sharedGateway) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "GATEWAY_SHARED_WITH_OTHER_ROOM",
+					});
+				}
+			}
+
+			await ctx.db.transaction(async (tx) => {
+				await tx
+					.update(rooms)
+					.set({ siteId: input.targetSiteId })
+					.where(eq(rooms.id, input.roomId));
+
+				if (deviceIds.length > 0) {
+					await tx
+						.update(devices)
+						.set({ siteId: input.targetSiteId })
+						.where(inArray(devices.id, deviceIds));
+				}
+
+				if (gatewayIds.length > 0) {
+					await tx
+						.update(gateways)
+						.set({ siteId: input.targetSiteId })
+						.where(inArray(gateways.id, gatewayIds));
+				}
+			});
 
 			return { success: true as const };
 		}),

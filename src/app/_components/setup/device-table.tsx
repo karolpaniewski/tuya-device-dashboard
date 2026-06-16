@@ -51,6 +51,11 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 	const [errorById, setErrorById] = useState<Record<string, string>>({});
 	const [savingById, setSavingById] = useState<Record<string, boolean>>({});
 
+	const roomItems = Object.fromEntries([
+		["unassigned", "— Unassigned"],
+		...rooms.map((room) => [room.id, room.name]),
+	]);
+
 	const setDeviceRoom = api.room.setDeviceRoom.useMutation({
 		onSuccess: () => {
 			void utils.room.list.invalidate();
@@ -172,6 +177,7 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 								</td>
 								<td className="px-4 py-3">
 									<Select
+										items={roomItems}
 										onValueChange={(v) =>
 											assign(device.id, v === "unassigned" ? null : v)
 										}

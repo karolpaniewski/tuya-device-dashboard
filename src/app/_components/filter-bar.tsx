@@ -53,6 +53,11 @@ export function FilterBar({
 	onTypeChange,
 	rooms,
 }: FilterBarProps) {
+	const roomItems = Object.fromEntries([
+		["all", "All Rooms"],
+		...rooms.map((room) => [room.roomId, room.roomName]),
+	]);
+
 	return (
 		<div className="mb-6 flex flex-col gap-2 rounded-xl border border-[var(--s-border)] bg-[var(--s-bg-alt)] px-4 py-3 backdrop-blur-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
 			<Input
@@ -65,6 +70,7 @@ export function FilterBar({
 
 			{!hideRoomFilter && (
 				<Select
+					items={roomItems}
 					onValueChange={(v) => onRoomChange(!v || v === "all" ? "" : v)}
 					value={filters.roomId || "all"}
 				>
