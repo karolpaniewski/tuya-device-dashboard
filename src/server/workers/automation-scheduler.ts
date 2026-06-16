@@ -13,7 +13,9 @@ import { sendSetpointCommand } from "~/server/lib/valve-control";
 
 const FRESH_READING_MS = 5 * 60 * 1000;
 
-async function getRoomAvgTemperature(deviceId: string): Promise<number | null> {
+export async function getRoomAvgTemperature(
+	deviceId: string,
+): Promise<number | null> {
 	const [assignment] = await db
 		.select({ roomId: deviceRoomAssignments.roomId })
 		.from(deviceRoomAssignments)

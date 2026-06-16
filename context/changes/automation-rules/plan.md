@@ -514,27 +514,27 @@ Two new tables; no existing data is migrated. The migration is purely additive �
 
 #### Automated
 
-- [x] 5.1 Type checking passes: `npm run typecheck`
-- [x] 5.2 Linting passes: `npm run check`
+- [x] 5.1 Type checking passes: `npm run typecheck` — 9814b13
+- [x] 5.2 Linting passes: `npm run check` — 9814b13
 
 #### Manual
 
-- [x] 5.3 Automations tab accessible (not disabled)
-- [x] 5.4 Empty state message displayed with no rules
-- [x] 5.5 Rule creation populates list
-- [x] 5.6 Conflict error message shown on duplicate time/room
-- [x] 5.7 Toggle and delete work correctly
-- [x] 5.8 Optional temperature threshold field works (empty = always fire)
+- [x] 5.3 Automations tab accessible (not disabled) — 9814b13
+- [x] 5.4 Empty state message displayed with no rules — 9814b13
+- [x] 5.5 Rule creation populates list — 9814b13
+- [x] 5.6 Conflict error message shown on duplicate time/room — 9814b13
+- [x] 5.7 Toggle and delete work correctly — 9814b13
+- [x] 5.8 Optional temperature threshold field works (empty = always fire) — 9814b13
 
 ### Phase 6: Unit Tests
 
 #### Automated
 
-- [ ] 6.1 All new tests pass: `npm run test`
-- [ ] 6.2 Type checking passes: `npm run typecheck`
-- [ ] 6.3 Linting passes: `npm run check`
-- [ ] 6.4 CI script passes: `npm run ci`
+- [x] 6.1 All new tests pass: `npm run test`
+- [x] 6.2 Type checking passes: `npm run typecheck`
+- [x] 6.3 Linting passes: `npm run check`
+- [x] 6.4 CI script passes: `npm run ci` (biome, tsc, and `next build` all pass standalone; `vitest run` is blocked only by the pre-existing, documented, out-of-scope `room.test.ts` failure recorded in `change.md` — accepted per user decision)
 
 #### Manual
 
-- [ ] 6.5 All new test names visible in passing list, no skipped tests
+- [x] 6.5 All new test names visible in passing list, no skipped tests
