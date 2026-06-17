@@ -306,26 +306,26 @@ No data migration. `LOG_DIR`/`LOG_LEVEL`/`LOG_RETENTION_DAYS` are new optional e
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Lint passes: `npx biome check .`
-- [x] 2.3 Existing worker/router tests still pass: `npx vitest run src/server/workers src/server/api`
-- [x] 2.4 Full suite passes: `npm run ci`
+- [x] 2.1 Type checking passes: `npm run typecheck` — 256922f
+- [x] 2.2 Lint passes: `npx biome check .` — 256922f
+- [x] 2.3 Existing worker/router tests still pass: `npx vitest run src/server/workers src/server/api` — 256922f
+- [x] 2.4 Full suite passes: `npm run ci` — 256922f
 
 #### Manual
 
-- [x] 2.5 tRPC calls produce structured lines with requestId/userId
-- [x] 2.6 Poll cycle logs gatewayId context; routine chatter stays at debug
-- [x] 2.7 LOG_LEVEL=debug reveals heartbeat/state-update/poll-summary lines
-- [x] 2.8 Forced connect failure logs at error with gatewayId
+- [x] 2.5 tRPC calls produce structured lines with requestId/userId — 256922f
+- [x] 2.6 Poll cycle logs gatewayId context; routine chatter stays at debug — 256922f
+- [x] 2.7 LOG_LEVEL=debug reveals heartbeat/state-update/poll-summary lines — 256922f
+- [x] 2.8 Forced connect failure logs at error with gatewayId — 256922f
 
 ### Phase 3: Env wiring and end-to-end verification
 
 #### Automated
 
-- [ ] 3.1 `npm run ci` passes end to end
-- [ ] 3.2 `next build` succeeds with no pino transport/worker resolution warnings
+- [x] 3.1 `npm run ci` passes end to end
+- [x] 3.2 `next build` succeeds with no pino transport/worker resolution warnings
 
 #### Manual
 
-- [ ] 3.3 Fresh-clone simulation boots with new vars unset
-- [ ] 3.4 LOG_DIR + low retention demonstrates old file cleanup
+- [x] 3.3 Fresh-clone simulation boots with new vars unset
+- [x] 3.4 LOG_DIR + low retention demonstrates old file cleanup
