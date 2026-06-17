@@ -24,7 +24,7 @@ import {
 	Wifi,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useSiteContext } from "~/components/site-context";
 import { Button } from "~/components/ui/button";
@@ -156,10 +156,43 @@ export function DeviceOverview() {
 		onError: () => void utils.device.overview.invalidate(),
 		onSuccess: () => void utils.device.overview.invalidate(),
 	});
+	// Pending layout save — at most one `dashboardLayout.save` request is ever
+	// in flight; a newer call supersedes an older one still in flight instead
+	// of racing it, so two requests can never resolve in an order that lets a
+	// stale payload overwrite a newer one.
+	const pendingLayoutSaveRef = useRef<{
+		hiddenWidgets: string[];
+		roomOrder: string[];
+		widgetOrder: string[];
+	} | null>(null);
+	const layoutSaveInFlightRef = useRef(false);
 	const saveLayoutMutation = api.dashboardLayout.save.useMutation({
 		onError: () => void utils.dashboardLayout.get.invalidate(),
+		onMutate: () => void utils.dashboardLayout.get.cancel(),
+		onSettled: () => {
+			const next = pendingLayoutSaveRef.current;
+			if (!next) {
+				layoutSaveInFlightRef.current = false;
+				return;
+			}
+			pendingLayoutSaveRef.current = null;
+			saveLayoutMutation.mutate(next);
+		},
 		onSuccess: () => void utils.dashboardLayout.get.invalidate(),
 	});
+	function persistLayout(next: {
+		hiddenWidgets: string[];
+		roomOrder: string[];
+		widgetOrder: string[];
+	}) {
+		utils.dashboardLayout.get.setData(undefined, next);
+		if (layoutSaveInFlightRef.current) {
+			pendingLayoutSaveRef.current = next;
+			return;
+		}
+		layoutSaveInFlightRef.current = true;
+		saveLayoutMutation.mutate(next);
+	}
 
 	function findContainer(deviceId: string): string | null {
 		for (const room of localRooms) {
@@ -302,16 +335,7 @@ export function DeviceOverview() {
 
 		const newOrder = arrayMove(visibleWidgets, oldIdx, newIdx).map((w) => w.id);
 		setWidgetOrder(newOrder);
-		utils.dashboardLayout.get.setData(undefined, {
-			hiddenWidgets,
-			roomOrder,
-			widgetOrder: newOrder,
-		});
-		saveLayoutMutation.mutate({
-			hiddenWidgets,
-			roomOrder,
-			widgetOrder: newOrder,
-		});
+		persistLayout({ hiddenWidgets, roomOrder, widgetOrder: newOrder });
 	}
 
 	function handleHideWidget(id: string) {
@@ -319,12 +343,7 @@ export function DeviceOverview() {
 		const newHidden = [...hiddenWidgets, id];
 		setWidgetOrder(newOrder);
 		setHiddenWidgets(newHidden);
-		utils.dashboardLayout.get.setData(undefined, {
-			hiddenWidgets: newHidden,
-			roomOrder,
-			widgetOrder: newOrder,
-		});
-		saveLayoutMutation.mutate({
+		persistLayout({
 			hiddenWidgets: newHidden,
 			roomOrder,
 			widgetOrder: newOrder,
@@ -336,12 +355,7 @@ export function DeviceOverview() {
 		const newHidden = hiddenWidgets.filter((wid) => wid !== id);
 		setWidgetOrder(newOrder);
 		setHiddenWidgets(newHidden);
-		utils.dashboardLayout.get.setData(undefined, {
-			hiddenWidgets: newHidden,
-			roomOrder,
-			widgetOrder: newOrder,
-		});
-		saveLayoutMutation.mutate({
+		persistLayout({
 			hiddenWidgets: newHidden,
 			roomOrder,
 			widgetOrder: newOrder,
@@ -352,16 +366,7 @@ export function DeviceOverview() {
 		const defaults = [...DEFAULT_WIDGET_ORDER];
 		setWidgetOrder(defaults);
 		setHiddenWidgets([]);
-		utils.dashboardLayout.get.setData(undefined, {
-			hiddenWidgets: [],
-			roomOrder,
-			widgetOrder: defaults,
-		});
-		saveLayoutMutation.mutate({
-			hiddenWidgets: [],
-			roomOrder,
-			widgetOrder: defaults,
-		});
+		persistLayout({ hiddenWidgets: [], roomOrder, widgetOrder: defaults });
 	}
 
 	const allDevices = data

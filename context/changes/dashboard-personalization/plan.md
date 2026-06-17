@@ -210,6 +210,12 @@ itself.
 **Contract**: `SortableWidget({ id, onHide, children }: { id: string; onHide:
 () => void; children: ReactNode })`.
 
+> Addendum (post-Phase-2 review): the implementation also accepts an optional
+> `className` prop, passed through to the wrapper `div`. Needed so the
+> room-temp-panel widget can apply `col-span-full` — without it, that widget
+> gets squeezed into a single grid cell like a KPI card instead of spanning
+> the row. Narrow, deliberate extension of the contract above.
+
 #### 3. Widget registry + reordering in the overview
 
 **File**: `src/app/_components/device-overview.tsx`
@@ -398,16 +404,16 @@ nothing in the current schema represents a "previous" layout to migrate from.
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Existing device-overview-adjacent tests still pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck` — 5a7e6f2
+- [x] 2.2 Linting passes: `npm run lint` — 5a7e6f2
+- [x] 2.3 Existing device-overview-adjacent tests still pass: `npm run test` — 5a7e6f2
 
 #### Manual
 
-- [x] 2.4 Drag a KPI card to a new position; reload the page; confirm the new order persists
-- [x] 2.5 Hide a widget; confirm it disappears and the "hidden" affordance lists it; click to restore it; confirm it reappears in its prior position
-- [x] 2.6 Click "Reset layout"; confirm all 6 widgets reappear in original order
-- [x] 2.7 Confirm the existing device-card drag-and-drop (within/between rooms) still works unaffected
+- [x] 2.4 Drag a KPI card to a new position; reload the page; confirm the new order persists — 5a7e6f2
+- [x] 2.5 Hide a widget; confirm it disappears and the "hidden" affordance lists it; click to restore it; confirm it reappears in its prior position — 5a7e6f2
+- [x] 2.6 Click "Reset layout"; confirm all 6 widgets reappear in original order — 5a7e6f2
+- [x] 2.7 Confirm the existing device-card drag-and-drop (within/between rooms) still works unaffected — 5a7e6f2
 
 ### Phase 3: Room reorder
 
