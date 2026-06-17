@@ -14,6 +14,7 @@ import {
 	arrayMove,
 	rectSortingStrategy,
 	SortableContext,
+	verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
 	CheckCircle2,
@@ -31,7 +32,7 @@ import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
 import { DEFAULT_WIDGET_ORDER } from "~/lib/dashboard-widgets";
-import { applySavedOrder } from "~/lib/layout-order";
+import { applySavedOrder, spliceSectionOrder } from "~/lib/layout-order";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { DeviceCard } from "./device-card";
 import { DeviceModal } from "./device-modal";
@@ -40,6 +41,7 @@ import { KpiCard } from "./kpi-card";
 import { RoomGroup } from "./room-group";
 import { RoomSidebar } from "./room-sidebar";
 import { RoomTemperaturePanel } from "./room-temperature-panel";
+import { SortableRoomGroup } from "./sortable-room-group";
 import { SortableWidget } from "./sortable-widget";
 
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
@@ -133,14 +135,17 @@ export function DeviceOverview() {
 		setLocalUnassigned(data.unassigned);
 	}, [data, activeId]);
 
-	// Sync local widget-layout state from server (skip during active widget drag)
+	// Sync local widget-layout state from server (skip during an active widget
+	// drag, or an active room drag — `activeId` covers both device and room
+	// drags since they share one DndContext; pausing here for either avoids a
+	// layout refetch clobbering an in-progress room reorder).
 	useEffect(() => {
-		if (activeWidgetId !== null) return;
+		if (activeWidgetId !== null || activeId !== null) return;
 		if (!layoutQuery.data) return;
 		setWidgetOrder(layoutQuery.data.widgetOrder);
 		setHiddenWidgets(layoutQuery.data.hiddenWidgets);
 		setRoomOrder(layoutQuery.data.roomOrder);
-	}, [layoutQuery.data, activeWidgetId]);
+	}, [layoutQuery.data, activeWidgetId, activeId]);
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -206,6 +211,36 @@ export function DeviceOverview() {
 		setActiveId(String(active.id));
 	}
 
+	function handleRoomReorder(activeRoomId: string, overRoomId: string) {
+		const sections =
+			activeSiteId === "all"
+				? groupBySite(orderedRooms).map(([, siteRooms]) =>
+						siteRooms.map((r) => r.roomId),
+					)
+				: [orderedRooms.map((r) => r.roomId)];
+
+		const section = sections.find((ids) => ids.includes(activeRoomId));
+		if (!section) return;
+
+		const oldIdx = section.indexOf(activeRoomId);
+		const newIdx = section.indexOf(overRoomId);
+		if (oldIdx === -1 || newIdx === -1) return;
+
+		const newSectionOrder = arrayMove(section, oldIdx, newIdx);
+
+		const knownIds = localRooms.map((r) => r.roomId);
+		const newIds = knownIds.filter((id) => !roomOrder.includes(id));
+		const fullOrder = [...roomOrder, ...newIds];
+		const newRoomOrder = spliceSectionOrder(
+			fullOrder,
+			section,
+			newSectionOrder,
+		);
+
+		setRoomOrder(newRoomOrder);
+		persistLayout({ hiddenWidgets, roomOrder: newRoomOrder, widgetOrder });
+	}
+
 	function handleDragEnd({ active, over }: DragEndEvent) {
 		setActiveId(null);
 		if (!over) return;
@@ -213,6 +248,17 @@ export function DeviceOverview() {
 		const activeDeviceId = String(active.id);
 		const overId = String(over.id);
 		if (activeDeviceId === overId) return;
+
+		if (orderedRooms.some((r) => r.roomId === activeDeviceId)) {
+			// `over` may resolve to a device card nested inside a room (closestCorners
+			// considers every sortable in the shared context) — resolve back to the
+			// room that device belongs to.
+			const overRoomId = orderedRooms.some((r) => r.roomId === overId)
+				? overId
+				: findContainer(overId);
+			if (overRoomId) handleRoomReorder(activeDeviceId, overRoomId);
+			return;
+		}
 
 		const sourceContainer = findContainer(activeDeviceId);
 		if (!sourceContainer) return;
@@ -560,6 +606,12 @@ export function DeviceOverview() {
 		}))
 		.filter((room) => room.devices.length > 0);
 
+	const orderedRooms = applySavedOrder(
+		filteredRooms,
+		roomOrder,
+		(r) => r.roomId,
+	);
+
 	const filteredUnassigned = roomFilter
 		? []
 		: localUnassigned.filter((d) =>
@@ -573,6 +625,9 @@ export function DeviceOverview() {
 	];
 	const activeDevice = activeId
 		? allLocalDevices.find((d) => d.id === activeId)
+		: null;
+	const activeRoomBeingDragged = activeId
+		? orderedRooms.find((r) => r.roomId === activeId)
 		: null;
 	const dndEnabled = activeFilterCount === 0;
 
@@ -773,54 +828,72 @@ export function DeviceOverview() {
 								onDragStart={handleDragStart}
 								sensors={sensors}
 							>
-								{activeSiteId === "all"
-									? groupBySite(filteredRooms).map(([siteName, siteRooms]) => (
-											<SiteSection key={siteName} siteName={siteName}>
+								{activeSiteId === "all" ? (
+									groupBySite(orderedRooms).map(([siteName, siteRooms]) => (
+										<SiteSection key={siteName} siteName={siteName}>
+											<SortableContext
+												items={siteRooms.map((r) => r.roomId)}
+												strategy={verticalListSortingStrategy}
+											>
 												{siteRooms.map((room) => (
-													<RoomGroup
-														anomaly={room.anomaly}
-														badge={room.badge}
-														devices={room.devices}
-														dndEnabled={dndEnabled}
+													<SortableRoomGroup
 														key={room.roomId}
-														onDeviceClick={setSelectedDevice}
-														primarySensorId={
-															room.devices.find(
-																(d) => d.deviceType === "sensor" && d.isOnline,
-															)?.tuyaDeviceId ??
-															room.devices.find(
-																(d) => d.deviceType === "sensor",
-															)?.tuyaDeviceId ??
-															null
-														}
 														roomId={room.roomId}
-														roomName={room.roomName}
-														suggestion={room.suggestion}
-													/>
+													>
+														<RoomGroup
+															anomaly={room.anomaly}
+															badge={room.badge}
+															devices={room.devices}
+															dndEnabled={dndEnabled}
+															onDeviceClick={setSelectedDevice}
+															primarySensorId={
+																room.devices.find(
+																	(d) =>
+																		d.deviceType === "sensor" && d.isOnline,
+																)?.tuyaDeviceId ??
+																room.devices.find(
+																	(d) => d.deviceType === "sensor",
+																)?.tuyaDeviceId ??
+																null
+															}
+															roomId={room.roomId}
+															roomName={room.roomName}
+															suggestion={room.suggestion}
+														/>
+													</SortableRoomGroup>
 												))}
-											</SiteSection>
-										))
-									: filteredRooms.map((room) => (
-											<RoomGroup
-												anomaly={room.anomaly}
-												badge={room.badge}
-												devices={room.devices}
-												dndEnabled={dndEnabled}
-												key={room.roomId}
-												onDeviceClick={setSelectedDevice}
-												primarySensorId={
-													room.devices.find(
-														(d) => d.deviceType === "sensor" && d.isOnline,
-													)?.tuyaDeviceId ??
-													room.devices.find((d) => d.deviceType === "sensor")
-														?.tuyaDeviceId ??
-													null
-												}
-												roomId={room.roomId}
-												roomName={room.roomName}
-												suggestion={room.suggestion}
-											/>
+											</SortableContext>
+										</SiteSection>
+									))
+								) : (
+									<SortableContext
+										items={orderedRooms.map((r) => r.roomId)}
+										strategy={verticalListSortingStrategy}
+									>
+										{orderedRooms.map((room) => (
+											<SortableRoomGroup key={room.roomId} roomId={room.roomId}>
+												<RoomGroup
+													anomaly={room.anomaly}
+													badge={room.badge}
+													devices={room.devices}
+													dndEnabled={dndEnabled}
+													onDeviceClick={setSelectedDevice}
+													primarySensorId={
+														room.devices.find(
+															(d) => d.deviceType === "sensor" && d.isOnline,
+														)?.tuyaDeviceId ??
+														room.devices.find((d) => d.deviceType === "sensor")
+															?.tuyaDeviceId ??
+														null
+													}
+													roomId={room.roomId}
+													roomName={room.roomName}
+													suggestion={room.suggestion}
+												/>
+											</SortableRoomGroup>
 										))}
+									</SortableContext>
+								)}
 								{filteredUnassigned.length > 0 && (
 									<RoomGroup
 										devices={filteredUnassigned}
@@ -835,6 +908,10 @@ export function DeviceOverview() {
 									{activeDevice ? (
 										<div className="rotate-1 opacity-90 shadow-2xl">
 											<DeviceCard device={activeDevice} />
+										</div>
+									) : activeRoomBeingDragged ? (
+										<div className="rotate-1 rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] px-4 py-2 font-semibold text-foreground opacity-90 shadow-2xl">
+											{activeRoomBeingDragged.roomName}
 										</div>
 									) : null}
 								</DragOverlay>

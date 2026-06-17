@@ -320,6 +320,28 @@ to other sites, or rooms hidden by an active room/type/status filter).
 enabled regardless of `activeFilterCount` (per user's explicit choice); it
 does not read or depend on that variable at all.
 
+> Addendum (implementation-time, user-approved "Adapt and continue"): "a
+> second, independent `DndContext`" above is not achievable with dnd-kit —
+> `useSortable`/`useDroppable` resolve to the *nearest ancestor* `DndContext`,
+> and the room-level hooks must wrap `RoomGroup`, which contains the
+> device-level hooks (a single shared `DndContext` spanning all rooms, needed
+> for cross-room device moves). Two nested, independent `DndContext`s cannot
+> both be "nearest ancestor" for two different descendant hook sets in that
+> arrangement. Implemented instead as the standard dnd-kit nested-sortables
+> pattern: **one shared `DndContext`** (the existing device-level one, reused
+> unchanged — same `sensors`/`closestCorners`), multiple nested
+> `SortableContext`s (rooms within sites, devices within rooms — fully
+> supported), and a single `onDragEnd` that dispatches on whether the dragged
+> id belongs to `orderedRooms` (room reorder) or not (existing device-move
+> logic). The functional intent — splice-back persistence, no filter guard on
+> room dragging, no interference between room and device drags — is
+> unchanged; only the literal "two independent `DndContext`s" mechanism
+> differs. One follow-up fix during verification: the room-reorder branch
+> must resolve `over` back to its containing room id when it lands on a
+> device card nested inside that room (`closestCorners` considers every
+> sortable in the shared context, not just rooms) — done via the same
+> `findContainer` helper already used for device moves.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -419,13 +441,13 @@ nothing in the current schema represents a "previous" layout to migrate from.
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run typecheck`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 `applySavedOrder` + splice-back logic covered by unit tests (room not in any visible section is preserved untouched after a same-section reorder)
+- [x] 3.1 Type checking passes: `npm run typecheck`
+- [x] 3.2 Linting passes: `npm run lint`
+- [x] 3.3 `applySavedOrder` + splice-back logic covered by unit tests (room not in any visible section is preserved untouched after a same-section reorder)
 
 #### Manual
 
-- [ ] 3.4 In "All sites" view, drag a room within one site's section to a new position; reload; confirm it persists and other sites' room order is untouched
-- [ ] 3.5 Switch to a single-site view; confirm that site's rooms reflect the same saved order
-- [ ] 3.6 Apply a type/status filter; confirm room dragging still works (no guard) while device-card dragging within a room is disabled, exactly as today
-- [ ] 3.7 Confirm dragging a room produces no interference with dragging a device card (the two `DndContext`s operate independently)
+- [x] 3.4 In "All sites" view, drag a room within one site's section to a new position; reload; confirm it persists and other sites' room order is untouched
+- [x] 3.5 Switch to a single-site view; confirm that site's rooms reflect the same saved order
+- [x] 3.6 Apply a type/status filter; confirm room dragging still works (no guard) while device-card dragging within a room is disabled, exactly as today
+- [x] 3.7 Confirm dragging a room produces no interference with dragging a device card (the two `DndContext`s operate independently)

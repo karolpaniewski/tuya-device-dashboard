@@ -28,3 +28,26 @@ export function applySavedOrder<T>(
 
 	return [...known.map((k) => k.item), ...unknown];
 }
+
+/**
+ * Replaces the slots in `fullOrder` held by `sectionIds` with the ids in
+ * `newSectionOrder`, in order, leaving every other id's position untouched.
+ * Used to fold a reorder of one visible section (e.g. one site's rooms) back
+ * into the full saved order without dropping ids that belong to sections not
+ * currently visible (other sites, filtered-out rooms).
+ */
+export function spliceSectionOrder(
+	fullOrder: string[],
+	sectionIds: string[],
+	newSectionOrder: string[],
+): string[] {
+	const sectionIdSet = new Set(sectionIds);
+	let i = 0;
+
+	return fullOrder.map((id) => {
+		if (!sectionIdSet.has(id)) return id;
+		const replacement = newSectionOrder[i];
+		i += 1;
+		return replacement ?? id;
+	});
+}
