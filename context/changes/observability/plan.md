@@ -322,10 +322,10 @@ No data migration. `LOG_DIR`/`LOG_LEVEL`/`LOG_RETENTION_DAYS` are new optional e
 
 #### Automated
 
-- [x] 3.1 `npm run ci` passes end to end
-- [x] 3.2 `next build` succeeds with no pino transport/worker resolution warnings
+- [x] 3.1 `npm run ci` passes end to end — 913599e
+- [x] 3.2 `next build` succeeds with no pino transport/worker resolution warnings — 913599e
 
 #### Manual
 
-- [x] 3.3 Fresh-clone simulation boots with new vars unset
-- [x] 3.4 LOG_DIR + low retention demonstrates old file cleanup
+- [x] 3.3 Fresh-clone simulation boots with new vars unset — 913599e
+- [x] 3.4 LOG_DIR + low retention demonstrates old file cleanup — 913599e

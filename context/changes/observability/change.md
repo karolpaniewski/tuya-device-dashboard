@@ -1,7 +1,7 @@
 ---
 id: observability
 title: Observability infrastructure
-status: implementing
+status: implemented
 updated: 2026-06-17
 roadmap_id: S-07
 ---
