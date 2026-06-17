@@ -385,29 +385,29 @@ nothing in the current schema represents a "previous" layout to migrate from.
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run typecheck`
-- [x] 1.2 Linting passes: `npm run lint`
-- [x] 1.3 New router unit tests pass: `npm run test -- dashboard-layout`
-- [x] 1.4 `applySavedOrder` unit tests pass (new/deleted/empty-order cases)
+- [x] 1.1 Type checking passes: `npm run typecheck` — 0bc9ffc
+- [x] 1.2 Linting passes: `npm run lint` — 0bc9ffc
+- [x] 1.3 New router unit tests pass: `npm run test -- dashboard-layout` — 0bc9ffc
+- [x] 1.4 `applySavedOrder` unit tests pass (new/deleted/empty-order cases) — 0bc9ffc
 
 #### Manual
 
-- [x] 1.5 After migration, the app still boots and the dashboard renders unchanged (no row exists yet, defaults apply silently)
+- [x] 1.5 After migration, the app still boots and the dashboard renders unchanged (no row exists yet, defaults apply silently) — 0bc9ffc
 
 ### Phase 2: Widget reorder + hide/restore
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run typecheck`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Existing device-overview-adjacent tests still pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Existing device-overview-adjacent tests still pass: `npm run test`
 
 #### Manual
 
-- [ ] 2.4 Drag a KPI card to a new position; reload the page; confirm the new order persists
-- [ ] 2.5 Hide a widget; confirm it disappears and the "hidden" affordance lists it; click to restore it; confirm it reappears in its prior position
-- [ ] 2.6 Click "Reset layout"; confirm all 6 widgets reappear in original order
-- [ ] 2.7 Confirm the existing device-card drag-and-drop (within/between rooms) still works unaffected
+- [x] 2.4 Drag a KPI card to a new position; reload the page; confirm the new order persists
+- [x] 2.5 Hide a widget; confirm it disappears and the "hidden" affordance lists it; click to restore it; confirm it reappears in its prior position
+- [x] 2.6 Click "Reset layout"; confirm all 6 widgets reappear in original order
+- [x] 2.7 Confirm the existing device-card drag-and-drop (within/between rooms) still works unaffected
 
 ### Phase 3: Room reorder
 

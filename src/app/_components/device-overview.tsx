@@ -10,7 +10,11 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+import {
+	arrayMove,
+	rectSortingStrategy,
+	SortableContext,
+} from "@dnd-kit/sortable";
 import {
 	CheckCircle2,
 	Flame,
@@ -26,13 +30,17 @@ import { useSiteContext } from "~/components/site-context";
 import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
+import { DEFAULT_WIDGET_ORDER } from "~/lib/dashboard-widgets";
+import { applySavedOrder } from "~/lib/layout-order";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { DeviceCard } from "./device-card";
 import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
+import { KpiCard } from "./kpi-card";
 import { RoomGroup } from "./room-group";
 import { RoomSidebar } from "./room-sidebar";
 import { RoomTemperaturePanel } from "./room-temperature-panel";
+import { SortableWidget } from "./sortable-widget";
 
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
 
@@ -96,6 +104,7 @@ export function DeviceOverview() {
 		{ refetchInterval: 30_000, refetchIntervalInBackground: false },
 	);
 	const roomsListQuery = api.room.list.useQuery({ siteId: activeSiteId });
+	const layoutQuery = api.dashboardLayout.get.useQuery();
 
 	const [roomFilter, setRoomFilter] = useState("");
 	const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
@@ -108,6 +117,14 @@ export function DeviceOverview() {
 	const [localRooms, setLocalRooms] = useState<RoomItem[]>([]);
 	const [localUnassigned, setLocalUnassigned] = useState<DeviceItem[]>([]);
 
+	// Widget layout local state — mirrors the saved dashboard_layout row
+	const [activeWidgetId, setActiveWidgetId] = useState<string | null>(null);
+	const [widgetOrder, setWidgetOrder] = useState<string[]>([
+		...DEFAULT_WIDGET_ORDER,
+	]);
+	const [hiddenWidgets, setHiddenWidgets] = useState<string[]>([]);
+	const [roomOrder, setRoomOrder] = useState<string[]>([]);
+
 	// Sync local DnD state from server (skip during active drag)
 	useEffect(() => {
 		if (activeId !== null) return;
@@ -116,7 +133,19 @@ export function DeviceOverview() {
 		setLocalUnassigned(data.unassigned);
 	}, [data, activeId]);
 
+	// Sync local widget-layout state from server (skip during active widget drag)
+	useEffect(() => {
+		if (activeWidgetId !== null) return;
+		if (!layoutQuery.data) return;
+		setWidgetOrder(layoutQuery.data.widgetOrder);
+		setHiddenWidgets(layoutQuery.data.hiddenWidgets);
+		setRoomOrder(layoutQuery.data.roomOrder);
+	}, [layoutQuery.data, activeWidgetId]);
+
 	const sensors = useSensors(
+		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+	);
+	const widgetSensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
 	);
 
@@ -126,6 +155,10 @@ export function DeviceOverview() {
 	const moveMutation = api.device.move.useMutation({
 		onError: () => void utils.device.overview.invalidate(),
 		onSuccess: () => void utils.device.overview.invalidate(),
+	});
+	const saveLayoutMutation = api.dashboardLayout.save.useMutation({
+		onError: () => void utils.dashboardLayout.get.invalidate(),
+		onSuccess: () => void utils.dashboardLayout.get.invalidate(),
 	});
 
 	function findContainer(deviceId: string): string | null {
@@ -251,6 +284,86 @@ export function DeviceOverview() {
 		setNameSearch("");
 	}
 
+	function handleWidgetDragStart({ active }: DragStartEvent) {
+		setActiveWidgetId(String(active.id));
+	}
+
+	function handleWidgetDragEnd({ active, over }: DragEndEvent) {
+		setActiveWidgetId(null);
+		if (!over) return;
+
+		const activeWidgetIdStr = String(active.id);
+		const overWidgetId = String(over.id);
+		if (activeWidgetIdStr === overWidgetId) return;
+
+		const oldIdx = visibleWidgets.findIndex((w) => w.id === activeWidgetIdStr);
+		const newIdx = visibleWidgets.findIndex((w) => w.id === overWidgetId);
+		if (oldIdx === -1 || newIdx === -1) return;
+
+		const newOrder = arrayMove(visibleWidgets, oldIdx, newIdx).map((w) => w.id);
+		setWidgetOrder(newOrder);
+		utils.dashboardLayout.get.setData(undefined, {
+			hiddenWidgets,
+			roomOrder,
+			widgetOrder: newOrder,
+		});
+		saveLayoutMutation.mutate({
+			hiddenWidgets,
+			roomOrder,
+			widgetOrder: newOrder,
+		});
+	}
+
+	function handleHideWidget(id: string) {
+		const newOrder = widgetOrder.filter((wid) => wid !== id);
+		const newHidden = [...hiddenWidgets, id];
+		setWidgetOrder(newOrder);
+		setHiddenWidgets(newHidden);
+		utils.dashboardLayout.get.setData(undefined, {
+			hiddenWidgets: newHidden,
+			roomOrder,
+			widgetOrder: newOrder,
+		});
+		saveLayoutMutation.mutate({
+			hiddenWidgets: newHidden,
+			roomOrder,
+			widgetOrder: newOrder,
+		});
+	}
+
+	function handleRestoreWidget(id: string) {
+		const newOrder = [...widgetOrder, id];
+		const newHidden = hiddenWidgets.filter((wid) => wid !== id);
+		setWidgetOrder(newOrder);
+		setHiddenWidgets(newHidden);
+		utils.dashboardLayout.get.setData(undefined, {
+			hiddenWidgets: newHidden,
+			roomOrder,
+			widgetOrder: newOrder,
+		});
+		saveLayoutMutation.mutate({
+			hiddenWidgets: newHidden,
+			roomOrder,
+			widgetOrder: newOrder,
+		});
+	}
+
+	function handleResetLayout() {
+		const defaults = [...DEFAULT_WIDGET_ORDER];
+		setWidgetOrder(defaults);
+		setHiddenWidgets([]);
+		utils.dashboardLayout.get.setData(undefined, {
+			hiddenWidgets: [],
+			roomOrder,
+			widgetOrder: defaults,
+		});
+		saveLayoutMutation.mutate({
+			hiddenWidgets: [],
+			roomOrder,
+			widgetOrder: defaults,
+		});
+	}
+
 	const allDevices = data
 		? [...data.rooms.flatMap((r) => r.devices), ...data.unassigned]
 		: [];
@@ -293,112 +406,67 @@ export function DeviceOverview() {
 			.map((r) => ({ name: r.roomName, count: r.devices.length }))
 			.filter((r) => r.count > 0) ?? [];
 
-	// Use localRooms/localUnassigned (DnD-aware) as base for filtering
-	const filteredRooms = localRooms
-		.filter((room) => !roomFilter || room.roomId === roomFilter)
-		.map((room) => ({
-			...room,
-			devices: room.devices.filter((d) =>
-				matchDevice(d, typeFilter, statusFilter, nameSearch),
-			),
-		}))
-		.filter((room) => room.devices.length > 0);
+	type WidgetDef = {
+		className?: string;
+		id: string;
+		label: string;
+		render: ReactNode;
+	};
 
-	const filteredUnassigned = roomFilter
-		? []
-		: localUnassigned.filter((d) =>
-				matchDevice(d, typeFilter, statusFilter, nameSearch),
-			);
-
-	// DnD: find the active device for DragOverlay
-	const allLocalDevices = [
-		...localRooms.flatMap((r) => r.devices),
-		...localUnassigned,
-	];
-	const activeDevice = activeId
-		? allLocalDevices.find((d) => d.id === activeId)
-		: null;
-	const dndEnabled = activeFilterCount === 0;
-
-	const isZeroDevices =
-		!isLoading &&
-		!error &&
-		data &&
-		data.rooms.length === 0 &&
-		data.unassigned.length === 0 &&
-		activeFilterCount === 0;
-
-	const isFilteredEmpty =
-		!isLoading &&
-		!error &&
-		data &&
-		activeFilterCount > 0 &&
-		filteredRooms.length === 0 &&
-		filteredUnassigned.length === 0;
-
-	return (
-		<div className="flex flex-col gap-8">
-			{/* KPI Row */}
-			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-				{isLoading ? (
-					Array.from({ length: 5 }).map((_, i) => (
-						<div
-							className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
-							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
-							key={i}
-						>
-							<Skeleton className="mb-2 h-3 w-16" />
-							<Skeleton className="mb-1 h-7 w-12" />
-							<Skeleton className="h-3 w-24" />
-						</div>
-					))
-				) : data ? (
-					<>
-						{(
-							[
-								{
-									icon: <Wifi className="h-4 w-4" />,
-									label: "Devices",
-									sub: `${onlineCount} online · ${offlineCount} offline`,
-									value: totalDevices,
-								},
-								{
-									icon: <Thermometer className="h-4 w-4" />,
-									label: "Avg Temp",
-									sub: "online sensors",
-									value: avgTempC !== null ? `${avgTempC.toFixed(1)}°C` : "—",
-								},
-								{
-									icon: <CheckCircle2 className="h-4 w-4 text-green-400" />,
-									label: "Rooms OK",
-									sub: `of ${roomCount} rooms`,
-									value: roomsOk,
-								},
-								{
-									icon: <Flame className="h-4 w-4 text-orange-400" />,
-									label: "Alerts",
-									sub: `${roomsTooHot} too hot · ${roomsTooCold} too cold`,
-									value: roomsTooHot + roomsTooCold,
-								},
-							] as const
-						).map(({ label, value, sub, icon }) => (
-							<div
-								className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
-								key={label}
-							>
-								<div className="mb-1 flex items-center gap-2 text-[var(--s-text-muted)] text-xs">
-									{icon}
-									{label}
-								</div>
-								<div className="font-semibold text-2xl text-foreground">
-									{value}
-								</div>
-								<div className="mt-0.5 text-[var(--s-text-dim)] text-xs">
-									{sub}
-								</div>
-							</div>
-						))}
-						{/* 5th KPI card — donut chart by room */}
+	const widgetDefinitions: WidgetDef[] = data
+		? [
+				{
+					id: "kpi-devices",
+					label: "Devices",
+					render: (
+						<KpiCard
+							icon={<Wifi className="h-4 w-4" />}
+							label="Devices"
+							sub={`${onlineCount} online · ${offlineCount} offline`}
+							value={totalDevices}
+						/>
+					),
+				},
+				{
+					id: "kpi-avg-temp",
+					label: "Avg Temp",
+					render: (
+						<KpiCard
+							icon={<Thermometer className="h-4 w-4" />}
+							label="Avg Temp"
+							sub="online sensors"
+							value={avgTempC !== null ? `${avgTempC.toFixed(1)}°C` : "—"}
+						/>
+					),
+				},
+				{
+					id: "kpi-rooms-ok",
+					label: "Rooms OK",
+					render: (
+						<KpiCard
+							icon={<CheckCircle2 className="h-4 w-4 text-green-400" />}
+							label="Rooms OK"
+							sub={`of ${roomCount} rooms`}
+							value={roomsOk}
+						/>
+					),
+				},
+				{
+					id: "kpi-alerts",
+					label: "Alerts",
+					render: (
+						<KpiCard
+							icon={<Flame className="h-4 w-4 text-orange-400" />}
+							label="Alerts"
+							sub={`${roomsTooHot} too hot · ${roomsTooCold} too cold`}
+							value={roomsTooHot + roomsTooCold}
+						/>
+					),
+				},
+				{
+					id: "kpi-by-room",
+					label: "By Room",
+					render: (
 						<div className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]">
 							<div className="mb-1 text-[var(--s-text-muted)] text-xs">
 								By Room
@@ -446,14 +514,160 @@ export function DeviceOverview() {
 								</div>
 							)}
 						</div>
-					</>
-				) : null}
-			</div>
+					),
+				},
+				...(data.rooms.length > 0
+					? [
+							{
+								className: "col-span-full",
+								id: "room-temp-panel",
+								label: "Room Temperatures",
+								render: <RoomTemperaturePanel rooms={data.rooms} />,
+							},
+						]
+					: []),
+			]
+		: [];
 
-			{/* Temperature Overview Panel */}
-			{!isLoading && data && data.rooms.length > 0 && (
-				<RoomTemperaturePanel rooms={data.rooms} />
-			)}
+	const nonHiddenWidgetDefs = widgetDefinitions.filter(
+		(w) => !hiddenWidgets.includes(w.id),
+	);
+	const visibleWidgets = applySavedOrder(
+		nonHiddenWidgetDefs,
+		widgetOrder,
+		(w) => w.id,
+	);
+	const hiddenWidgetDefs = widgetDefinitions.filter((w) =>
+		hiddenWidgets.includes(w.id),
+	);
+	const activeWidgetDef = activeWidgetId
+		? (widgetDefinitions.find((w) => w.id === activeWidgetId) ?? null)
+		: null;
+
+	// Use localRooms/localUnassigned (DnD-aware) as base for filtering
+	const filteredRooms = localRooms
+		.filter((room) => !roomFilter || room.roomId === roomFilter)
+		.map((room) => ({
+			...room,
+			devices: room.devices.filter((d) =>
+				matchDevice(d, typeFilter, statusFilter, nameSearch),
+			),
+		}))
+		.filter((room) => room.devices.length > 0);
+
+	const filteredUnassigned = roomFilter
+		? []
+		: localUnassigned.filter((d) =>
+				matchDevice(d, typeFilter, statusFilter, nameSearch),
+			);
+
+	// DnD: find the active device for DragOverlay
+	const allLocalDevices = [
+		...localRooms.flatMap((r) => r.devices),
+		...localUnassigned,
+	];
+	const activeDevice = activeId
+		? allLocalDevices.find((d) => d.id === activeId)
+		: null;
+	const dndEnabled = activeFilterCount === 0;
+
+	const isZeroDevices =
+		!isLoading &&
+		!error &&
+		data &&
+		data.rooms.length === 0 &&
+		data.unassigned.length === 0 &&
+		activeFilterCount === 0;
+
+	const isFilteredEmpty =
+		!isLoading &&
+		!error &&
+		data &&
+		activeFilterCount > 0 &&
+		filteredRooms.length === 0 &&
+		filteredUnassigned.length === 0;
+
+	return (
+		<div className="flex flex-col gap-8">
+			{/* Summary widgets */}
+			{isLoading ? (
+				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+					{Array.from({ length: 5 }).map((_, i) => (
+						<div
+							className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
+							key={i}
+						>
+							<Skeleton className="mb-2 h-3 w-16" />
+							<Skeleton className="mb-1 h-7 w-12" />
+							<Skeleton className="h-3 w-24" />
+						</div>
+					))}
+				</div>
+			) : data ? (
+				<div className="flex flex-col gap-3">
+					<DndContext
+						collisionDetection={closestCorners}
+						onDragEnd={handleWidgetDragEnd}
+						onDragStart={handleWidgetDragStart}
+						sensors={widgetSensors}
+					>
+						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+							<SortableContext
+								items={visibleWidgets.map((w) => w.id)}
+								strategy={rectSortingStrategy}
+							>
+								{visibleWidgets.map((widget) => (
+									<SortableWidget
+										className={widget.className}
+										id={widget.id}
+										key={widget.id}
+										onHide={() => handleHideWidget(widget.id)}
+									>
+										{widget.render}
+									</SortableWidget>
+								))}
+							</SortableContext>
+						</div>
+						<DragOverlay>
+							{activeWidgetDef ? (
+								<div className="rotate-1 opacity-90 shadow-2xl">
+									{activeWidgetDef.render}
+								</div>
+							) : null}
+						</DragOverlay>
+					</DndContext>
+
+					<div className="flex flex-wrap items-center gap-2 text-xs">
+						{hiddenWidgetDefs.length > 0 && (
+							<>
+								<span className="text-[var(--s-text-dim)]">
+									{hiddenWidgetDefs.length} hidden:
+								</span>
+								{hiddenWidgetDefs.map((widget) => (
+									<button
+										className="rounded-full border border-[var(--s-border)] px-2 py-1 text-[var(--s-text-muted)] hover:bg-[var(--s-bg-dnd)] hover:text-foreground"
+										key={widget.id}
+										onClick={() => handleRestoreWidget(widget.id)}
+										type="button"
+									>
+										{widget.label}
+									</button>
+								))}
+							</>
+						)}
+						<Button
+							className="ml-auto"
+							onClick={handleResetLayout}
+							size="sm"
+							type="button"
+							variant="ghost"
+						>
+							Reset layout
+						</Button>
+					</div>
+				</div>
+			) : null}
 
 			{/* Loading skeleton grid */}
 			{isLoading && (

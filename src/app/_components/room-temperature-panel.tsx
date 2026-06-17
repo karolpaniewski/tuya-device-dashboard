@@ -124,7 +124,7 @@ export function RoomTemperaturePanel({ rooms }: { rooms: RoomItem[] }) {
 
 	return (
 		<div>
-			<div className="mb-3 flex items-center justify-between">
+			<div className="mb-3 flex items-center justify-between pr-8">
 				<div className="flex items-center gap-2">
 					<Thermometer className="text-[var(--s-text-muted)]" size={15} />
 					<span className="font-semibold text-foreground text-sm">
