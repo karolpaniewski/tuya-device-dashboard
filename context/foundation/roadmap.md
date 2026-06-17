@@ -3,7 +3,7 @@ project: Tuya Device Dashboard
 version: 1
 status: draft
 created: 2026-06-08
-updated: 2026-06-16
+updated: 2026-06-17
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -49,6 +49,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-16  | device-dnd-modal       | drag-and-drop devices to reorder within a room or move between rooms (persisted); click any device card to open management modal with setpoint, rename, room, history chart, humidity | S-01, S-09, S-15 | user-requested v2 | done |
 | S-17  | visual-ux-redesign     | full dark/light mode toggle (no FOUC), CSS token system replacing glass-morphism dark: variants (Turbopack-safe), device-type icons + watermark on cards, per-room 24h temperature overview panel, donut KPI card for device distribution by room | S-15, S-16 | user-requested v2 | done |
 | S-18  | room-site-reassignment | move a room — and its assigned devices and, if exclusive to it, its gateway — to a different site in one atomic operation, via a confirmation-gated picker in Setup → Rooms | S-13 | user-requested v2 | done |
+| S-19  | dashboard-personalization | drag-and-drop reorder/hide summary widgets (KPI cards, donut, room temperature panel) and reorder room groups on the dashboard; layout persists across sessions and server restarts (single shared deployment-level layout — no per-account identity boundary exists in this app, confirmed via `/10x-frame`) | S-15, S-16, S-17 | user-requested v2 | done |
 
 ## Streams
 
@@ -283,6 +284,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Multi-site is the largest scope item in the roadmap. The network topology unknown alone can require a different product architecture (e.g. one agent process per site phoning home to a central server). Shaping must resolve this before any planning begins.
 - **Status:** needs-shaping
 
+### S-19: Dashboard personalization
+
+- **Outcome:** user can drag-and-drop reorder or hide/restore the dashboard's summary widgets (KPI cards, "by room" donut, room temperature panel) and drag-and-drop reorder room groups; the resulting layout persists across sessions and server restarts. Persistence is a single shared deployment-level layout, not per-account — `/10x-frame` confirmed this app has exactly one effective identity (one seeded admin row; flat access model), so a `userId`-scoped table would be permanent cardinality-1 complexity with no behavioral payoff.
+- **Change ID:** dashboard-personalization
+- **PRD refs:** user-requested v2 (no PRD trace — open-ended feature brainstorming, framed via `/10x-frame` before planning)
+- **Prerequisites:** S-15 (KPI row + donut + room panel exist to be made reorderable), S-16 (established the `@dnd-kit` drag pattern in this codebase), S-17 (most recent UI layer this builds on)
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Widget order/visibility and room order are structurally distinct data shapes (rooms had no `sortOrder` column, unlike `devices.sortOrder`) — shipped as two separate phases rather than one bundled "drag-and-drop" feature to avoid conflating them. A layout-save race condition surfaced after initial implementation and was fixed by serializing writes (see `0bc9ffc`..`9ebb70d`).
+- **Status:** done
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID              | Suggested issue title                                             | Ready for `/10x-plan` | Notes                                                                 |
@@ -303,6 +316,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-11       | automation-rules       | Feature: time-based valve setpoint rules                          | done                  | —                                                                      |
 | S-12       | automation-history     | Feature: log of automation rule executions                        | no                    | Needs S-11 first                                                      |
 | S-13       | multi-site             | Feature: multiple office locations in one dashboard               | no                    | Run `/10x-shape` first — architecture decision needed                 |
+| S-19       | dashboard-personalization | Feature: drag-and-drop widget reorder/hide + room reorder, persisted layout | done | —                                                                      |
 
 ## Open Roadmap Questions
 
@@ -335,3 +349,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-17       | visual-ux-redesign     | 2026-06-15  |
 | S-11       | automation-rules       | 2026-06-16  |
 | S-18       | room-site-reassignment | 2026-06-16  |
+| S-19       | dashboard-personalization | 2026-06-17 |

@@ -1,5 +1,6 @@
 import TuyAPI from "tuyapi";
 
+import { getLogger } from "~/server/lib/log-context";
 import type { TuyaDeviceReading, TuyaGatewayClient } from "./types";
 
 const CONNECT_TIMEOUT_MS = 8_000;
@@ -35,6 +36,10 @@ function buildConnection(
 		version: "3.5",
 	});
 
+	const gatewayLogger = getLogger().child({
+		gatewayId: gateway.tuyaGatewayId,
+	});
+
 	const state: GatewayState = {
 		tuyaGateway,
 		latestDps: new Map(),
@@ -53,25 +58,21 @@ function buildConnection(
 		const key = d.cid ?? d.devId;
 		if (key && d.dps) {
 			state.latestDps.set(key, { ...state.latestDps.get(key), ...d.dps });
-			console.log(
-				`[tuya-poller] state update cid=${key} cmd=${cmdByte}:`,
-				d.dps,
+			gatewayLogger.debug(
+				{ cid: key, cmdByte, dps: d.dps },
+				"tuya.state-update",
 			);
 		}
 	};
 
 	tuyaGateway.on("data", onData);
 	tuyaGateway.on("dp-refresh", onData);
-	tuyaGateway.on("heartbeat", () =>
-		console.log(`[tuya-debug] heartbeat from ${gateway.tuyaGatewayId}`),
-	);
+	tuyaGateway.on("heartbeat", () => gatewayLogger.debug("tuya.heartbeat"));
 	tuyaGateway.on("error", (err: unknown) =>
-		console.log(`[tuya-debug] gateway ${gateway.tuyaGatewayId} error:`, err),
+		gatewayLogger.warn({ err }, "tuya.gateway-error-event"),
 	);
 	tuyaGateway.on("disconnected", () => {
-		console.log(
-			`[tuya-poller] gateway ${gateway.tuyaGatewayId} disconnected — reconnecting in ${RECONNECT_DELAY_MS}ms`,
-		);
+		gatewayLogger.warn("tuya.disconnected-reconnecting");
 		state.isConnected = false;
 		if (state.reconnectTimer) clearTimeout(state.reconnectTimer);
 		state.reconnectTimer = setTimeout(() => {
@@ -86,6 +87,7 @@ async function connectState(
 	tuyaGatewayId: string,
 	state: GatewayState,
 ): Promise<void> {
+	const gatewayLogger = getLogger().child({ gatewayId: tuyaGatewayId });
 	try {
 		await Promise.race([
 			state.tuyaGateway.connect(),
@@ -97,17 +99,12 @@ async function connectState(
 			),
 		]);
 		state.isConnected = true;
-		console.log(
-			`[tuya-poller] gateway ${tuyaGatewayId} connected (persistent)`,
-		);
+		gatewayLogger.info("tuya.connected");
 		// Trigger DP_REFRESH for each sub-device to populate initial state.
 		// Gateway responds with dp-refresh events that onData stores in latestDps.
 		void refreshSubDevices(tuyaGatewayId, state);
 	} catch (err) {
-		console.error(
-			`[tuya-poller] gateway ${tuyaGatewayId} connect failed:`,
-			err,
-		);
+		gatewayLogger.error({ err }, "tuya.connect-failed");
 		// Abort any in-flight connect so stale event listeners don't fire.
 		try {
 			state.tuyaGateway.disconnect();
@@ -126,18 +123,14 @@ async function refreshSubDevices(
 	tuyaGatewayId: string,
 	state: GatewayState,
 ): Promise<void> {
+	const gatewayLogger = getLogger().child({ gatewayId: tuyaGatewayId });
 	const nodeIds = [...state.nodeToTuya.keys()];
-	console.log(
-		`[tuya-poller] refreshing ${nodeIds.length} sub-devices on gateway ${tuyaGatewayId}`,
-	);
+	gatewayLogger.debug({ nodeCount: nodeIds.length }, "tuya.refresh-start");
 	for (const nodeId of nodeIds) {
 		try {
 			await state.tuyaGateway.refresh({ cid: nodeId });
 		} catch (err) {
-			console.warn(
-				`[tuya-poller] refresh failed cid=${nodeId}:`,
-				(err as Error).message,
-			);
+			gatewayLogger.warn({ err, nodeId }, "tuya.refresh-failed");
 		}
 	}
 }
@@ -167,10 +160,12 @@ async function ensureConnected(
 
 export const realTuyaClient: TuyaGatewayClient = {
 	async fetchGatewayDevices(gateway, devices) {
+		const gatewayLogger = getLogger().child({
+			gatewayId: gateway.tuyaGatewayId,
+		});
+
 		if (!gateway.ipAddress || !gateway.localKey) {
-			console.warn(
-				`[tuya-poller] Gateway ${gateway.tuyaGatewayId}: missing ipAddress or localKey — skipping`,
-			);
+			gatewayLogger.warn("tuya.missing-connection-info");
 			return [];
 		}
 
@@ -211,8 +206,9 @@ export const realTuyaClient: TuyaGatewayClient = {
 			});
 		}
 
-		console.log(
-			`[tuya-poller] gateway ${gateway.tuyaGatewayId}: ${readings.length}/${pollable.length} devices with known state`,
+		gatewayLogger.debug(
+			{ knownCount: readings.length, pollableCount: pollable.length },
+			"tuya.poll-summary",
 		);
 		return readings;
 	},

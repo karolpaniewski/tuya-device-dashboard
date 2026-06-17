@@ -7,6 +7,7 @@ import {
 } from "~/server/db/schema";
 import { decryptLocalKey } from "~/server/lib/crypto";
 import { deviceStateStore } from "~/server/lib/device-state-store";
+import { getLogger, runWithWorkerContext } from "~/server/lib/log-context";
 import { getTuyaClient } from "~/server/lib/tuya";
 
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
@@ -19,63 +20,70 @@ export async function pollOnce(): Promise<void> {
 	try {
 		allGateways = await db.select().from(gateways);
 	} catch (err) {
-		console.error("[tuya-poller] DB error fetching gateways:", err);
+		getLogger().error({ err }, "DB error fetching gateways");
 		return;
 	}
 
 	const readingBatch: (typeof deviceTemperatureReadings.$inferInsert)[] = [];
 
 	for (const gateway of allGateways) {
-		try {
-			const gatewayDevices = await db
-				.select({
-					tuyaDeviceId: devices.tuyaDeviceId,
-					nodeId: devices.nodeId,
-					deviceType: devices.deviceType,
-				})
-				.from(devices)
-				.where(eq(devices.gatewayId, gateway.id));
+		await runWithWorkerContext(
+			{ gatewayId: gateway.tuyaGatewayId },
+			async () => {
+				try {
+					const gatewayDevices = await db
+						.select({
+							tuyaDeviceId: devices.tuyaDeviceId,
+							nodeId: devices.nodeId,
+							deviceType: devices.deviceType,
+						})
+						.from(devices)
+						.where(eq(devices.gatewayId, gateway.id));
 
-			const client = getTuyaClient();
-			const decryptedKey =
-				gateway.localKey !== null ? decryptLocalKey(gateway.localKey) : null;
-			const readings = await client.fetchGatewayDevices(
-				{
-					tuyaGatewayId: gateway.tuyaGatewayId,
-					ipAddress: gateway.ipAddress,
-					localKey: decryptedKey,
-				},
-				gatewayDevices,
-			);
-			for (const reading of readings) {
-				deviceStateStore.set(reading.tuyaDeviceId, {
-					isOnline: reading.isOnline,
-					temperatureC: reading.temperatureC,
-					setpointC: reading.setpointC,
-					humidityPct: reading.humidityPct,
-					lastPolledAt: new Date(),
-				});
-				if (reading.temperatureC !== null || reading.setpointC !== null) {
-					readingBatch.push({
-						tuyaDeviceId: reading.tuyaDeviceId,
-						temperatureC: reading.temperatureC,
-						setpointC: reading.setpointC,
-					});
+					const client = getTuyaClient();
+					const decryptedKey =
+						gateway.localKey !== null
+							? decryptLocalKey(gateway.localKey)
+							: null;
+					const readings = await client.fetchGatewayDevices(
+						{
+							tuyaGatewayId: gateway.tuyaGatewayId,
+							ipAddress: gateway.ipAddress,
+							localKey: decryptedKey,
+						},
+						gatewayDevices,
+					);
+					for (const reading of readings) {
+						deviceStateStore.set(reading.tuyaDeviceId, {
+							isOnline: reading.isOnline,
+							temperatureC: reading.temperatureC,
+							setpointC: reading.setpointC,
+							humidityPct: reading.humidityPct,
+							lastPolledAt: new Date(),
+						});
+						if (reading.temperatureC !== null || reading.setpointC !== null) {
+							readingBatch.push({
+								tuyaDeviceId: reading.tuyaDeviceId,
+								temperatureC: reading.temperatureC,
+								setpointC: reading.setpointC,
+							});
+						}
+					}
+				} catch (err) {
+					getLogger().error(
+						{ err },
+						`Error polling gateway ${gateway.tuyaGatewayId}`,
+					);
 				}
-			}
-		} catch (err) {
-			console.error(
-				`[tuya-poller] Error polling gateway ${gateway.tuyaGatewayId}:`,
-				err,
-			);
-		}
+			},
+		);
 	}
 
 	if (readingBatch.length > 0) {
 		try {
 			await db.insert(deviceTemperatureReadings).values(readingBatch);
 		} catch (err) {
-			console.error("[tuya-poller] Error writing temperature history:", err);
+			getLogger().error({ err }, "Error writing temperature history");
 		}
 	}
 
@@ -87,11 +95,14 @@ export async function pollOnce(): Promise<void> {
 				.delete(deviceTemperatureReadings)
 				.where(lt(deviceTemperatureReadings.recordedAt, cutoff));
 		} catch (err) {
-			console.error("[tuya-poller] Error purging old readings:", err);
+			getLogger().error({ err }, "Error purging old readings");
 		}
 	}
 
-	console.log(`[tuya-poller] polled ${allGateways.length} gateway(s)`);
+	getLogger().info(
+		{ gatewayCount: allGateways.length },
+		"tuya-poller.poll-complete",
+	);
 }
 
 export function startPollingLoop(): void {

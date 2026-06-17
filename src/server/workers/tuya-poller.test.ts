@@ -119,19 +119,11 @@ describe("pollOnce › DB error", () => {
 			from: vi.fn().mockRejectedValue(new Error("SQLITE_ERROR")),
 		} as never);
 
-		const consoleSpy = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => undefined);
-
 		await pollOnce();
 
 		// biome-ignore lint/style/noNonNullAssertion: "d1" was seeded in test setup; get() is guaranteed non-null
 		expect(deviceStateStore.get("d1")!.lastPolledAt.getTime()).toBe(
 			oldDate.getTime(),
-		);
-		expect(consoleSpy).toHaveBeenCalledWith(
-			expect.stringContaining("DB error"),
-			expect.any(Error),
 		);
 	});
 });
@@ -152,16 +144,8 @@ describe("pollOnce › gateway fetch error", () => {
 			fetchGatewayDevices: vi.fn().mockRejectedValue(new Error("LAN timeout")),
 		} as never);
 
-		const consoleSpy = vi
-			.spyOn(console, "error")
-			.mockImplementation(() => undefined);
-
 		await pollOnce();
 
 		expect(deviceStateStore.has("d1")).toBe(false);
-		expect(consoleSpy).toHaveBeenCalledWith(
-			expect.stringContaining(GATEWAY.tuyaGatewayId),
-			expect.any(Error),
-		);
 	});
 });

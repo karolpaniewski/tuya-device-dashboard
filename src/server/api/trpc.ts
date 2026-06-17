@@ -12,6 +12,7 @@ import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
+import { getLogger, setRequestUserId } from "~/server/lib/log-context";
 
 /**
  * 1. CONTEXT
@@ -27,6 +28,7 @@ import { db } from "~/server/db";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
 	const session = await auth();
+	setRequestUserId(session?.user?.id);
 	return {
 		db,
 		session,
@@ -94,7 +96,7 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 	const result = await next();
 
 	const end = Date.now();
-	console.log(`[TRPC] ${path} took ${end - start}ms to execute`);
+	getLogger().info({ path, durationMs: end - start }, "trpc.request");
 
 	return result;
 });

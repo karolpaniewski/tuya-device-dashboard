@@ -292,31 +292,31 @@ No data migration. `LOG_DIR`/`LOG_LEVEL`/`LOG_RETENTION_DAYS` are new optional e
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run typecheck`
-- [x] 1.2 Lint passes: `npx biome check .`
-- [x] 1.3 New unit tests pass: `npx vitest run src/server/lib/logger.test.ts`
-- [x] 1.4 Full suite passes: `npm run ci`
+- [x] 1.1 Type checking passes: `npm run typecheck` — 63a9719
+- [x] 1.2 Lint passes: `npx biome check .` — 63a9719
+- [x] 1.3 New unit tests pass: `npx vitest run src/server/lib/logger.test.ts` — 63a9719
+- [x] 1.4 Full suite passes: `npm run ci` — 63a9719
 
 #### Manual
 
-- [ ] 1.5 `LOG_DIR` writes a dated file matching console output
-- [ ] 1.6 Stale dated files beyond retention are removed on rotation
+- [x] 1.5 `LOG_DIR` writes a dated file matching console output — 63a9719
+- [x] 1.6 Stale dated files beyond retention are removed on rotation — 63a9719
 
 ### Phase 2: Wire context into tRPC and workers
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run typecheck`
-- [ ] 2.2 Lint passes: `npx biome check .`
-- [ ] 2.3 Existing worker/router tests still pass: `npx vitest run src/server/workers src/server/api`
-- [ ] 2.4 Full suite passes: `npm run ci`
+- [x] 2.1 Type checking passes: `npm run typecheck`
+- [x] 2.2 Lint passes: `npx biome check .`
+- [x] 2.3 Existing worker/router tests still pass: `npx vitest run src/server/workers src/server/api`
+- [x] 2.4 Full suite passes: `npm run ci`
 
 #### Manual
 
-- [ ] 2.5 tRPC calls produce structured lines with requestId/userId
-- [ ] 2.6 Poll cycle logs gatewayId context; routine chatter stays at debug
-- [ ] 2.7 LOG_LEVEL=debug reveals heartbeat/state-update/poll-summary lines
-- [ ] 2.8 Forced connect failure logs at error with gatewayId
+- [x] 2.5 tRPC calls produce structured lines with requestId/userId
+- [x] 2.6 Poll cycle logs gatewayId context; routine chatter stays at debug
+- [x] 2.7 LOG_LEVEL=debug reveals heartbeat/state-update/poll-summary lines
+- [x] 2.8 Forced connect failure logs at error with gatewayId
 
 ### Phase 3: Env wiring and end-to-end verification
 

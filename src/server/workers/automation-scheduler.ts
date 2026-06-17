@@ -9,6 +9,7 @@ import {
 	devices,
 } from "~/server/db/schema";
 import { deviceStateStore } from "~/server/lib/device-state-store";
+import { getLogger, runWithWorkerContext } from "~/server/lib/log-context";
 import { sendSetpointCommand } from "~/server/lib/valve-control";
 
 const FRESH_READING_MS = 5 * 60 * 1000;
@@ -64,7 +65,7 @@ async function logExecution(
 }
 
 export async function runAutomationTick(): Promise<void> {
-	console.log("[automation-scheduler] tick");
+	getLogger().debug("automation-scheduler.tick-start");
 
 	const now = new Date();
 	const currentDay = now.getDay();
@@ -79,33 +80,40 @@ export async function runAutomationTick(): Promise<void> {
 	let firedCount = 0;
 
 	for (const rule of rules) {
-		const daysOfWeek = JSON.parse(rule.daysOfWeek) as number[];
-		if (!daysOfWeek.includes(currentDay)) continue;
-		if (rule.fireHour !== currentHour || rule.fireMinute !== currentMinute) {
-			continue;
-		}
-
-		if (rule.tempThresholdC !== null) {
-			const roomAvg = await getRoomAvgTemperature(rule.deviceId);
-			if (roomAvg !== null && roomAvg >= rule.tempThresholdC) {
-				await logExecution(rule.id, "skipped", "Temperature condition not met");
-				continue;
+		await runWithWorkerContext({ ruleId: rule.id }, async () => {
+			const daysOfWeek = JSON.parse(rule.daysOfWeek) as number[];
+			if (!daysOfWeek.includes(currentDay)) return;
+			if (rule.fireHour !== currentHour || rule.fireMinute !== currentMinute) {
+				return;
 			}
-		}
 
-		firedCount++;
+			if (rule.tempThresholdC !== null) {
+				const roomAvg = await getRoomAvgTemperature(rule.deviceId);
+				if (roomAvg !== null && roomAvg >= rule.tempThresholdC) {
+					await logExecution(
+						rule.id,
+						"skipped",
+						"Temperature condition not met",
+					);
+					return;
+				}
+			}
 
-		try {
-			await sendSetpointCommand(rule.deviceId, rule.targetSetpointC);
-			await logExecution(rule.id, "success");
-		} catch (err) {
-			const message = err instanceof Error ? err.message : "COMMAND_FAILED";
-			await logExecution(rule.id, "failed", message);
-		}
+			firedCount++;
+
+			try {
+				await sendSetpointCommand(rule.deviceId, rule.targetSetpointC);
+				await logExecution(rule.id, "success");
+			} catch (err) {
+				const message = err instanceof Error ? err.message : "COMMAND_FAILED";
+				await logExecution(rule.id, "failed", message);
+			}
+		});
 	}
 
-	console.log(
-		`[automation-scheduler] tick done — ${rules.length} rules evaluated, ${firedCount} fired`,
+	getLogger().info(
+		{ rulesEvaluated: rules.length, firedCount },
+		"automation-scheduler.tick-complete",
 	);
 }
 
