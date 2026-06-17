@@ -441,13 +441,13 @@ nothing in the current schema represents a "previous" layout to migrate from.
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npm run typecheck`
-- [x] 3.2 Linting passes: `npm run lint`
-- [x] 3.3 `applySavedOrder` + splice-back logic covered by unit tests (room not in any visible section is preserved untouched after a same-section reorder)
+- [x] 3.1 Type checking passes: `npm run typecheck` — c9ae5c4
+- [x] 3.2 Linting passes: `npm run lint` — c9ae5c4
+- [x] 3.3 `applySavedOrder` + splice-back logic covered by unit tests (room not in any visible section is preserved untouched after a same-section reorder) — c9ae5c4
 
 #### Manual
 
-- [x] 3.4 In "All sites" view, drag a room within one site's section to a new position; reload; confirm it persists and other sites' room order is untouched
-- [x] 3.5 Switch to a single-site view; confirm that site's rooms reflect the same saved order
-- [x] 3.6 Apply a type/status filter; confirm room dragging still works (no guard) while device-card dragging within a room is disabled, exactly as today
-- [x] 3.7 Confirm dragging a room produces no interference with dragging a device card (the two `DndContext`s operate independently)
+- [x] 3.4 In "All sites" view, drag a room within one site's section to a new position; reload; confirm it persists and other sites' room order is untouched — c9ae5c4
+- [x] 3.5 Switch to a single-site view; confirm that site's rooms reflect the same saved order — c9ae5c4
+- [x] 3.6 Apply a type/status filter; confirm room dragging still works (no guard) while device-card dragging within a room is disabled, exactly as today — c9ae5c4
+- [x] 3.7 Confirm dragging a room produces no interference with dragging a device card (the two `DndContext`s operate independently) — c9ae5c4
