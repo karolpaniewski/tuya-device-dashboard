@@ -5,3 +5,4 @@ process.env.DATABASE_URL = "file:test.db";
 process.env.AUTH_SECRET = "test-auth-secret-minimum-32-chars-long";
 process.env.AUTH_ADMIN_EMAIL = "admin@test.local";
 process.env.AUTH_ADMIN_PASSWORD = "testpassword";
+process.env.LOG_LEVEL = "silent";

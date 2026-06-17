@@ -122,6 +122,11 @@ describe("room.list", () => {
 describe("room.create", () => {
 	it("returns the created room", async () => {
 		const mockDb = {
+			select: vi.fn().mockReturnValue({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ id: "s1" }]),
+				}),
+			}),
 			insert: vi.fn().mockReturnValue({
 				values: vi.fn().mockReturnValue({
 					returning: vi
