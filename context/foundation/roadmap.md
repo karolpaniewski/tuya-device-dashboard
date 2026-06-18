@@ -37,7 +37,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-04  | valve-setpoint-control | open device detail, adjust heating valve setpoint, see confirmation or specific error            | F-01, S-01               | FR-010, FR-011, FR-012, US-02     | done     |
 | S-05  | room-health-thresholds | configure per-room comfort thresholds; see OK/Too Cold/Too Hot badge + anomaly flags per room    | F-01, F-02, S-01, S-02   | FR-004, Business Logic            | done     |
 | S-06  | cicd-pipeline          | push to main triggers lint + typecheck + Vitest; passing build produces a deployable artifact   | —                        | PRD §Non-Goals (deferred v1)      | done     |
-| S-07  | observability          | structured logging replaces console.log; errors surface with request/user/device context        | —                        | PRD §Non-Goals (deferred v1)      | proposed |
+| S-07  | observability          | structured logging replaces console.log; errors surface with request/user/device context        | —                        | PRD §Non-Goals (deferred v1)      | done |
 | S-08  | mobile-responsive      | dashboard usable on 375 px viewport (iOS Safari, Android Chrome) without horizontal scroll      | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | done     |
@@ -179,7 +179,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** LAN-only deployment means no cloud runner can reach the target host. CI produces a build artifact; actual deploy remains a manual `git pull && npm run build && npm start` unless a self-hosted runner is available. Do not scope automated deploy in this slice.
 - **Status:** proposed
 
-### S-07: Observability infrastructure
+### S-07: Observability infrastructure (done)
 
 - **Outcome:** structured logging (Pino or equivalent) replaces all `console.log` calls; every log line carries request id, user id, and device id where applicable; errors are written to a queryable log file on disk; no PII or device keys appear in logs.
 - **Change ID:** observability
@@ -189,7 +189,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Key material (`local_key`) must be explicitly excluded from log serialisation — a structured logger's default deep-serialisation will expose it if the device object is logged naively. This must be enforced via a redaction rule, not convention.
-- **Status:** proposed
+- **Status:** done
 
 ### S-08: Mobile browser support (done)
 
@@ -308,7 +308,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-04       | valve-setpoint-control | Feature: heating valve setpoint control with confirmation         | no                    | Blocked — resolve DP code unknown first                               |
 | S-05       | room-health-thresholds | Feature: per-room threshold config + OK/Too Cold/Too Hot status   | done                  | —                                                                     |
 | S-06       | cicd-pipeline          | Infra: lint + typecheck + Vitest on push; deployable artifact     | yes                   | Run `/10x-plan cicd-pipeline`                                         |
-| S-07       | observability          | Infra: structured logging with redaction; replaces console.log    | yes                   | Run `/10x-plan observability`                                         |
+| S-07       | observability          | Infra: structured logging with redaction; replaces console.log    | done                  | —                                                                     |
 | S-08       | mobile-responsive      | Feature: 375 px viewport support across all dashboard views       | yes                   | Run `/10x-plan mobile-responsive`; best after S-14 (shared components stabilised) |
 | S-14       | ux-polish              | Feature: skeleton states, empty states, toast feedback, error UX, visual polish | yes      | Run `/10x-plan ux-polish`                                             |
 | S-09       | temperature-history    | Feature: temperature chart per device/room over configurable range| no                    | Run `/10x-shape` first — storage strategy + retention policy needed   |
