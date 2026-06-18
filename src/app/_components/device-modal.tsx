@@ -12,6 +12,7 @@ import {
 	YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
 import {
 	Dialog,
 	DialogBody,
@@ -198,7 +199,7 @@ function DeviceModalContent({
 								</div>
 								<div className="flex gap-3">
 									<input
-										className="h-2 flex-1 cursor-pointer accent-blue-500 disabled:opacity-40"
+										className="h-2 flex-1 cursor-pointer accent-primary disabled:opacity-40"
 										disabled={setpointSaving}
 										max={35}
 										min={5}
@@ -207,14 +208,13 @@ function DeviceModalContent({
 										type="range"
 										value={setpointInput || "20"}
 									/>
-									<button
-										className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-sm text-white transition-colors hover:bg-blue-500 disabled:opacity-40"
+									<Button
 										disabled={setpointSaving}
 										onClick={handleSetpoint}
 										type="button"
 									>
 										{setpointSaving ? "Sending…" : "Set"}
-									</button>
+									</Button>
 								</div>
 							</div>
 						)}

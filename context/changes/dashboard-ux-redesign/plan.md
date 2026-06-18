@@ -326,26 +326,26 @@ N/A — no data model or schema changes.
 
 #### Automated
 
-- [x] 1.1 Type checking passes
-- [x] 1.2 Linting passes
-- [x] 1.3 Build succeeds
+- [x] 1.1 Type checking passes — 2c0fcc7
+- [x] 1.2 Linting passes — 2c0fcc7
+- [x] 1.3 Build succeeds — 2c0fcc7
 
 #### Manual
 
-- [ ] 1.4 DeviceModal readable in light mode (background/title/description/close)
-- [ ] 1.5 DeviceModal no regression in dark mode
-- [ ] 1.6 Toast follows light theme
-- [ ] 1.7 Toast no regression in dark mode
-- [ ] 1.8 ErrorMessage page variant readable in light mode
+- [x] 1.4 DeviceModal readable in light mode (background/title/description/close) — 2c0fcc7
+- [x] 1.5 DeviceModal no regression in dark mode — 2c0fcc7
+- [x] 1.6 Toast follows light theme — 2c0fcc7
+- [x] 1.7 Toast no regression in dark mode — 2c0fcc7
+- [x] 1.8 ErrorMessage page variant readable in light mode — 2c0fcc7
 
 ### Phase 2: Dead code removal + device-modal one-off fixes
 
 #### Automated
 
-- [ ] 2.1 Type checking passes
-- [ ] 2.2 Linting passes
-- [ ] 2.3 Build succeeds
-- [ ] 2.4 No remaining references to TemperatureHistoryModal
+- [x] 2.1 Type checking passes
+- [x] 2.2 Linting passes
+- [x] 2.3 Build succeeds
+- [x] 2.4 No remaining references to TemperatureHistoryModal
 
 #### Manual
 
