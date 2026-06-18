@@ -356,28 +356,28 @@ N/A — no data model or schema changes.
 
 #### Automated
 
-- [x] 3.1 Type checking passes
-- [x] 3.2 Linting passes
-- [x] 3.3 Build succeeds
+- [x] 3.1 Type checking passes — e94bda5
+- [x] 3.2 Linting passes — e94bda5
+- [x] 3.3 Build succeeds — e94bda5
 
 #### Manual
 
-- [x] 3.4 Offline device badge/text/temperature legible in light mode
-- [x] 3.5 Empty-state views legible in both light and dark mode
+- [x] 3.4 Offline device badge/text/temperature legible in light mode — e94bda5
+- [x] 3.5 Empty-state views legible in both light and dark mode — e94bda5
 
 ### Phase 4: Badge/status color consolidation
 
 #### Automated
 
-- [ ] 4.1 Type checking passes
-- [ ] 4.2 Linting passes
-- [ ] 4.3 Build succeeds
+- [x] 4.1 Type checking passes
+- [x] 4.2 Linting passes
+- [x] 4.3 Build succeeds
 
 #### Manual
 
-- [ ] 4.4 Room status badge + sidebar dot colors pixel-identical before/after
-- [ ] 4.5 Device-type badge colors pixel-identical before/after
-- [ ] 4.6 Setup device-table badges visually unchanged
+- [x] 4.4 Room status badge + sidebar dot colors pixel-identical before/after
+- [x] 4.5 Device-type badge colors pixel-identical before/after
+- [x] 4.6 Setup device-table badges visually unchanged
 
 ### Phase 5: Density tightening
 

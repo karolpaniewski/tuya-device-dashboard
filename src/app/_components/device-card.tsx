@@ -5,17 +5,12 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { DEVICE_TYPE_BADGE_CLASSES } from "~/lib/device-type-colors";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
-
-const TYPE_BADGE: Record<string, string> = {
-	sensor: "bg-blue-600 text-blue-100",
-	valve: "bg-orange-600 text-orange-100",
-	plug: "bg-gray-600 text-gray-100",
-};
 
 const TYPE_ICON = {
 	sensor: Thermometer,
@@ -156,7 +151,9 @@ export function DeviceCard({
 					className={cn(
 						"shrink-0 font-medium",
 						device.isOnline
-							? (TYPE_BADGE[device.deviceType] ?? "bg-gray-600 text-gray-100")
+							? (DEVICE_TYPE_BADGE_CLASSES[
+									device.deviceType as keyof typeof DEVICE_TYPE_BADGE_CLASSES
+								] ?? "bg-gray-600 text-gray-100")
 							: "bg-[var(--s-badge-bg)] text-[var(--s-badge-text)]",
 					)}
 				>

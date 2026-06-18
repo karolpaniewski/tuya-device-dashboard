@@ -1,5 +1,6 @@
 "use client";
 
+import { ROOM_STATUS_DOT_CLASSES } from "~/lib/room-status-colors";
 import { cn } from "~/lib/utils";
 
 interface Room {
@@ -13,12 +14,6 @@ interface RoomSidebarProps {
 	onSelect: (roomId: string | null) => void;
 	rooms: Room[];
 }
-
-const BADGE_DOT: Record<string, string> = {
-	OK: "bg-green-400",
-	"Too Cold": "bg-blue-400",
-	"Too Hot": "bg-red-400",
-};
 
 export function RoomSidebar({
 	activeRoomId,
@@ -54,7 +49,9 @@ export function RoomSidebar({
 					<span
 						className={cn(
 							"h-2 w-2 shrink-0 rounded-full",
-							room.badge ? BADGE_DOT[room.badge] : "bg-[var(--s-sidebar-dot)]",
+							room.badge
+								? ROOM_STATUS_DOT_CLASSES[room.badge]
+								: "bg-[var(--s-sidebar-dot)]",
 						)}
 					/>
 					<span className="truncate">{room.roomName}</span>

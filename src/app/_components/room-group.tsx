@@ -4,18 +4,13 @@ import { useDroppable } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
 import { Badge } from "~/components/ui/badge";
+import { ROOM_STATUS_BADGE_CLASSES } from "~/lib/room-status-colors";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { SortableDeviceCard } from "./sortable-device-card";
 
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
-
-const BADGE_STYLE: Record<string, string> = {
-	OK: "bg-green-700 text-green-100",
-	"Too Cold": "bg-blue-700 text-blue-100",
-	"Too Hot": "bg-red-700 text-red-100",
-};
 
 function RoomSparkline({ deviceId }: { deviceId: string }) {
 	const { data } = api.device.temperatureHistory.useQuery(
@@ -126,7 +121,7 @@ export function RoomGroup({
 					<Badge
 						className={cn(
 							"h-auto rounded-lg px-3 py-1 font-semibold text-sm",
-							BADGE_STYLE[badge] ?? "",
+							ROOM_STATUS_BADGE_CLASSES[badge] ?? "",
 						)}
 					>
 						{badge}
