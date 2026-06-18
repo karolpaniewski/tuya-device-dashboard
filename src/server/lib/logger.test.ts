@@ -5,29 +5,30 @@ import {
 	runWithRequestContext,
 	runWithWorkerContext,
 } from "~/server/lib/log-context";
+import { redact } from "~/server/lib/logger";
 
 function loggerWithCollector(level: pino.LevelWithSilent = "info") {
 	const lines: string[] = [];
 	const stream = { write: (chunk: string) => lines.push(chunk) };
-	const testLogger = pino(
-		{
-			level,
-			redact: {
-				paths: [
-					"*.localKey",
-					"*.gateway.localKey",
-					"*.passwordHash",
-					"*.user.passwordHash",
-				],
-				censor: "[REDACTED]",
-			},
-		},
-		stream,
-	);
+	const testLogger = pino({ level, redact }, stream);
 	return { logger: testLogger, lines };
 }
 
 describe("logger redaction", () => {
+	it("never leaks a bare top-level localKey", () => {
+		const { logger, lines } = loggerWithCollector();
+		const secret = "top-level-secret-local-key";
+		logger.info({ localKey: secret }, "raw gateway row");
+		expect(lines.join("")).not.toContain(secret);
+	});
+
+	it("never leaks a bare top-level passwordHash", () => {
+		const { logger, lines } = loggerWithCollector();
+		const secret = "top-level-secret-password-hash";
+		logger.info({ passwordHash: secret }, "raw user row");
+		expect(lines.join("")).not.toContain(secret);
+	});
+
 	it("never leaks localKey nested one level under a property (e.g. a logged gateway object)", () => {
 		const { logger, lines } = loggerWithCollector();
 		const secret = "nested-secret-local-key";

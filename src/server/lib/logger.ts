@@ -8,10 +8,12 @@ const LOG_LEVEL = process.env.LOG_LEVEL ?? "info";
 const LOG_DIR = process.env.LOG_DIR;
 const LOG_RETENTION_DAYS = Number(process.env.LOG_RETENTION_DAYS ?? 14);
 
-const redact = {
+export const redact = {
 	paths: [
+		"localKey",
 		"*.localKey",
 		"*.gateway.localKey",
+		"passwordHash",
 		"*.passwordHash",
 		"*.user.passwordHash",
 	],
