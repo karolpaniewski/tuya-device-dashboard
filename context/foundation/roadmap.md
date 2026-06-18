@@ -3,7 +3,7 @@ project: Tuya Device Dashboard
 version: 1
 status: draft
 created: 2026-06-08
-updated: 2026-06-17
+updated: 2026-06-18
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -50,6 +50,9 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-17  | visual-ux-redesign     | full dark/light mode toggle (no FOUC), CSS token system replacing glass-morphism dark: variants (Turbopack-safe), device-type icons + watermark on cards, per-room 24h temperature overview panel, donut KPI card for device distribution by room | S-15, S-16 | user-requested v2 | done |
 | S-18  | room-site-reassignment | move a room — and its assigned devices and, if exclusive to it, its gateway — to a different site in one atomic operation, via a confirmation-gated picker in Setup → Rooms | S-13 | user-requested v2 | done |
 | S-19  | dashboard-personalization | drag-and-drop reorder/hide summary widgets (KPI cards, donut, room temperature panel) and reorder room groups on the dashboard; layout persists across sessions and server restarts (single shared deployment-level layout — no per-account identity boundary exists in this app, confirmed via `/10x-frame`) | S-15, S-16, S-17 | user-requested v2 | done |
+| S-20  | room-heat-toggle       | one-click "turn off heat in room X" quick action on the dashboard — closes the valve (DP `valve_state`) directly, independent of setpoint; manual action overrides automation, which may re-engage on its next tick | S-01, S-04, S-11         | user-requested v2                 | needs-shaping |
+| S-21  | dashboard-ux-redesign  | visual design-system pass finishing what S-17 started — palette/density tightened within existing layout, primitive consistency restored (e.g. `temperature-history-modal.tsx`, `device-modal.tsx` one-off styling), desktop-only | S-15, S-16, S-17, S-19   | user-requested v2                 | proposed |
+| S-22  | setup-to-settings      | Setup page reorganized to read as an actual Settings experience (app-wide config / browser-local display preferences), instead of relocating its existing Rooms/Devices/Automations/Sites CRUD screens | S-15, S-19                | user-requested v2                 | needs-shaping |
 
 ## Streams
 
@@ -296,6 +299,47 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Widget order/visibility and room order are structurally distinct data shapes (rooms had no `sortOrder` column, unlike `devices.sortOrder`) — shipped as two separate phases rather than one bundled "drag-and-drop" feature to avoid conflating them. A layout-save race condition surfaced after initial implementation and was fixed by serializing writes (see `0bc9ffc`..`9ebb70d`).
 - **Status:** done
 
+### S-20: Room heat quick-toggle
+
+- **Outcome:** a one-click control on the dashboard (room-level, exact placement TBD) that closes a room's heating valve immediately — writes `valve_state = closed` via the device's DP code (DP 3 in the one documented productKey, `ogx8u5z6`), independent of the `temp_set` (DP 4) path used by S-04/S-11.
+- **Change ID:** room-heat-toggle
+- **PRD refs:** user-requested v2 (no PRD trace — open-ended quick-action request)
+- **Prerequisites:** S-01 (device data flowing), S-04 (existing valve-write path/patterns), S-11 (automation rules this can conflict with)
+- **Parallel with:** S-21
+- **Blockers:** —
+- **Unknowns:**
+  - Room-level vs per-device toggle granularity. Owner: user. Block: no — can default to room-level.
+  - "Turn back on" semantics — does the toggle have an explicit reverse action, or does any subsequent setpoint write implicitly re-open the valve? Owner: user. Block: yes for UX, not for backend.
+  - Exact dashboard placement (room card affordance vs detail modal). Owner: user. Block: no.
+- **Risk:** Low — device-protocol feasibility already confirmed (`src/server/lib/tuya/dp-codes.ts`). Automation-conflict behavior was resolved during scoping discussion: manual toggle is a simple override, automation may re-engage on its next scheduled tick (no new "paused rule" state).
+- **Status:** needs-shaping
+
+### S-21: Visual design-system pass
+
+- **Outcome:** finishes the visual/theming work S-17 started but didn't fully cover — palette, density (tightened within the *existing* layout, no restructuring), and primitive consistency. Confirmed concrete gaps: `temperature-history-modal.tsx` is hardcoded dark-only (no `dark:` variants, no `--s-*` tokens) and will look broken in light mode; `device-modal.tsx:211` uses a raw `bg-blue-600` button bypassing the shared `Button` component. Desktop-only (mobile/S-08 stays out of scope, same boundary S-17 drew). Setup page is explicitly OUT of scope here — see S-22.
+- **Change ID:** dashboard-ux-redesign
+- **PRD refs:** user-requested v2 (no PRD trace — framed via `/10x-frame`, see `context/changes/dashboard-ux-redesign/frame.md`)
+- **Prerequisites:** S-15, S-16, S-17 (the UI layers this revises), S-19 (most recent layout-persistence work it must stay compatible with)
+- **Parallel with:** S-20, S-22
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Touches widely-used shared components (cards, modals, buttons) — screenshot-level regressions are easy to miss without manual review across both light and dark mode.
+- **Status:** proposed
+
+### S-22: Setup → Settings reorganization
+
+- **Outcome:** TBD — needs its own shaping/framing pass before planning. The Setup page (`src/app/_components/setup/`) is currently pure CRUD admin (Rooms/Devices/Automations/Sites tabs plus one buried per-room threshold form) with zero preference/account/display-config content — confirmed via `/10x-frame` (`context/changes/dashboard-ux-redesign/frame.md`) to be a content/IA gap, not a visual one. The fix is reorganizing what's *in* Setup to actually be settings-shaped, not restyling the existing CRUD screens.
+- **Change ID:** setup-to-settings
+- **PRD refs:** user-requested v2 (no PRD trace — open-ended feedback, not yet shaped)
+- **Prerequisites:** S-15 (current Setup tab structure), S-19 (confirms this app's flat single-admin identity model — no per-user preference table exists)
+- **Parallel with:** S-21
+- **Blockers:** —
+- **Unknowns:**
+  - What actually belongs in "Settings" for this app — app-wide config? notification/threshold defaults relocated here? theme controls? Owner: user. Block: yes.
+  - Whether the existing CRUD tabs move, get relabeled, or stay as-is alongside a new dedicated settings section. Owner: user. Block: yes.
+- **Risk:** Must stay inside this app's flat, single-admin identity model — S-19's `/10x-frame` already confirmed no per-account preference table exists. Any "settings" content implying per-user preferences needs that model revisited first, not assumed.
+- **Status:** needs-shaping
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID              | Suggested issue title                                             | Ready for `/10x-plan` | Notes                                                                 |
@@ -317,6 +361,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-12       | automation-history     | Feature: log of automation rule executions                        | no                    | Needs S-11 first                                                      |
 | S-13       | multi-site             | Feature: multiple office locations in one dashboard               | no                    | Run `/10x-shape` first — architecture decision needed                 |
 | S-19       | dashboard-personalization | Feature: drag-and-drop widget reorder/hide + room reorder, persisted layout | done | —                                                                      |
+| S-20       | room-heat-toggle       | Feature: one-click room heat-off quick action (valve close, not setpoint)| no                    | Run `/10x-frame` first — toggle granularity, undo semantics            |
+| S-21       | dashboard-ux-redesign  | Feature: visual design-system pass (finish S-17, fix primitive consistency) | yes            | Run `/10x-plan dashboard-ux-redesign`; scope locked via `/10x-frame`   |
+| S-22       | setup-to-settings      | Feature: Setup page content/IA reorganized to read as Settings       | no                    | Run `/10x-shape` or `/10x-frame` first — what belongs in Settings is still open |
 
 ## Open Roadmap Questions
 
