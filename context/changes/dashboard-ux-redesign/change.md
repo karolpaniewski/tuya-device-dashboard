@@ -1,7 +1,7 @@
 ---
 change_id: dashboard-ux-redesign
 title: Visual design-system pass
-status: implementing
+status: implemented
 created: 2026-06-18
 updated: 2026-06-18
 roadmap_id: S-21

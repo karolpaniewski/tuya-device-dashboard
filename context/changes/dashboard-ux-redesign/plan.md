@@ -383,12 +383,12 @@ N/A — no data model or schema changes.
 
 #### Automated
 
-- [x] 5.1 Type checking passes
-- [x] 5.2 Linting passes
-- [x] 5.3 Build succeeds
+- [x] 5.1 Type checking passes — 97eded7
+- [x] 5.2 Linting passes — 97eded7
+- [x] 5.3 Build succeeds — 97eded7
 
 #### Manual
 
-- [x] 5.4 Dashboard spacing tighter without feeling cramped at typical desktop viewport
-- [x] 5.5 Device card content still fits at reduced min-h
-- [x] 5.6 No newly-cramped areas at 1366×768
+- [x] 5.4 Dashboard spacing tighter without feeling cramped at typical desktop viewport — 97eded7
+- [x] 5.5 Device card content still fits at reduced min-h — 97eded7
+- [x] 5.6 No newly-cramped areas at 1366×768 — 97eded7
