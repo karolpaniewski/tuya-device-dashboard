@@ -20,7 +20,7 @@ export function ErrorMessage({ message, variant = "inline" }: Props) {
 		return (
 			<div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
 				<AlertTriangle className="text-destructive" size={24} />
-				<p className="font-semibold text-white">Something went wrong</p>
+				<p className="font-semibold text-foreground">Something went wrong</p>
 				<p className="text-muted-foreground text-sm">{message}</p>
 			</div>
 		);

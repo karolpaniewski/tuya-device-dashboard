@@ -45,10 +45,10 @@ export default function RootLayout({
 							storageKey="theme"
 						>
 							<SessionProvider>{children}</SessionProvider>
+							<Toaster position="bottom-right" richColors />
 						</ThemeProvider>
 					</SiteProvider>
 				</TRPCReactProvider>
-				<Toaster position="bottom-right" richColors />
 			</body>
 		</html>
 	);

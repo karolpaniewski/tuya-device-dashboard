@@ -39,7 +39,7 @@ function DialogContent({
 			<DialogPrimitive.Popup
 				className={cn(
 					"fixed top-1/2 left-1/2 z-[60] w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
-					"rounded-2xl border border-white/10 bg-gray-900/95 shadow-2xl",
+					"rounded-2xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] shadow-2xl",
 					"transition-all data-[ending-style]:scale-95 data-[ending-style]:opacity-0",
 					className,
 				)}
@@ -58,7 +58,7 @@ function DialogClose({
 	return (
 		<DialogPrimitive.Close
 			className={cn(
-				"absolute top-4 right-4 rounded-md p-1 text-white/40 transition-colors hover:text-white/80",
+				"absolute top-4 right-4 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground",
 				className,
 			)}
 			{...props}
@@ -71,7 +71,10 @@ function DialogClose({
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
-			className={cn("border-white/10 border-b px-6 py-4 pr-12", className)}
+			className={cn(
+				"border-[var(--s-border-card)] border-b px-6 py-4 pr-12",
+				className,
+			)}
 			{...props}
 		/>
 	);
@@ -83,7 +86,7 @@ function DialogTitle({
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
 	return (
 		<DialogPrimitive.Title
-			className={cn("font-semibold text-lg text-white", className)}
+			className={cn("font-semibold text-foreground text-lg", className)}
 			{...props}
 		/>
 	);
@@ -95,7 +98,7 @@ function DialogDescription({
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
 	return (
 		<DialogPrimitive.Description
-			className={cn("mt-1 text-sm text-white/50", className)}
+			className={cn("mt-1 text-muted-foreground text-sm", className)}
 			{...props}
 		/>
 	);

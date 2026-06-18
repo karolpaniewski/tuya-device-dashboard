@@ -1,7 +1,7 @@
 ---
 change_id: dashboard-ux-redesign
 title: Visual design-system pass
-status: preparing
+status: implementing
 created: 2026-06-18
 updated: 2026-06-18
 roadmap_id: S-21
@@ -26,3 +26,10 @@ Scope locked via discussion on 2026-06-18:
 - Automation-history widget stays excluded (S-12 is parked).
 
 Ready for `/10x-plan`.
+
+Planned 2026-06-18 — 5 phases (shared primitives, dead-code removal +
+device-modal fixes, offline/dim token cleanup, badge consolidation, density
+tightening). Key discovery during planning: `temperature-history-modal.tsx`
+was dead/unreachable code (orphaned trigger), not just unstyled — deleted
+rather than fixed, since `device-modal.tsx`'s History tab already covers it.
+See `plan.md` / `plan-brief.md`.
