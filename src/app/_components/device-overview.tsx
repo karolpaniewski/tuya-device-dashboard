@@ -648,7 +648,7 @@ export function DeviceOverview() {
 		filteredUnassigned.length === 0;
 
 	return (
-		<div className="flex flex-col gap-8">
+		<div className="flex flex-col gap-6">
 			{/* Summary widgets */}
 			{isLoading ? (
 				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -784,7 +784,7 @@ export function DeviceOverview() {
 					</aside>
 
 					{/* Main content */}
-					<div className="flex min-w-0 flex-1 flex-col gap-8">
+					<div className="flex min-w-0 flex-1 flex-col gap-6">
 						<FilterBar
 							activeFilterCount={activeFilterCount}
 							filters={{

@@ -369,26 +369,26 @@ N/A — no data model or schema changes.
 
 #### Automated
 
-- [x] 4.1 Type checking passes
-- [x] 4.2 Linting passes
-- [x] 4.3 Build succeeds
+- [x] 4.1 Type checking passes — 72e3dcf
+- [x] 4.2 Linting passes — 72e3dcf
+- [x] 4.3 Build succeeds — 72e3dcf
 
 #### Manual
 
-- [x] 4.4 Room status badge + sidebar dot colors pixel-identical before/after
-- [x] 4.5 Device-type badge colors pixel-identical before/after
-- [x] 4.6 Setup device-table badges visually unchanged
+- [x] 4.4 Room status badge + sidebar dot colors pixel-identical before/after — 72e3dcf
+- [x] 4.5 Device-type badge colors pixel-identical before/after — 72e3dcf
+- [x] 4.6 Setup device-table badges visually unchanged — 72e3dcf
 
 ### Phase 5: Density tightening
 
 #### Automated
 
-- [ ] 5.1 Type checking passes
-- [ ] 5.2 Linting passes
-- [ ] 5.3 Build succeeds
+- [x] 5.1 Type checking passes
+- [x] 5.2 Linting passes
+- [x] 5.3 Build succeeds
 
 #### Manual
 
-- [ ] 5.4 Dashboard spacing tighter without feeling cramped at typical desktop viewport
-- [ ] 5.5 Device card content still fits at reduced min-h
-- [ ] 5.6 No newly-cramped areas at 1366×768
+- [x] 5.4 Dashboard spacing tighter without feeling cramped at typical desktop viewport
+- [x] 5.5 Device card content still fits at reduced min-h
+- [x] 5.6 No newly-cramped areas at 1366×768

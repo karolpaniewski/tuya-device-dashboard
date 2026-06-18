@@ -74,7 +74,7 @@ export function RoomGroup({
 	const grid = (
 		<div
 			className={cn(
-				"grid min-h-[80px] grid-cols-1 gap-4 rounded-xl p-1 transition-colors sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+				"grid min-h-[64px] grid-cols-1 gap-3 rounded-xl p-1 transition-colors sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
 				isOver && dndEnabled
 					? "bg-[var(--s-bg-dnd)] ring-1 ring-[var(--s-border-dnd)]"
 					: "",
