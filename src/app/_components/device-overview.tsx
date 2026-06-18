@@ -757,11 +757,11 @@ export function DeviceOverview() {
 			{/* Zero devices (no filter active) */}
 			{isZeroDevices && (
 				<div className="flex flex-col items-center justify-center py-8 text-center sm:py-16">
-					<Layers className="mb-4 text-gray-600" size={48} />
+					<Layers className="mb-4 text-[var(--s-text-dim)]" size={48} />
 					<p className="font-semibold text-foreground">
 						No devices discovered yet
 					</p>
-					<p className="mt-1 max-w-xs text-gray-400 text-sm">
+					<p className="mt-1 max-w-xs text-[var(--s-text-muted)] text-sm">
 						The polling worker will surface devices as they respond on the LAN.
 					</p>
 				</div>
@@ -804,11 +804,11 @@ export function DeviceOverview() {
 
 						{isFilteredEmpty ? (
 							<div className="flex flex-col items-center justify-center py-8 text-center sm:py-16">
-								<Search className="mb-4 text-gray-600" size={48} />
+								<Search className="mb-4 text-[var(--s-text-dim)]" size={48} />
 								<p className="font-semibold text-foreground">
 									No devices match your filters
 								</p>
-								<p className="mt-1 max-w-xs text-gray-400 text-sm">
+								<p className="mt-1 max-w-xs text-[var(--s-text-muted)] text-sm">
 									Try adjusting or clearing your filters.
 								</p>
 								<Button

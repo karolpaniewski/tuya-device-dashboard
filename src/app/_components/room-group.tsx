@@ -118,7 +118,7 @@ export function RoomGroup({
 					className={`font-semibold text-xl ${isUnassigned ? "text-[var(--s-text-dim)]" : "text-foreground"}`}
 				>
 					{roomName}
-					<span className="ml-2 font-normal text-gray-500 text-sm">
+					<span className="ml-2 font-normal text-[var(--s-text-dim)] text-sm">
 						({devices.length})
 					</span>
 				</h2>

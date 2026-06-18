@@ -157,7 +157,7 @@ export function DeviceCard({
 						"shrink-0 font-medium",
 						device.isOnline
 							? (TYPE_BADGE[device.deviceType] ?? "bg-gray-600 text-gray-100")
-							: "bg-gray-700 text-gray-400",
+							: "bg-[var(--s-badge-bg)] text-[var(--s-badge-text)]",
 					)}
 				>
 					{(() => {
@@ -172,7 +172,7 @@ export function DeviceCard({
 				<div
 					className={cn(
 						"font-bold text-2xl",
-						device.isOnline ? "text-foreground" : "text-gray-500",
+						device.isOnline ? "text-foreground" : "text-[var(--s-text-muted)]",
 					)}
 				>
 					{device.temperatureC !== null ? `${device.temperatureC}°C` : "—"}
@@ -193,7 +193,7 @@ export function DeviceCard({
 				<span
 					className={cn(
 						"font-medium text-xs",
-						device.isOnline ? "text-emerald-400" : "text-gray-600",
+						device.isOnline ? "text-emerald-400" : "text-[var(--s-text-dim)]",
 					)}
 				>
 					{device.isOnline ? "Online" : "Offline"}

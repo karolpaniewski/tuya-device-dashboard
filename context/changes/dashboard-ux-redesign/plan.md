@@ -342,28 +342,28 @@ N/A — no data model or schema changes.
 
 #### Automated
 
-- [x] 2.1 Type checking passes
-- [x] 2.2 Linting passes
-- [x] 2.3 Build succeeds
-- [x] 2.4 No remaining references to TemperatureHistoryModal
+- [x] 2.1 Type checking passes — 4ff0174
+- [x] 2.2 Linting passes — 4ff0174
+- [x] 2.3 Build succeeds — 4ff0174
+- [x] 2.4 No remaining references to TemperatureHistoryModal — 4ff0174
 
 #### Manual
 
-- [ ] 2.5 Valve DeviceModal "Set" button styled via shared Button, setpoint still submits
-- [ ] 2.6 Setpoint slider usable and consistent in both themes
+- [x] 2.5 Valve DeviceModal "Set" button styled via shared Button, setpoint still submits — 4ff0174
+- [x] 2.6 Setpoint slider usable and consistent in both themes — 4ff0174
 
 ### Phase 3: Offline/dim-state token cleanup
 
 #### Automated
 
-- [ ] 3.1 Type checking passes
-- [ ] 3.2 Linting passes
-- [ ] 3.3 Build succeeds
+- [x] 3.1 Type checking passes
+- [x] 3.2 Linting passes
+- [x] 3.3 Build succeeds
 
 #### Manual
 
-- [ ] 3.4 Offline device badge/text/temperature legible in light mode
-- [ ] 3.5 Empty-state views legible in both light and dark mode
+- [x] 3.4 Offline device badge/text/temperature legible in light mode
+- [x] 3.5 Empty-state views legible in both light and dark mode
 
 ### Phase 4: Badge/status color consolidation
 
