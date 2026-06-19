@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useSiteContext } from "~/components/site-context";
 import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
@@ -39,25 +38,20 @@ import {
 import { applySavedOrder, spliceSectionOrder } from "~/lib/layout-order";
 import { DEFAULT_THRESHOLDS } from "~/server/lib/scoring";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { CcAutomationsWidget } from "./cc-automations-widget";
+import { CcClimateOverview } from "./cc-climate-overview";
+import { CcDevicesByRoom } from "./cc-devices-by-room";
 import { CcKpiCard } from "./cc-kpi-card";
 import { DeviceCard } from "./device-card";
 import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
 import { RoomGroup } from "./room-group";
 import { RoomSidebar } from "./room-sidebar";
-import { RoomTemperaturePanel } from "./room-temperature-panel";
 import { SortableRoomGroup } from "./sortable-room-group";
 import { SortableWidget } from "./sortable-widget";
 
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
 
-const CHART_COLORS = [
-	"var(--color-chart-1)",
-	"var(--color-chart-2)",
-	"var(--color-chart-3)",
-	"var(--color-chart-4)",
-	"var(--color-chart-5)",
-];
 const CC_KPI_BIG_NUM =
 	"font-bold text-[#f4f7fa] text-[38px] leading-none tracking-[-0.03em]";
 type DeviceItem = RoomItem["devices"][number];
@@ -710,69 +704,6 @@ export function DeviceOverview() {
 						/>
 					),
 				},
-				{
-					id: "kpi-by-room",
-					label: "By Room",
-					render: (
-						<div className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]">
-							<div className="mb-1 text-[var(--s-text-muted)] text-xs">
-								By Room
-							</div>
-							{roomDeviceCounts.length > 0 ? (
-								<ResponsiveContainer height={80} width="100%">
-									<PieChart>
-										<Pie
-											cx="50%"
-											cy="50%"
-											data={roomDeviceCounts}
-											dataKey="count"
-											innerRadius={24}
-											nameKey="name"
-											outerRadius={36}
-										>
-											{roomDeviceCounts.map((_, i) => (
-												<Cell
-													// biome-ignore lint/suspicious/noArrayIndexKey: chart segment index
-													key={i}
-													style={{
-														fill: CHART_COLORS[i % CHART_COLORS.length],
-													}}
-												/>
-											))}
-										</Pie>
-										<Tooltip
-											contentStyle={{
-												background: "var(--popover)",
-												border: "1px solid var(--border)",
-												borderRadius: "8px",
-												color: "var(--popover-foreground)",
-												fontSize: 12,
-											}}
-											formatter={(val: unknown, name: unknown) => [
-												`${val} devices`,
-												String(name),
-											]}
-										/>
-									</PieChart>
-								</ResponsiveContainer>
-							) : (
-								<div className="flex h-20 items-center justify-center text-[var(--s-text-dim)] text-xs">
-									No rooms
-								</div>
-							)}
-						</div>
-					),
-				},
-				...(data.rooms.length > 0
-					? [
-							{
-								className: "col-span-full",
-								id: "room-temp-panel",
-								label: "Room Temperatures",
-								render: <RoomTemperaturePanel rooms={data.rooms} />,
-							},
-						]
-					: []),
 			]
 		: [];
 
@@ -921,6 +852,14 @@ export function DeviceOverview() {
 						>
 							Reset layout
 						</Button>
+					</div>
+
+					<div className="grid grid-cols-1 gap-[14px] md:grid-cols-[1.95fr_1fr]">
+						<CcClimateOverview rooms={data.rooms} />
+						<div className="flex flex-col gap-[14px]">
+							<CcDevicesByRoom roomDeviceCounts={roomDeviceCounts} />
+							<CcAutomationsWidget siteId={activeSiteId} />
+						</div>
 					</div>
 				</div>
 			) : null}

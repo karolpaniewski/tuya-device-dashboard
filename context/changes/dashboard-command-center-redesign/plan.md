@@ -663,30 +663,30 @@ purely additive and have no effect on existing sensor/valve devices.
 
 ### Phase 2: KPI row (5 real-data stat cards)
 
-- [x] 2.1 Build `cc-kpi-card.tsx` primitive
-- [x] 2.2 Devices Online card
-- [x] 2.3 Avg Temperature card with real range bar
-- [x] 2.4 Active Alerts card (real room names, no fabricated copy)
-- [x] 2.5 Rooms Healthy card
-- [x] 2.6 Active Automations card (5th slot, new `automation.list` query)
+- [x] 2.1 Build `cc-kpi-card.tsx` primitive — 8eb981a
+- [x] 2.2 Devices Online card — 8eb981a
+- [x] 2.3 Avg Temperature card with real range bar — 8eb981a
+- [x] 2.4 Active Alerts card (real room names, no fabricated copy) — 8eb981a
+- [x] 2.5 Rooms Healthy card — 8eb981a
+- [x] 2.6 Active Automations card (5th slot, new `automation.list` query) — 8eb981a
 
 #### Manual
 
-- [x] 2.7 All 5 KPI values cross-checked against underlying data
-- [x] 2.8 Active Alerts tints only when alerts exist
-- [x] 2.9 Active Automations count matches `/setup`
+- [x] 2.7 All 5 KPI values cross-checked against underlying data — 8eb981a
+- [x] 2.8 Active Alerts tints only when alerts exist — 8eb981a
+- [x] 2.9 Active Automations count matches `/setup` — 8eb981a
 
 ### Phase 3: Climate Overview + side column
 
-- [ ] 3.1 Build `cc-climate-overview.tsx` multi-series chart
-- [ ] 3.2 Build `cc-devices-by-room.tsx` (relocated donut)
-- [ ] 3.3 Build `cc-automations-widget.tsx` (read+toggle)
+- [x] 3.1 Build `cc-climate-overview.tsx` multi-series chart
+- [x] 3.2 Build `cc-devices-by-room.tsx` (relocated donut)
+- [x] 3.3 Build `cc-automations-widget.tsx` (read+toggle)
 
 #### Manual
 
-- [ ] 3.4 Climate chart shows one line per sensor-having room only
-- [ ] 3.5 Donut counts match Devices section counts
-- [ ] 3.6 Automation toggle here stays in sync with `/setup`
+- [x] 3.4 Climate chart shows one line per sensor-having room only
+- [x] 3.5 Donut counts match Devices section counts
+- [x] 3.6 Automation toggle here stays in sync with `/setup`
 
 ### Phase 4: Devices section (toolbar + restyled card grid)
 
