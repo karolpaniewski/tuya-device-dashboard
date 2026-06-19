@@ -22,6 +22,7 @@ import {
 	Layers,
 	Search,
 	Thermometer,
+	Timer,
 	Wifi,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -31,13 +32,17 @@ import { useSiteContext } from "~/components/site-context";
 import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
-import { DEFAULT_WIDGET_ORDER } from "~/lib/dashboard-widgets";
+import {
+	DEFAULT_WIDGET_ORDER,
+	mergeMissingDefaultIds,
+} from "~/lib/dashboard-widgets";
 import { applySavedOrder, spliceSectionOrder } from "~/lib/layout-order";
+import { DEFAULT_THRESHOLDS } from "~/server/lib/scoring";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { CcKpiCard } from "./cc-kpi-card";
 import { DeviceCard } from "./device-card";
 import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
-import { KpiCard } from "./kpi-card";
 import { RoomGroup } from "./room-group";
 import { RoomSidebar } from "./room-sidebar";
 import { RoomTemperaturePanel } from "./room-temperature-panel";
@@ -53,6 +58,8 @@ const CHART_COLORS = [
 	"var(--color-chart-4)",
 	"var(--color-chart-5)",
 ];
+const CC_KPI_BIG_NUM =
+	"font-bold text-[#f4f7fa] text-[38px] leading-none tracking-[-0.03em]";
 type DeviceItem = RoomItem["devices"][number];
 
 function matchDevice(
@@ -107,6 +114,9 @@ export function DeviceOverview() {
 	);
 	const roomsListQuery = api.room.list.useQuery({ siteId: activeSiteId });
 	const layoutQuery = api.dashboardLayout.get.useQuery();
+	const automationListQuery = api.automation.list.useQuery({
+		siteId: activeSiteId,
+	});
 
 	const [roomFilter, setRoomFilter] = useState("");
 	const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
@@ -142,7 +152,7 @@ export function DeviceOverview() {
 	useEffect(() => {
 		if (activeWidgetId !== null || activeId !== null) return;
 		if (!layoutQuery.data) return;
-		setWidgetOrder(layoutQuery.data.widgetOrder);
+		setWidgetOrder(mergeMissingDefaultIds(layoutQuery.data.widgetOrder));
 		setHiddenWidgets(layoutQuery.data.hiddenWidgets);
 		setRoomOrder(layoutQuery.data.roomOrder);
 	}, [layoutQuery.data, activeWidgetId, activeId]);
@@ -442,6 +452,25 @@ export function DeviceOverview() {
 		avgTempReadings.length > 0
 			? avgTempReadings.reduce((a, b) => a + b, 0) / avgTempReadings.length
 			: null;
+	const roomsWithReadingsCount =
+		data?.rooms.filter((r) =>
+			r.devices.some(
+				(d) =>
+					d.deviceType === "sensor" &&
+					d.isOnline &&
+					!d.isStale &&
+					d.temperatureC !== null,
+			),
+		).length ?? 0;
+	const alertingRooms =
+		data?.rooms.filter(
+			(r) => r.badge === "Too Hot" || r.badge === "Too Cold",
+		) ?? [];
+	const hasActiveAlerts = alertingRooms.length > 0;
+	const allRoomsHealthy = roomCount > 0 && roomsOk === roomCount;
+	const activeAutomationsCount =
+		automationListQuery.data?.filter((a) => a.isEnabled).length ?? 0;
+	const totalAutomationsCount = automationListQuery.data?.length ?? 0;
 
 	const activeFilterCount =
 		(roomFilter ? 1 : 0) +
@@ -468,49 +497,216 @@ export function DeviceOverview() {
 		? [
 				{
 					id: "kpi-devices",
-					label: "Devices",
+					label: "Devices Online",
 					render: (
-						<KpiCard
-							icon={<Wifi className="h-4 w-4" />}
-							label="Devices"
-							sub={`${onlineCount} online · ${offlineCount} offline`}
-							value={totalDevices}
+						<CcKpiCard
+							icon={
+								<Wifi className="h-3.5 w-3.5" style={{ color: "#5d6876" }} />
+							}
+							label="Devices Online"
+							sub={`${offlineCount} offline`}
+							value={
+								<>
+									<span className={CC_KPI_BIG_NUM}>{onlineCount}</span>
+									<span className="font-mono text-[#5d6876] text-[14px]">
+										/ {totalDevices}
+									</span>
+								</>
+							}
 						/>
 					),
 				},
 				{
 					id: "kpi-avg-temp",
-					label: "Avg Temp",
+					label: "Avg Temperature",
 					render: (
-						<KpiCard
-							icon={<Thermometer className="h-4 w-4" />}
-							label="Avg Temp"
-							sub="online sensors"
-							value={avgTempC !== null ? `${avgTempC.toFixed(1)}°C` : "—"}
-						/>
-					),
-				},
-				{
-					id: "kpi-rooms-ok",
-					label: "Rooms OK",
-					render: (
-						<KpiCard
-							icon={<CheckCircle2 className="h-4 w-4 text-green-400" />}
-							label="Rooms OK"
-							sub={`of ${roomCount} rooms`}
-							value={roomsOk}
-						/>
+						<CcKpiCard
+							icon={
+								<Thermometer
+									className="h-3.5 w-3.5"
+									style={{ color: "#5d6876" }}
+								/>
+							}
+							label="Avg Temperature"
+							sub={
+								avgTempC !== null
+									? `across ${roomsWithReadingsCount} active room${roomsWithReadingsCount === 1 ? "" : "s"}`
+									: "no live sensor data"
+							}
+							value={
+								avgTempC !== null ? (
+									<>
+										<span className={CC_KPI_BIG_NUM}>
+											{avgTempC.toFixed(1)}
+										</span>
+										<span className="font-semibold text-[#8b96a3] text-[20px]">
+											°C
+										</span>
+									</>
+								) : (
+									<span className={CC_KPI_BIG_NUM}>—</span>
+								)
+							}
+						>
+							{avgTempC !== null && (
+								<div className="mt-3.5 flex items-center gap-2">
+									<span className="font-mono text-[#5d6876] text-[10px]">
+										{DEFAULT_THRESHOLDS.minTempC}°
+									</span>
+									<div className="relative h-[5px] flex-1 rounded-[3px] bg-white/[0.07]">
+										<div
+											className="absolute h-full rounded-[3px]"
+											style={{
+												background:
+													"linear-gradient(90deg, var(--cc-emerald), var(--cc-cyan))",
+												left: 0,
+												width: `${Math.min(100, Math.max(0, ((avgTempC - DEFAULT_THRESHOLDS.minTempC) / (DEFAULT_THRESHOLDS.maxTempC - DEFAULT_THRESHOLDS.minTempC)) * 100))}%`,
+											}}
+										/>
+										<div
+											className="absolute top-1/2 h-[11px] w-[11px] rounded-full"
+											style={{
+												backgroundColor: "var(--cc-cyan)",
+												boxShadow: "0 0 10px var(--cc-cyan)",
+												left: `${Math.min(100, Math.max(0, ((avgTempC - DEFAULT_THRESHOLDS.minTempC) / (DEFAULT_THRESHOLDS.maxTempC - DEFAULT_THRESHOLDS.minTempC)) * 100))}%`,
+												transform: "translate(-50%, -50%)",
+											}}
+										/>
+									</div>
+									<span className="font-mono text-[#5d6876] text-[10px]">
+										{DEFAULT_THRESHOLDS.maxTempC}°
+									</span>
+								</div>
+							)}
+						</CcKpiCard>
 					),
 				},
 				{
 					id: "kpi-alerts",
-					label: "Alerts",
+					label: "Active Alerts",
 					render: (
-						<KpiCard
-							icon={<Flame className="h-4 w-4 text-orange-400" />}
-							label="Alerts"
-							sub={`${roomsTooHot} too hot · ${roomsTooCold} too cold`}
-							value={roomsTooHot + roomsTooCold}
+						<CcKpiCard
+							icon={
+								<Flame
+									className="h-3.5 w-3.5"
+									style={{
+										color: hasActiveAlerts ? "var(--cc-rose)" : "#5d6876",
+									}}
+								/>
+							}
+							label="Active Alerts"
+							sub={
+								hasActiveAlerts
+									? alertingRooms.map((r) => r.roomName).join(", ")
+									: "All rooms within range"
+							}
+							tone={hasActiveAlerts ? "alert" : "default"}
+							value={
+								<span
+									className={
+										hasActiveAlerts
+											? `${CC_KPI_BIG_NUM} text-[var(--cc-rose)]`
+											: CC_KPI_BIG_NUM
+									}
+								>
+									{roomsTooHot + roomsTooCold}
+								</span>
+							}
+						>
+							{hasActiveAlerts && (
+								<button
+									className="mt-3.5 inline-flex rounded-[8px] px-[11px] py-[6px] font-semibold text-[11px]"
+									onClick={() =>
+										document
+											.getElementById("cc-devices-section")
+											?.scrollIntoView({ behavior: "smooth", block: "start" })
+									}
+									style={{
+										backgroundColor: "rgba(251, 113, 133, 0.12)",
+										border: "1px solid rgba(251, 113, 133, 0.3)",
+										color: "var(--cc-rose)",
+									}}
+									type="button"
+								>
+									Review →
+								</button>
+							)}
+						</CcKpiCard>
+					),
+				},
+				{
+					id: "kpi-rooms-ok",
+					label: "Rooms Healthy",
+					render: (
+						<CcKpiCard
+							icon={
+								<CheckCircle2
+									className="h-3.5 w-3.5"
+									style={{
+										color: allRoomsHealthy ? "var(--cc-emerald)" : "#5d6876",
+									}}
+								/>
+							}
+							label="Rooms Healthy"
+							sub={
+								roomCount === 0
+									? "no rooms yet"
+									: allRoomsHealthy
+										? "all within target range"
+										: hasActiveAlerts
+											? `${alertingRooms.length} room${alertingRooms.length === 1 ? "" : "s"} need attention`
+											: "awaiting sensor data"
+							}
+							tone={allRoomsHealthy ? "healthy" : "default"}
+							value={
+								<>
+									<span className={CC_KPI_BIG_NUM}>{roomsOk}</span>
+									<span className="font-mono text-[#5d6876] text-[14px]">
+										/ {roomCount}
+									</span>
+								</>
+							}
+						>
+							{roomCount > 0 && (
+								<div className="mt-3.5 flex gap-[5px]">
+									{data.rooms.map((r) => {
+										const segmentColor =
+											r.badge === "Too Hot"
+												? "var(--cc-amber)"
+												: r.badge === "Too Cold"
+													? "var(--cc-cyan)"
+													: r.badge === "OK"
+														? "var(--cc-emerald)"
+														: "#3a4350";
+										return (
+											<div
+												className="h-1.5 flex-1 rounded-[3px]"
+												key={r.roomId}
+												style={{
+													backgroundColor: segmentColor,
+													boxShadow: `0 0 8px ${segmentColor}`,
+												}}
+											/>
+										);
+									})}
+								</div>
+							)}
+						</CcKpiCard>
+					),
+				},
+				{
+					id: "kpi-automations",
+					label: "Active Automations",
+					render: (
+						<CcKpiCard
+							icon={
+								<Timer className="h-3.5 w-3.5" style={{ color: "#5d6876" }} />
+							}
+							label="Active Automations"
+							sub={`of ${totalAutomationsCount} rule${totalAutomationsCount === 1 ? "" : "s"}`}
+							value={
+								<span className={CC_KPI_BIG_NUM}>{activeAutomationsCount}</span>
+							}
 						/>
 					),
 				},
@@ -651,8 +847,8 @@ export function DeviceOverview() {
 		<div className="flex flex-col gap-6">
 			{/* Summary widgets */}
 			{isLoading ? (
-				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-					{Array.from({ length: 5 }).map((_, i) => (
+				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+					{Array.from({ length: 6 }).map((_, i) => (
 						<div
 							className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] p-4 shadow-[var(--s-shadow)]"
 							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton list
@@ -672,7 +868,7 @@ export function DeviceOverview() {
 						onDragStart={handleWidgetDragStart}
 						sensors={widgetSensors}
 					>
-						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 							<SortableContext
 								items={visibleWidgets.map((w) => w.id)}
 								strategy={rectSortingStrategy}
@@ -769,7 +965,7 @@ export function DeviceOverview() {
 
 			{/* Filter bar + device list (data present, not zero-devices) */}
 			{!isLoading && !error && data && !isZeroDevices && (
-				<div className="flex gap-6">
+				<div className="flex gap-6" id="cc-devices-section">
 					{/* Sidebar — desktop only */}
 					<aside className="hidden sm:block">
 						<RoomSidebar

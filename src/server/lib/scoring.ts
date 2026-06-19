@@ -1,5 +1,11 @@
 export type RoomBadge = "OK" | "Too Cold" | "Too Hot";
 
+export const DEFAULT_THRESHOLDS = {
+	anomalyGapC: 3,
+	maxTempC: 24,
+	minTempC: 18,
+};
+
 export interface RoomScore {
 	badge: RoomBadge | null;
 	anomaly: boolean;

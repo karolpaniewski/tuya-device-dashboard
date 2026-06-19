@@ -648,33 +648,33 @@ purely additive and have no effect on existing sensor/valve devices.
 
 ### Phase 1: Foundation — fonts, scoped tokens, command-center shell
 
-- [x] 1.1 Add Space Grotesk + JetBrains Mono fonts to `layout.tsx`
-- [x] 1.2 Add `.command-center` scoped token block to `globals.css`
-- [x] 1.3 Build `command-center-shell.tsx`
-- [x] 1.4 Build `command-center-clock.tsx`
-- [x] 1.5 Wire new shell into `src/app/page.tsx`
+- [x] 1.1 Add Space Grotesk + JetBrains Mono fonts to `layout.tsx` — 3d2fb6b
+- [x] 1.2 Add `.command-center` scoped token block to `globals.css` — 3d2fb6b
+- [x] 1.3 Build `command-center-shell.tsx` — 3d2fb6b
+- [x] 1.4 Build `command-center-clock.tsx` — 3d2fb6b
+- [x] 1.5 Wire new shell into `src/app/page.tsx` — 3d2fb6b
 
 #### Manual
 
-- [ ] 1.6 `/` renders new shell; `/setup` unchanged
-- [ ] 1.7 Rail navigation + active-state styling correct
-- [ ] 1.8 Live clock ticks with no hydration warning
-- [ ] 1.9 Site selector still works
+- [x] 1.6 `/` renders new shell; `/setup` unchanged — 3d2fb6b
+- [x] 1.7 Rail navigation + active-state styling correct — 3d2fb6b
+- [x] 1.8 Live clock ticks with no hydration warning — 3d2fb6b
+- [x] 1.9 Site selector still works — 3d2fb6b
 
 ### Phase 2: KPI row (5 real-data stat cards)
 
-- [ ] 2.1 Build `cc-kpi-card.tsx` primitive
-- [ ] 2.2 Devices Online card
-- [ ] 2.3 Avg Temperature card with real range bar
-- [ ] 2.4 Active Alerts card (real room names, no fabricated copy)
-- [ ] 2.5 Rooms Healthy card
-- [ ] 2.6 Active Automations card (5th slot, new `automation.list` query)
+- [x] 2.1 Build `cc-kpi-card.tsx` primitive
+- [x] 2.2 Devices Online card
+- [x] 2.3 Avg Temperature card with real range bar
+- [x] 2.4 Active Alerts card (real room names, no fabricated copy)
+- [x] 2.5 Rooms Healthy card
+- [x] 2.6 Active Automations card (5th slot, new `automation.list` query)
 
 #### Manual
 
-- [ ] 2.7 All 5 KPI values cross-checked against underlying data
-- [ ] 2.8 Active Alerts tints only when alerts exist
-- [ ] 2.9 Active Automations count matches `/setup`
+- [x] 2.7 All 5 KPI values cross-checked against underlying data
+- [x] 2.8 Active Alerts tints only when alerts exist
+- [x] 2.9 Active Automations count matches `/setup`
 
 ### Phase 3: Climate Overview + side column
 

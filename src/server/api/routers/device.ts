@@ -12,11 +12,14 @@ import {
 	sites,
 } from "~/server/db/schema";
 import { deviceStateStore } from "~/server/lib/device-state-store";
-import { type RoomBadge, scoreRoom } from "~/server/lib/scoring";
+import {
+	DEFAULT_THRESHOLDS,
+	type RoomBadge,
+	scoreRoom,
+} from "~/server/lib/scoring";
 import { sendSetpointCommand } from "~/server/lib/valve-control";
 
 const STALE_THRESHOLD_MS = 60_000;
-const DEFAULT_THRESHOLDS = { anomalyGapC: 3, maxTempC: 24, minTempC: 18 };
 
 export const deviceRouter = createTRPCRouter({
 	setpoint: protectedProcedure
