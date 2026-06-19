@@ -194,6 +194,30 @@
 	--s-grid-line: oklch(1 0 0 / 5%);
 }
 
+/* dashboard-command-center-redesign: scoped to .command-center only — never :root/.dark */
+.command-center {
+	--cc-bg: #05070c;
+	--cc-glass-bg: linear-gradient(
+		155deg,
+		rgba(255, 255, 255, 0.05),
+		rgba(255, 255, 255, 0.012)
+	);
+	--cc-glass-border: rgba(255, 255, 255, 0.08);
+	--cc-text-primary: #f4f7fa;
+	--cc-text-secondary: #cdd6df;
+	--cc-text-muted: #8b96a3;
+	--cc-text-faint: #5d6876;
+	--cc-cyan: #22d3ee;
+	--cc-cyan-dark: #0e7490;
+	--cc-emerald: #34d399;
+	--cc-violet: #a78bfa;
+	--cc-violet-dark: #6d28d9;
+	--cc-amber: #fbbf24;
+	--cc-rose: #fb7185;
+	--cc-glow-1: rgba(34, 211, 238, 0.13);
+	--cc-glow-2: rgba(167, 139, 250, 0.1);
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

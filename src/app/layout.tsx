@@ -1,7 +1,7 @@
 import "~/styles/globals.css";
 
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { SiteProvider } from "~/components/site-context";
@@ -19,11 +19,25 @@ const geist = Geist({
 	variable: "--font-geist-sans",
 });
 
+const spaceGrotesk = Space_Grotesk({
+	subsets: ["latin"],
+	variable: "--font-display",
+});
+
+const jetBrainsMono = JetBrains_Mono({
+	subsets: ["latin"],
+	variable: "--font-mono-display",
+});
+
 export default function RootLayout({
 	children,
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<html className={geist.variable} lang="en" suppressHydrationWarning>
+		<html
+			className={`${geist.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable}`}
+			lang="en"
+			suppressHydrationWarning
+		>
 			<head>
 				<script
 					dangerouslySetInnerHTML={{
