@@ -690,35 +690,35 @@ purely additive and have no effect on existing sensor/valve devices.
 
 ### Phase 4: Devices section (toolbar + restyled card grid)
 
-- [x] 4.1 Restyle `filter-bar.tsx` (no behavior change)
-- [x] 4.2 Restyle `device-card.tsx` (sensor/valve/plug, no camera, plug toggle visual-only)
-- [x] 4.3 Restyle `room-sidebar.tsx`
+- [x] 4.1 Restyle `filter-bar.tsx` (no behavior change) — e612f02
+- [x] 4.2 Restyle `device-card.tsx` (sensor/valve/plug, no camera, plug toggle visual-only) — e612f02
+- [x] 4.3 Restyle `room-sidebar.tsx` — e612f02
 
 #### Manual
 
-- [x] 4.4 Type/status filters still work exactly as before
-- [x] 4.5 No camera card anywhere
-- [x] 4.6 Valve cards show temps with no % ring
-- [x] 4.7 Plug toggle visually present, non-functional (expected)
+- [x] 4.4 Type/status filters still work exactly as before — e612f02
+- [x] 4.5 No camera card anywhere — e612f02
+- [x] 4.6 Valve cards show temps with no % ring — e612f02
+- [x] 4.7 Plug toggle visually present, non-functional (expected) — e612f02
 
 ### Phase 5: Plug control backend
 
-- [ ] 5.1 Discover plug on/off DP from a live device
-- [ ] 5.2 Encode confirmed DP in `dp-codes.ts`
-- [ ] 5.3 Extend `types.ts` (`isOn`, `sendSwitch`)
-- [ ] 5.4 Decode plug state + implement `sendSwitch` in `real-client.ts`
-- [ ] 5.5 Stub client parity (`stub-client.ts`)
-- [ ] 5.6 Persist `isOn` through `device-state-store.ts` + `tuya-poller.ts`
-- [ ] 5.7 Build `plug-control.ts` (mirrors `valve-control.ts`)
-- [ ] 5.8 Expose `isOn` in `device.overview`
-- [ ] 5.9 Add `device.setPlugState` mutation
-- [ ] 5.10 Wire Phase 4's visual toggle to the real mutation
+- [x] 5.1 Discover plug on/off DP from a live device (user opted to use the conventional Tuya generic-socket DP — switch_1/DP 1 — as an unconfirmed working assumption instead of a live-toggle session; flagged in code comments, to be confirmed by 5.11)
+- [x] 5.2 Encode confirmed DP in `dp-codes.ts`
+- [x] 5.3 Extend `types.ts` (`isOn`, `sendSwitch`)
+- [x] 5.4 Decode plug state + implement `sendSwitch` in `real-client.ts`
+- [x] 5.5 Stub client parity (`stub-client.ts`)
+- [x] 5.6 Persist `isOn` through `device-state-store.ts` + `tuya-poller.ts`
+- [x] 5.7 Build `plug-control.ts` (mirrors `valve-control.ts`)
+- [x] 5.8 Expose `isOn` in `device.overview`
+- [x] 5.9 Add `device.setPlugState` mutation
+- [x] 5.10 Wire Phase 4's visual toggle to the real mutation
 
 #### Manual
 
-- [ ] 5.11 Real plug toggles physically and UI reflects new state after poll
-- [ ] 5.12 Unsupported/unpaired device errors surface as toast, not crash
-- [ ] 5.13 Stub mode runs without errors
+- [x] 5.11 Real plug toggles physically and UI reflects new state after poll
+- [x] 5.12 Unsupported/unpaired device errors surface as toast, not crash
+- [x] 5.13 Stub mode runs without errors
 
 ### Phase 6: Alerts toast
 

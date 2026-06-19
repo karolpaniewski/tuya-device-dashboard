@@ -4,6 +4,7 @@ export interface TuyaDeviceReading {
 	temperatureC: number | null;
 	setpointC: number | null;
 	humidityPct: number | null;
+	isOn: boolean | null;
 }
 
 export interface TuyaGatewayClient {
@@ -27,5 +28,14 @@ export interface TuyaGatewayClient {
 			localKey: string | null;
 		},
 		command: { dps: number; set: number; cid?: string },
+	): Promise<void>;
+
+	sendSwitch(
+		gateway: {
+			tuyaGatewayId: string;
+			ipAddress: string | null;
+			localKey: string | null;
+		},
+		command: { dps: number; set: boolean; cid?: string },
 	): Promise<void>;
 }

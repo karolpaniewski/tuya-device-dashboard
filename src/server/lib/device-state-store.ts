@@ -3,6 +3,7 @@ export interface DeviceState {
 	temperatureC: number | null;
 	setpointC: number | null;
 	humidityPct: number | null;
+	isOn: boolean | null;
 	lastPolledAt: Date;
 }
 

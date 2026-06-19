@@ -17,8 +17,20 @@ interface GatewayState {
 	reconnectTimer?: ReturnType<typeof setTimeout>;
 }
 
+// globalThis keeps the same Map across Next.js hot-module reloads in dev mode
+// (otherwise the poller and API routes can end up with separate module
+// instances and never see each other's connection state).
+declare global {
+	// eslint-disable-next-line no-var
+	var __tuyaGatewayConnections: Map<string, GatewayState> | undefined;
+}
+
+if (!globalThis.__tuyaGatewayConnections) {
+	globalThis.__tuyaGatewayConnections = new Map<string, GatewayState>();
+}
+
 // Module-level map — one persistent connection per gateway
-const gatewayConnections = new Map<string, GatewayState>();
+const gatewayConnections = globalThis.__tuyaGatewayConnections;
 
 function buildConnection(
 	gateway: {
@@ -188,21 +200,26 @@ export const realTuyaClient: TuyaGatewayClient = {
 		// DPS key mapping differs by device type:
 		//   sensor (plwbuwzx): "1" = temperature, "2" = humidity
 		//   valve  (ogx8u5z6): "2" = temperature, "4" = setpoint
+		//   plug   (fgwhjm9j): "1" = switch_1 (on/off) — conventional Tuya
+		//                       generic-socket DP, not yet confirmed live (see dp-codes.ts)
 		const readings: TuyaDeviceReading[] = [];
 		for (const [cid, dps] of state.latestDps) {
 			const tuyaDeviceId = state.nodeToTuya.get(cid);
 			if (!tuyaDeviceId) continue;
 			const deviceType = state.nodeToType.get(cid) ?? "";
 			const isSensor = deviceType === "sensor";
+			const isPlug = deviceType === "plug";
 			const tempRaw = isSensor ? dps["1"] : dps["2"];
 			const setpointRaw = isSensor ? undefined : dps["4"];
 			const humidityRaw = isSensor ? dps["2"] : undefined;
+			const switchRaw = isPlug ? dps["1"] : undefined;
 			readings.push({
 				tuyaDeviceId,
 				isOnline: true,
 				temperatureC: typeof tempRaw === "number" ? tempRaw / 10 : null,
 				setpointC: typeof setpointRaw === "number" ? setpointRaw / 10 : null,
 				humidityPct: typeof humidityRaw === "number" ? humidityRaw / 10 : null,
+				isOn: typeof switchRaw === "boolean" ? switchRaw : null,
 			});
 		}
 
@@ -218,6 +235,20 @@ export const realTuyaClient: TuyaGatewayClient = {
 		if (!state?.isConnected)
 			throw new Error(
 				`Gateway ${gateway.tuyaGatewayId} is not connected — poller must run before sendSetpoint`,
+			);
+		await state.tuyaGateway.set({
+			dps: command.dps,
+			set: command.set,
+			shouldWaitForResponse: true,
+			...(command.cid ? { cid: command.cid } : {}),
+		});
+	},
+
+	async sendSwitch(gateway, command) {
+		const state = gatewayConnections.get(gateway.tuyaGatewayId);
+		if (!state?.isConnected)
+			throw new Error(
+				`Gateway ${gateway.tuyaGatewayId} is not connected — poller must run before sendSwitch`,
 			);
 		await state.tuyaGateway.set({
 			dps: command.dps,

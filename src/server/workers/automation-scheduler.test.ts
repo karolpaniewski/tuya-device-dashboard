@@ -114,6 +114,7 @@ describe("runAutomationTick", () => {
 			temperatureC: 25,
 			setpointC: null,
 			humidityPct: null,
+			isOn: null,
 			lastPolledAt: NOW,
 		});
 
@@ -202,6 +203,7 @@ describe("getRoomAvgTemperature", () => {
 			temperatureC: 22,
 			setpointC: null,
 			humidityPct: null,
+			isOn: null,
 			lastPolledAt: new Date(NOW.getTime() - 10 * 60 * 1000),
 		});
 
@@ -242,6 +244,7 @@ describe("getRoomAvgTemperature", () => {
 			temperatureC: 20,
 			setpointC: null,
 			humidityPct: null,
+			isOn: null,
 			lastPolledAt: NOW,
 		});
 		deviceStateStore.set("tuya-sensor-2", {
@@ -249,6 +252,7 @@ describe("getRoomAvgTemperature", () => {
 			temperatureC: 24,
 			setpointC: null,
 			humidityPct: null,
+			isOn: null,
 			lastPolledAt: NOW,
 		});
 
@@ -279,6 +283,7 @@ describe("getRoomAvgTemperature", () => {
 			temperatureC: 19.5,
 			setpointC: null,
 			humidityPct: null,
+			isOn: null,
 			lastPolledAt: NOW,
 		});
 

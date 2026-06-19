@@ -17,6 +17,7 @@ import {
 	type RoomBadge,
 	scoreRoom,
 } from "~/server/lib/scoring";
+import { sendPlugCommand } from "~/server/lib/plug-control";
 import { sendSetpointCommand } from "~/server/lib/valve-control";
 
 const STALE_THRESHOLD_MS = 60_000;
@@ -71,6 +72,55 @@ export const deviceRouter = createTRPCRouter({
 			}
 
 			return { success: true as const, setpointC: input.setpointC };
+		}),
+
+	setPlugState: protectedProcedure
+		.input(z.object({ deviceId: z.string(), isOn: z.boolean() }))
+		.mutation(async ({ input }) => {
+			try {
+				await sendPlugCommand(input.deviceId, input.isOn);
+			} catch (err) {
+				const message = err instanceof Error ? err.message : "COMMAND_FAILED";
+				switch (message) {
+					case "DEVICE_NOT_FOUND":
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: "Device not found",
+						});
+					case "UNSUPPORTED_DEVICE":
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "UNSUPPORTED_DEVICE",
+						});
+					case "DEVICE_NOT_PAIRED":
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "DEVICE_NOT_PAIRED",
+						});
+					case "GATEWAY_NOT_FOUND":
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: "Gateway not found",
+						});
+					case "GATEWAY_KEY_NOT_SET":
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "GATEWAY_KEY_NOT_SET",
+						});
+					case "KEY_DECRYPT_FAILED":
+						throw new TRPCError({
+							code: "INTERNAL_SERVER_ERROR",
+							message: "KEY_DECRYPT_FAILED",
+						});
+					default:
+						throw new TRPCError({
+							code: "INTERNAL_SERVER_ERROR",
+							message: "COMMAND_FAILED",
+						});
+				}
+			}
+
+			return { success: true as const, isOn: input.isOn };
 		}),
 
 	rename: protectedProcedure
@@ -289,6 +339,7 @@ export const deviceRouter = createTRPCRouter({
 					temperatureC: state?.temperatureC ?? null,
 					setpointC: state?.setpointC ?? null,
 					humidityPct: state?.humidityPct ?? null,
+					isOn: state?.isOn ?? null,
 					lastPolledAt: state?.lastPolledAt ?? null,
 					isStale,
 				};
@@ -363,6 +414,7 @@ interface DeviceItem {
 	temperatureC: number | null;
 	setpointC: number | null;
 	humidityPct: number | null;
+	isOn: boolean | null;
 	lastPolledAt: Date | null;
 	isStale: boolean;
 }

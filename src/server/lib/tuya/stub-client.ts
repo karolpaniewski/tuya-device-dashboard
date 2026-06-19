@@ -7,6 +7,7 @@ const FIXTURE_READINGS: TuyaDeviceReading[] = [
 		temperatureC: 21.5,
 		setpointC: null,
 		humidityPct: 55,
+		isOn: null,
 	},
 	{
 		tuyaDeviceId: "stub-dev-002",
@@ -14,6 +15,7 @@ const FIXTURE_READINGS: TuyaDeviceReading[] = [
 		temperatureC: 19.2,
 		setpointC: null,
 		humidityPct: 48,
+		isOn: null,
 	},
 	{
 		tuyaDeviceId: "stub-dev-003",
@@ -21,6 +23,7 @@ const FIXTURE_READINGS: TuyaDeviceReading[] = [
 		temperatureC: 20.1,
 		setpointC: 21.0,
 		humidityPct: null,
+		isOn: null,
 	},
 	{
 		tuyaDeviceId: "stub-dev-004",
@@ -28,6 +31,7 @@ const FIXTURE_READINGS: TuyaDeviceReading[] = [
 		temperatureC: null,
 		setpointC: 20.0,
 		humidityPct: null,
+		isOn: null,
 	},
 	{
 		tuyaDeviceId: "stub-dev-005",
@@ -35,6 +39,7 @@ const FIXTURE_READINGS: TuyaDeviceReading[] = [
 		temperatureC: null,
 		setpointC: null,
 		humidityPct: null,
+		isOn: true,
 	},
 ];
 
@@ -46,6 +51,10 @@ export const stubTuyaClient: TuyaGatewayClient = {
 	},
 
 	async sendSetpoint(_gateway, _command) {
+		// no-op in stub
+	},
+
+	async sendSwitch(_gateway, _command) {
 		// no-op in stub
 	},
 };

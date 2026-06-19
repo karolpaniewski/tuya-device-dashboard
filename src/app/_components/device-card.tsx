@@ -127,7 +127,33 @@ function DeviceSparkline({ deviceId }: { deviceId: string }) {
 	);
 }
 
-function PlugToggleVisual({ isOn }: { isOn: boolean | null }) {
+function PlugToggle({
+	deviceId,
+	initialIsOn,
+}: {
+	deviceId: string;
+	initialIsOn: boolean | null;
+}) {
+	const [localIsOn, setLocalIsOn] = useState<boolean | null>(initialIsOn);
+	const isOn = localIsOn ?? initialIsOn;
+
+	const mutation = api.device.setPlugState.useMutation({
+		onSuccess: (data) => {
+			setLocalIsOn(data.isOn);
+			toast.success(`Plug → ${data.isOn ? "ON" : "OFF"}`);
+		},
+		onError: () => {
+			setLocalIsOn(initialIsOn);
+			toast.error("Failed to update plug");
+		},
+	});
+
+	function toggle() {
+		const next = !(isOn ?? false);
+		setLocalIsOn(next);
+		mutation.mutate({ deviceId, isOn: next });
+	}
+
 	const label = isOn === null ? "—" : isOn ? "ON" : "OFF";
 	const labelColor =
 		isOn === null
@@ -142,9 +168,10 @@ function PlugToggleVisual({ isOn }: { isOn: boolean | null }) {
 				{label}
 			</span>
 			<button
-				aria-label="Plug control coming soon"
-				className="flex h-6 w-[44px] flex-none cursor-not-allowed items-center rounded-xl p-[3px]"
-				disabled
+				aria-label={isOn ? "Turn plug off" : "Turn plug on"}
+				className="flex h-6 w-[44px] flex-none items-center rounded-xl p-[3px] transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+				disabled={mutation.isPending}
+				onClick={toggle}
 				style={{
 					background:
 						isOn === true
@@ -155,7 +182,6 @@ function PlugToggleVisual({ isOn }: { isOn: boolean | null }) {
 						isOn === true ? "0 0 16px rgba(34, 211, 238, 0.35)" : "none",
 					justifyContent: isOn === true ? "flex-end" : "flex-start",
 				}}
-				title="Plug control coming soon"
 				type="button"
 			>
 				<span
@@ -186,9 +212,7 @@ export function DeviceCard({
 	const deviceType = device.deviceType as keyof typeof TYPE_ICON;
 	const supportsSetpoint = deviceType === "valve" && device.setpointC !== null;
 	const isPlug = deviceType === "plug";
-	const isOn = isPlug
-		? ((device as { isOn?: boolean | null }).isOn ?? null)
-		: null;
+	const isOn = isPlug ? device.isOn : null;
 
 	const BgIcon = TYPE_ICON[deviceType] ?? null;
 
@@ -319,7 +343,13 @@ export function DeviceCard({
 				<DeviceSparkline deviceId={device.tuyaDeviceId} />
 			)}
 
-			{isPlug && <PlugToggleVisual isOn={isOn} />}
+			{isPlug && (
+				// biome-ignore lint/a11y/noStaticElementInteractions: stopPropagation only
+				// biome-ignore lint/a11y/useKeyWithClickEvents: no keyboard action needed; parent card handles keyboard
+				<div onClick={(e) => e.stopPropagation()}>
+					<PlugToggle deviceId={device.id} initialIsOn={isOn} />
+				</div>
+			)}
 
 			<div className="relative mt-3.5 flex items-center justify-between gap-1">
 				<span
