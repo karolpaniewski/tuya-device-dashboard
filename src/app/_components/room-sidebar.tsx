@@ -1,8 +1,5 @@
 "use client";
 
-import { ROOM_STATUS_DOT_CLASSES } from "~/lib/room-status-colors";
-import { cn } from "~/lib/utils";
-
 interface Room {
 	roomId: string;
 	roomName: string;
@@ -15,6 +12,12 @@ interface RoomSidebarProps {
 	rooms: Room[];
 }
 
+const BADGE_DOT_COLOR: Record<NonNullable<Room["badge"]>, string> = {
+	OK: "var(--cc-emerald)",
+	"Too Cold": "var(--cc-cyan)",
+	"Too Hot": "var(--cc-amber)",
+};
+
 export function RoomSidebar({
 	activeRoomId,
 	onSelect,
@@ -23,40 +26,52 @@ export function RoomSidebar({
 	return (
 		<nav className="flex w-44 shrink-0 flex-col gap-1">
 			<button
-				className={cn(
-					"flex cursor-pointer items-center rounded-lg px-3 py-2 text-left text-sm transition-colors",
-					activeRoomId === null
-						? "bg-[var(--s-bg-dim)] text-foreground"
-						: "text-[var(--s-text-secondary)] hover:bg-[var(--s-bg-dim)] hover:text-[var(--s-text-secondary-hov)]",
-				)}
+				className="flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-left text-[13px] transition-colors"
 				onClick={() => onSelect(null)}
+				style={{
+					backgroundColor:
+						activeRoomId === null ? "rgba(255, 255, 255, 0.06)" : "transparent",
+					color:
+						activeRoomId === null
+							? "var(--cc-text-primary)"
+							: "var(--cc-text-secondary)",
+				}}
 				type="button"
 			>
 				All Rooms
 			</button>
-			{rooms.map((room) => (
-				<button
-					className={cn(
-						"flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
-						activeRoomId === room.roomId
-							? "bg-[var(--s-bg-dim)] text-foreground"
-							: "text-[var(--s-text-secondary)] hover:bg-[var(--s-bg-dim)] hover:text-[var(--s-text-secondary-hov)]",
-					)}
-					key={room.roomId}
-					onClick={() => onSelect(room.roomId)}
-					type="button"
-				>
-					<span
-						className={cn(
-							"h-2 w-2 shrink-0 rounded-full",
-							room.badge
-								? ROOM_STATUS_DOT_CLASSES[room.badge]
-								: "bg-[var(--s-sidebar-dot)]",
-						)}
-					/>
-					<span className="truncate">{room.roomName}</span>
-				</button>
-			))}
+			{rooms.map((room) => {
+				const active = activeRoomId === room.roomId;
+				return (
+					<button
+						className="flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2 text-left text-[13px] transition-colors"
+						key={room.roomId}
+						onClick={() => onSelect(room.roomId)}
+						style={{
+							backgroundColor: active
+								? "rgba(255, 255, 255, 0.06)"
+								: "transparent",
+							color: active
+								? "var(--cc-text-primary)"
+								: "var(--cc-text-secondary)",
+						}}
+						type="button"
+					>
+						<span
+							className="h-[7px] w-[7px] shrink-0 rounded-full"
+							style={{
+								backgroundColor: room.badge
+									? BADGE_DOT_COLOR[room.badge]
+									: "var(--cc-text-faint)",
+								boxShadow: room.badge
+									? `0 0 6px ${BADGE_DOT_COLOR[room.badge]}`
+									: undefined,
+							}}
+						/>
+						<span className="truncate">{room.roomName}</span>
+					</button>
+				);
+			})}
 		</nav>
 	);
 }

@@ -678,28 +678,28 @@ purely additive and have no effect on existing sensor/valve devices.
 
 ### Phase 3: Climate Overview + side column
 
-- [x] 3.1 Build `cc-climate-overview.tsx` multi-series chart
-- [x] 3.2 Build `cc-devices-by-room.tsx` (relocated donut)
-- [x] 3.3 Build `cc-automations-widget.tsx` (read+toggle)
+- [x] 3.1 Build `cc-climate-overview.tsx` multi-series chart — 011de00
+- [x] 3.2 Build `cc-devices-by-room.tsx` (relocated donut) — 011de00
+- [x] 3.3 Build `cc-automations-widget.tsx` (read+toggle) — 011de00
 
 #### Manual
 
-- [x] 3.4 Climate chart shows one line per sensor-having room only
-- [x] 3.5 Donut counts match Devices section counts
-- [x] 3.6 Automation toggle here stays in sync with `/setup`
+- [x] 3.4 Climate chart shows one line per sensor-having room only — 011de00
+- [x] 3.5 Donut counts match Devices section counts — 011de00
+- [x] 3.6 Automation toggle here stays in sync with `/setup` — 011de00
 
 ### Phase 4: Devices section (toolbar + restyled card grid)
 
-- [ ] 4.1 Restyle `filter-bar.tsx` (no behavior change)
-- [ ] 4.2 Restyle `device-card.tsx` (sensor/valve/plug, no camera, plug toggle visual-only)
-- [ ] 4.3 Restyle `room-sidebar.tsx`
+- [x] 4.1 Restyle `filter-bar.tsx` (no behavior change)
+- [x] 4.2 Restyle `device-card.tsx` (sensor/valve/plug, no camera, plug toggle visual-only)
+- [x] 4.3 Restyle `room-sidebar.tsx`
 
 #### Manual
 
-- [ ] 4.4 Type/status filters still work exactly as before
-- [ ] 4.5 No camera card anywhere
-- [ ] 4.6 Valve cards show temps with no % ring
-- [ ] 4.7 Plug toggle visually present, non-functional (expected)
+- [x] 4.4 Type/status filters still work exactly as before
+- [x] 4.5 No camera card anywhere
+- [x] 4.6 Valve cards show temps with no % ring
+- [x] 4.7 Plug toggle visually present, non-functional (expected)
 
 ### Phase 5: Plug control backend
 
