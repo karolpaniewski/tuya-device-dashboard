@@ -38,6 +38,7 @@ import {
 import { applySavedOrder, spliceSectionOrder } from "~/lib/layout-order";
 import { DEFAULT_THRESHOLDS } from "~/server/lib/scoring";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { CcAlertToast } from "./cc-alert-toast";
 import { CcAutomationsWidget } from "./cc-automations-widget";
 import { CcClimateOverview } from "./cc-climate-overview";
 import { CcDevicesByRoom } from "./cc-devices-by-room";
@@ -776,6 +777,7 @@ export function DeviceOverview() {
 
 	return (
 		<div className="flex flex-col gap-6">
+			{data && <CcAlertToast rooms={data.rooms} />}
 			{/* Summary widgets */}
 			{isLoading ? (
 				<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -855,7 +857,7 @@ export function DeviceOverview() {
 					</div>
 
 					<div className="grid grid-cols-1 gap-[14px] md:grid-cols-[1.95fr_1fr]">
-						<CcClimateOverview rooms={data.rooms} />
+						<CcClimateOverview />
 						<div className="flex flex-col gap-[14px]">
 							<CcDevicesByRoom roomDeviceCounts={roomDeviceCounts} />
 							<CcAutomationsWidget siteId={activeSiteId} />

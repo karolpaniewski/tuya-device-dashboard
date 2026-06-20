@@ -703,29 +703,29 @@ purely additive and have no effect on existing sensor/valve devices.
 
 ### Phase 5: Plug control backend
 
-- [x] 5.1 Discover plug on/off DP from a live device (user opted to use the conventional Tuya generic-socket DP — switch_1/DP 1 — as an unconfirmed working assumption instead of a live-toggle session; flagged in code comments, to be confirmed by 5.11)
-- [x] 5.2 Encode confirmed DP in `dp-codes.ts`
-- [x] 5.3 Extend `types.ts` (`isOn`, `sendSwitch`)
-- [x] 5.4 Decode plug state + implement `sendSwitch` in `real-client.ts`
-- [x] 5.5 Stub client parity (`stub-client.ts`)
-- [x] 5.6 Persist `isOn` through `device-state-store.ts` + `tuya-poller.ts`
-- [x] 5.7 Build `plug-control.ts` (mirrors `valve-control.ts`)
-- [x] 5.8 Expose `isOn` in `device.overview`
-- [x] 5.9 Add `device.setPlugState` mutation
-- [x] 5.10 Wire Phase 4's visual toggle to the real mutation
+- [x] 5.1 Discover plug on/off DP from a live device (user opted to use the conventional Tuya generic-socket DP — switch_1/DP 1 — as an unconfirmed working assumption instead of a live-toggle session; flagged in code comments, to be confirmed by 5.11) — f0654f0
+- [x] 5.2 Encode confirmed DP in `dp-codes.ts` — f0654f0
+- [x] 5.3 Extend `types.ts` (`isOn`, `sendSwitch`) — f0654f0
+- [x] 5.4 Decode plug state + implement `sendSwitch` in `real-client.ts` — f0654f0
+- [x] 5.5 Stub client parity (`stub-client.ts`) — f0654f0
+- [x] 5.6 Persist `isOn` through `device-state-store.ts` + `tuya-poller.ts` — f0654f0
+- [x] 5.7 Build `plug-control.ts` (mirrors `valve-control.ts`) — f0654f0
+- [x] 5.8 Expose `isOn` in `device.overview` — f0654f0
+- [x] 5.9 Add `device.setPlugState` mutation — f0654f0
+- [x] 5.10 Wire Phase 4's visual toggle to the real mutation — f0654f0
 
 #### Manual
 
-- [x] 5.11 Real plug toggles physically and UI reflects new state after poll
-- [x] 5.12 Unsupported/unpaired device errors surface as toast, not crash
-- [x] 5.13 Stub mode runs without errors
+- [x] 5.11 Real plug toggles physically and UI reflects new state after poll — f0654f0
+- [x] 5.12 Unsupported/unpaired device errors surface as toast, not crash — f0654f0
+- [x] 5.13 Stub mode runs without errors — f0654f0
 
 ### Phase 6: Alerts toast
 
-- [ ] 6.1 Build `cc-alert-toast.tsx`
+- [x] 6.1 Build `cc-alert-toast.tsx`
 
 #### Manual
 
-- [ ] 6.2 Toast appears only with real alerting rooms, names correct
-- [ ] 6.3 Dismiss/reappear behavior correct
-- [ ] 6.4 No toast when all rooms OK
+- [x] 6.2 Toast appears only with real alerting rooms, names correct
+- [x] 6.3 Dismiss/reappear behavior correct
+- [x] 6.4 No toast when all rooms OK
