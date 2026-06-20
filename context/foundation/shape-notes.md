@@ -1,128 +1,251 @@
 ---
-project: Tuya Device Dashboard — S-17 Visual & UX Redesign
-updated: 2026-06-15
+project: Tuya Device Dashboard — S-22 Setup → Settings Reorganization
+updated: 2026-06-20
 
 context_type: brownfield
 product_type: web-app
 target_scale:
   users: small
 timeline_budget:
-  delivery_weeks: 2
+  delivery_weeks: 3
   hard_deadline: null
   after_hours_only: true
 checkpoint:
   current_phase: 8
   phases_completed: [1, 2, 3, 4, 5, 6, 7]
-  frs_drafted: 6
+  frs_drafted: 9
   quality_check_status: accepted
 ---
 
-> Seed idea: redesign wyglądu aplikacji — "wygląda tanio, brak spójności, brak ilustracji, słaby dashboard, brak light mode"
+> Seed idea: S-22 from the roadmap — "Setup page reorganized to read as an
+> actual Settings experience (app-wide config / browser-local display
+> preferences), instead of relocating its existing Rooms/Devices/Automations/
+> Sites CRUD screens."
 
 ## Current System
 
-Tuya Device Dashboard — działający brownfield:
-- Next.js 15, tRPC v11, Drizzle ORM + libsql (SQLite), Tailwind CSS, shadcn/ui
-- Dark-only design, brak spójnej palety i systemu designu
-- Kafelki urządzeń nie rozróżniają wizualnie sensor / valve / plug
-- Strona główna po zalogowaniu: słaby dashboard — brak wykresów na widoku głównym, brak KPI row
-- Brak trybu jasnego
+Setup page (`src/app/_components/setup/`) — pure CRUD admin: Rooms /
+Devices / Automations / Sites tabs (`setup-shell.tsx`), plus one buried
+per-room threshold form (`room-manager.tsx` → `room-threshold-form.tsx`).
+Styled with the older `--s-*` token theme (light/dark via `next-themes`);
+never received the new "command-center" glassmorphic dark-only redesign
+(`--cc-*` tokens, Space Grotesk/JetBrains Mono) the dashboard route
+(`dashboard-command-center-redesign`) just shipped.
 
-**Must preserve:** polling loop (30s), sterowanie zaworami, room health scoring, temperature history, multi-site scoping, auth gate — żadna logika nie jest zmieniana.
+Stack: Next.js 15, tRPC v11, Drizzle ORM + libsql (SQLite), Tailwind CSS,
+shadcn/ui — unchanged, no new stack needed (confirmed via
+`context/changes/dashboard-ux-redesign/frame.md`).
+
+Users: facility manager / office admin. Flat, single-admin identity model
+— NextAuth JWT-only, no per-user preference table, no `/signup`.
+
+**Must preserve:**
+- All existing CRUD functionality (Rooms/Devices/Automations/Sites) stays
+  fully accessible — nothing is hidden or removed, only reorganized/restyled.
+- The flat single-admin identity model is not revisited in this change —
+  any new "settings" content must be app-wide config or browser-local
+  (`next-themes`/`localStorage`) preferences, never per-user.
+- Mobile/375px viewport support (S-08) must not regress.
 
 ## Vision & Problem Statement
 
-Facility managerowie pracują z dashboardem który wygląda jak szkic, nie jak narzędzie pracy. Ciemne tło bez hierarchii, kafelki bez charakteru, strona główna bez żadnej informacji na pierwszy rzut oka.
+Setup is the one remaining surface still on the pre-command-center visual
+theme — the dashboard route just shipped a glassmorphic dark-only redesign
+that Setup never received, so the two now look like two different products.
+Separately, Setup reads as a CRUD admin panel, not a Settings page: zero
+preference/config content exists anywhere in it today.
 
-**Zmiana:** Przeprojektowanie warstwy wizualnej i UX — Grafana/Datadog aesthetic: data-dense, wykresy na pierwszym planie, profesjonalny monitoring feel. Priorytet: strona główna / dashboard. Uzupełnienie: ikony rozróżniające typy urządzeń (Lucide/Phosphor), pełny system dark + light z przełącznikiem.
+**Change:** Reorganize Setup so it (a) visually matches the dashboard's new
+command-center aesthetic, and (b) contains actual settings content — a
+Display/Appearance preferences section and a default room-thresholds
+section — rather than only relabeled CRUD tabs. Both the visual restyle and
+the content/IA fix are bundled into this one change (explicit choice — this
+project has previously split visual-polish slices from content/IA slices,
+e.g. S-17/S-21 vs. this S-22, but the user chose to bundle here since the
+visual gap is now concrete and current rather than a vague aspiration).
 
-**Insight:** Stack jest gotowy — Tailwind + shadcn/ui obsługuje dark/light class strategy. Recharts już zainstalowany. Żadna nowa biblioteka nie jest wymagana do core zmiany — problem jest w tym JAK używamy obecnych narzędzi.
-
-**Estetyczna referencja:** Grafana / Datadog — data-dense, wykresy na pierwszym planie, każdy piksel niesie informację. Ciemny motyw czytelny, jasny jako alternatywa z przełącznikiem.
+**Insight:** The command-center redesign (just-shipped) only touched the
+dashboard route (`/`). Setup (`/setup`) is the one remaining page on the
+old `--s-*` theme — this is now a precise, current gap, not a subjective
+"make it nicer" request.
 
 ## User & Persona
 
-**Rola:** Facility manager / administrator biura (2–5 osób w organizacji)
-**Moment bólu:** Otwarcie dashboardu rano — chce natychmiast zobaczyć stan pomieszczeń, alerty, trendy temperatury. Zamiast tego widzi listę kafelków bez kontekstu.
-**Urządzenie:** Desktop browser (primary), mobile (secondary — S-08 już zrobiony)
+**Role:** Facility manager / office administrator (2–5 person org) — same
+persona as the rest of the app, no new persona introduced for Setup.
+**Device:** Desktop browser (primary), mobile (secondary — S-08 already
+shipped, must not regress).
+**Pain moment:** Opens Setup expecting a settings/config experience after
+just seeing the new dashboard look; instead sees a CRUD panel rendered in
+the old theme with no preference content.
 
 ## Access Control
 
-Brak zmian — obecny model zachowany: jeden typ użytkownika, pełny dostęp po zalogowaniu email + password.
-Preferencja dark/light przechowywana client-side (localStorage / cookie), nie wymaga zmiany schematu DB ani ról.
+No changes planned — current model preserved: NextAuth email + password
+login, single flat role, full access for the one effective user type. No
+new roles or role-boundary changes introduced by this work.
 
 ## Success Criteria
 
 ### Primary
-Po zalogowaniu użytkownik widzi w ciągu 2 sekund:
-1. KPI row: urządzenia online/offline, liczba pokoi, aktywne alerty termiczne
-2. Wykresy temperatur per pokój (prominentne, nie tylko sparklines)
-3. Wykres kołowy: rozkład urządzeń per pokój
-4. Każdy kafelek urządzenia ma ikonę rozróżniającą sensor / valve / plug
-5. Przełącznik dark/light mode dostępny w nawigacji — preferencja persystuje między sesjami (localStorage)
+Admin opens `/setup` and sees a grid of setting cards, styled with the
+dashboard's command-center aesthetic: Rooms, Devices, Automations, Sites,
+Display/Appearance, Default Thresholds. Clicking any card opens a
+popup/modal containing that section's full content — the four existing CRUD
+screens fully functional inside their modals (not just visually present),
+plus the two new settings sections (Display/Appearance preferences;
+default room-threshold config) working end-to-end.
 
 ### Secondary
-- Ogólna spójność wizualna: paleta, typografia, spacing — feel zbliżony do Grafana/Datadog
-- Mobile: redesign nie psuje S-08 (375px viewport)
+None — scope kept tight to the core flow.
 
 ### Guardrails
-- Zero zmian w logice backendowej — polling, scoring, history, multi-site bez modyfikacji
-- Wszystkie istniejące funkcje pozostają dostępne (nie chowamy niczego za redesignem)
+- No existing CRUD functionality (Rooms/Devices/Automations/Sites) is lost
+  or degraded when moved from full-page tabs into modals.
+- Mobile/375px viewport support (S-08) does not regress.
+
+**Timeline:** ~3 weeks of after-hours work. Explicit fallback if it runs
+over: ship the visual restyle + settings-grid navigation + the two new
+settings sections first; defer converting the heaviest existing screen
+(Devices — table-heavy) into a modal to a later pass.
 
 ## Functional Requirements
 
-### Dashboard
+### Setup landing
 
-- FR-001: Użytkownik widzi KPI row natychmiast po zalogowaniu: urządzenia online/offline, liczba pokoi, aktywne alerty termiczne. Priority: must-have. Change: modified (S-15 dodał KPI row; ten slice przeprojektowuje jego wygląd i spójność wizualną).
-  > Socrates: Kontrargument rozważony: "S-15 już dodał KPI row — może to tylko poprawa wyglądu?". Rezolucja: zakwalifikowane jako modified, nie new — scope jest precyzyjny. FR stoi.
+- FR-001: Admin sees a settings grid of cards (Rooms, Devices, Automations,
+  Sites, Display/Appearance, Default Thresholds) on `/setup`, styled in the
+  dashboard's command-center aesthetic. Priority: must-have. Change: modified.
+  > Socrates: Counter-argument considered: "tabs were simpler navigation —
+  > grid+modal adds a click vs. a tab click." Resolution: accepted as a
+  > deliberate tradeoff — the user explicitly wants the grid-of-cards
+  > pattern over tabs; the extra click is the cost of visual/IA
+  > consistency with the dashboard. FR stands.
+- FR-002: Admin can click any settings card to open a popup/modal containing
+  that section's full content. Priority: must-have. Change: new.
+  > Socrates: Counter-argument considered: "Devices is too data-heavy
+  > (sortable/filterable table + assignment UI) for a popup." Resolution:
+  > no counter-argument raised; flagged as a planning-time risk to revisit
+  > if Devices doesn't fit a standard modal width. FR stands.
 
-- FR-002: Użytkownik widzi wykresy temperatur per pokój na głównym widoku dashboardu (prominentne, nie tylko sparklines). Priority: must-have. Change: modified.
-  > Socrates: Kontrargument rozważony: "przy 10+ pokojach dashboard się załamie". Rezolucja: skala produktu to 2–5 pokoi (PRD §target_scale: small). FR stoi.
+### Existing CRUD (moved into modals)
 
-- FR-003: Użytkownik widzi wykres kołowy z rozkładem urządzeń per pokój. Priority: must-have. Change: new.
-  > Socrates: Kontrargument rozważony: "wartość informacyjna niska — slot lepiej na health status". Rezolucja: user wyraził potrzebę wprost; health status jest już w KPI row (alerty). FR stoi.
+- FR-003: Rooms management is fully functional inside its modal. Priority:
+  must-have. Change: modified.
+  > Socrates: Counter-argument considered: "Rooms already opens a nested
+  > threshold sub-dialog — modal-in-modal risk." Resolution: no
+  > counter-argument raised; carried forward as a design note for FR-009.
+  > FR stands.
+- FR-004: Devices management is fully functional inside its modal. Priority:
+  must-have. Change: modified.
+  > Socrates: Counter-argument considered: "already flagged as the
+  > highest-risk/defer-candidate screen." Resolution: no counter-argument
+  > raised; consistent with the timeline fallback already recorded (defer
+  > Devices to a later pass if the 3-week budget runs out). FR stands.
+- FR-005: Automations management is fully functional inside its modal.
+  Priority: must-have. Change: modified.
+  > Socrates: Counter-argument considered: "rule creation form can be long
+  > — modal scroll risk." Resolution: no counter-argument raised; flagged
+  > as a layout consideration for planning. FR stands.
+- FR-006: Sites management is fully functional inside its modal. Priority:
+  must-have. Change: modified.
+  > Socrates: Counter-argument considered: "site-reassignment's
+  > confirmation-gated flow may not nest cleanly inside this modal."
+  > Resolution: no counter-argument raised; flagged as a risk for
+  > planning. FR stands.
+- FR-009: Per-room threshold override (existing form, currently buried in
+  Rooms) continues to work, reachable from within the Rooms modal. Priority:
+  must-have. Change: preserved.
+  > Socrates: Counter-argument considered: "creates the same modal-in-modal
+  > pattern flagged in FR-003." Resolution: no counter-argument raised;
+  > explicit design attention needed at planning time, not assumed to just
+  > work. FR stands.
 
-### Urządzenia
+### New settings sections
 
-- FR-004: Każdy kafelek urządzenia wyświetla unikalną ikonę rozróżniającą sensor / valve / plug (Lucide lub Phosphor). Priority: must-have. Change: new.
-  > Socrates: Kontrargument rozważony: "typ jest widoczny w nazwie — ikona to dekoracja". Rezolucja: ikona daje rozpoznanie < 200ms bez czytania; przy mixed-type room jest rzeczywistą wartością.
-
-### Motyw
-
-- FR-005: Użytkownik może przełączać dark / light mode; preferencja persystuje w localStorage między sesjami. Priority: must-have. Change: new.
-  > Socrates: Kontrargument rozważony: "dark/light podwaja koszt każdej przyszłej zmiany UI". Rezolucja: koszt zaakceptowany świadomie — light mode to wyrażona potrzeba użytkownika, nie opcja. Każdy przyszły komponent musi być testowany w obu trybach.
-
-- FR-006: Cała aplikacja (wszystkie strony i komponenty) renderuje się poprawnie w obu motywach. Priority: must-have. Change: new.
-  > Socrates: Objęte odpowiedzią do FR-005 — koszt zaakceptowany.
-
-## Non-Goals
-
-- **Custom SVG icons rysowane od zera** — wyłącznie gotowe ikony z Lucide lub Phosphor; zero angażowania designera.
-- **Widget historii automatyzacji** — wykluczone z tego slica; dojdzie razem z S-12 gdy będzie co pokazywać. Placeholder dopuszczalny jeśli slot jest potrzebny layoutowo.
+- FR-007: Admin can configure Display/Appearance preferences (theme,
+  density) via a new settings section, persisted browser-locally. Priority:
+  must-have. Change: new.
+  > Socrates: Counter-argument considered: "browser-local means prefs
+  > don't follow the admin across devices/browsers." Resolution: accepted
+  > tradeoff — consistent with the flat single-admin identity constraint;
+  > no per-user account model exists to attach server-side prefs to. FR
+  > stands.
+- FR-008: Admin can configure default room thresholds (the global fallback
+  used before a room sets its own override) via a new settings section.
+  Priority: must-have. Change: new.
+  > Socrates: Counter-argument considered: "low value — defaults rarely
+  > change once set; might be over-engineering vs. editing the constant in
+  > code." Resolution: no counter-argument raised; FR stands.
 
 ## Business Logic
 
-Brak zmian w logice domenowej — ta zmiana jest infrastructure/visual-only. Istniejące reguły pozostają nienaruszone:
-- `scoreRoom()` — ocena health per pokój na każdym cyklu pollingu
-- Valve setpoint control — DP command przez TuyaGatewayClient
-- Temperature history — append co 30s, purge 30 dni
+No new domain logic, and the existing room-scoring rule's logic is
+unchanged — `scoreRoom()` still decides OK / Too Cold / Too Hot the same
+way it does today. The one exception: the rule's default threshold
+*inputs* move from a hardcoded constant (`DEFAULT_THRESHOLDS` in
+`scoring.ts`) to DB-configurable values, editable via the new Default
+Thresholds settings section (FR-008). The decision boundary itself
+(min/max comparison) is untouched — only where its fallback numbers come
+from changes.
+
+## Non-Goals
+
+- **No per-user/per-account settings** — stays inside the flat
+  single-admin identity model; no auth/role changes to support per-user
+  preferences.
+- **No changes to polling/scoring/valve-control logic** — beyond the
+  default-thresholds config-source change (FR-008), no other backend
+  domain logic is touched.
+- **No full mobile redesign of Setup** — existing S-08 375px support must
+  not regress, but this isn't a mobile-first redesign effort; desktop is
+  primary, same boundary as prior visual passes (S-17, S-21).
 
 ## Constraints & Preserved Behavior
 
-- Polling worker (30s cycle) nie jest dotykany — żaden komponent UI nie może spowalniać ani blokować pętli
-- Wszystkie istniejące tRPC endpoints pozostają bez zmian
-- Mobile layout (S-08, 375px viewport) nie może regresować
-- Dane w SQLite nie są migrowane — zero zmian schematu
+- Default thresholds move from a hardcoded constant to a DB-backed value —
+  standard additive Drizzle migration (new table/column with a sensible
+  default), no backfill complexity expected.
+- All existing CRUD functionality (Rooms/Devices/Automations/Sites) and
+  their tRPC endpoints remain unchanged in behavior — only the
+  presentation layer (modal vs. full-page tab) changes.
+- Mobile/375px viewport support (S-08) must not regress.
+- The flat single-admin auth model is not revisited.
+- No other constraints identified beyond what's already recorded.
+- Product type and target scale are unchanged (still web-app, still
+  small-scale). No new deployment/CI/monitoring constraints — the
+  existing CI pipeline (S-06: lint/typecheck/Vitest + build) covers this
+  change as-is.
 
 ## Non-Functional Requirements
 
-- Dashboard renderuje się w < 2s po zalogowaniu — wykresy i KPI widoczne bez dodatkowego fetcha
-- Kontrast tekstu spełnia WCAG AA (4.5:1) w obu motywach — light mode nie może być wash-out
-- Przełącznik dark/light działa bez FOUC (flash of unstyled content) — motyw odczytywany z localStorage przed renderem, nie po
+- Text contrast meets WCAG AA (4.5:1) in both themes on the new Setup
+  styling.
+- No flash of unstyled content (FOUC) when Setup's command-center styling
+  loads.
+- Settings modals open without perceptible lag (target: <300ms perceived)
+  — converting full-page CRUD screens into modals must not introduce
+  heavier mount cost the admin notices.
 
 ## User Stories
 
-### US-01: Poranny przegląd stanu biura
-**Given** jestem zalogowany jako facility manager,
-**When** otwieram dashboard,
-**Then** widzę w ciągu 2 sekund: KPI row (online/offline, pokoje, alerty), wykresy temperatur per pokój, wykres kołowy urządzeń, każde urządzenie z ikoną swojego typu — bez żadnego dodatkowego klikania.
+### US-01: Reconfiguring app settings
+**Given** I am logged in as the admin,
+**When** I open `/setup`,
+**Then** I see a grid of setting cards styled like the dashboard; clicking
+any card (Rooms, Devices, Automations, Sites, Display/Appearance, Default
+Thresholds) opens a modal where I can view/edit that section fully, then
+close it and return to the grid.
+
+## Quality cross-check
+
+All six soft-gate elements present, no gaps recorded:
+
+- Access Control: present
+- Business Logic: present (infrastructure/visual-only, one declared exception — default-threshold source)
+- Project artifacts: present
+- Timeline-cost ack: present (3 weeks, within the ≤ 3-week bar — no explicit acknowledgment block needed)
+- Non-Goals: present (3 entries)
+- Preserved behavior: present (`## Constraints & Preserved Behavior`)
+
+`quality_check_status: accepted`.
