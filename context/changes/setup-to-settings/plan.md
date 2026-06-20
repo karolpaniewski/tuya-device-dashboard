@@ -361,30 +361,30 @@ The new `defaultThresholds` table starts empty; `getDefaultThresholds` falls bac
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly: `npm run db:push` (substituted `db:migrate` — `db:push` fails on a pre-existing FK issue in this repo's local db.sqlite unrelated to this change; see user decision in session)
-- [x] 1.2 Type checking passes: `npm run typecheck`
-- [x] 1.3 New `settings.test.ts` passes
-- [x] 1.4 Existing suite still passes: `npm run test`
+- [x] 1.1 Migration applies cleanly: `npm run db:push` (substituted `db:migrate` — `db:push` fails on a pre-existing FK issue in this repo's local db.sqlite unrelated to this change; see user decision in session) — 7f874d2
+- [x] 1.2 Type checking passes: `npm run typecheck` — 7f874d2
+- [x] 1.3 New `settings.test.ts` passes — 7f874d2
+- [x] 1.4 Existing suite still passes: `npm run test` — 7f874d2
 
 #### Manual
 
-- [x] 1.5 Dashboard gauge renders correctly with no DB row present
-- [x] 1.6 Gauge updates after `setDefaultThresholds` is called
+- [x] 1.5 Dashboard gauge renders correctly with no DB row present — 7f874d2
+- [x] 1.6 Gauge updates after `setDefaultThresholds` is called — 7f874d2
 
 ### Phase 2: Settings shell & navigation skeleton
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run typecheck`
-- [ ] 2.2 Lint passes: `npm run check`
-- [ ] 2.3 Existing suite still passes: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck`
+- [x] 2.2 Lint passes: `npm run check` (same pre-existing drizzle-metadata diagnostics noted in Phase 1; no new errors from any Phase 2 file — confirmed via targeted `biome check` on each touched file)
+- [x] 2.3 Existing suite still passes: `npm run test`
 
 #### Manual
 
-- [ ] 2.4 Six-card grid renders, dark-only, matches dashboard visual language
-- [ ] 2.5 Clicking Rooms/Devices/Automations/Sites opens a working popup
-- [ ] 2.6 Devices popup is visibly wider than the others
-- [ ] 2.7 375px viewport: grid collapses to one column, cards remain tappable
+- [x] 2.4 Six-card grid renders, dark-only, matches dashboard visual language
+- [x] 2.5 Clicking Rooms/Devices/Automations/Sites opens a working popup
+- [x] 2.6 Devices popup is visibly wider than the others
+- [x] 2.7 375px viewport: grid collapses to one column, cards remain tappable
 
 ### Phase 3: Restyle existing CRUD inside their popups
 

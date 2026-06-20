@@ -31,14 +31,18 @@ function DialogBackdrop({
 function DialogContent({
 	className,
 	children,
+	size = "default",
 	...props
-}: React.ComponentProps<typeof DialogPrimitive.Popup>) {
+}: React.ComponentProps<typeof DialogPrimitive.Popup> & {
+	size?: "default" | "wide";
+}) {
 	return (
 		<DialogPortal>
 			<DialogBackdrop />
 			<DialogPrimitive.Popup
 				className={cn(
-					"fixed top-1/2 left-1/2 z-[60] w-full max-w-lg -translate-x-1/2 -translate-y-1/2",
+					"fixed top-1/2 left-1/2 z-[60] w-full -translate-x-1/2 -translate-y-1/2",
+					size === "wide" ? "max-w-4xl" : "max-w-lg",
 					"rounded-2xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] shadow-2xl",
 					"transition-all data-[ending-style]:scale-95 data-[ending-style]:opacity-0",
 					className,
