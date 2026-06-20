@@ -1,5 +1,6 @@
 "use client";
 
+import { Droplets, Thermometer, Wind } from "lucide-react";
 import {
 	CartesianGrid,
 	Line,
@@ -9,24 +10,45 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { api, type RouterOutputs } from "~/trpc/react";
+import { api } from "~/trpc/react";
 
-type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
+const OUTDOOR_COLOR = "var(--color-chart-1)";
 
-const SERIES_COLORS = [
-	"var(--color-chart-1)",
-	"var(--color-chart-2)",
-	"var(--color-chart-3)",
-	"var(--color-chart-4)",
-	"var(--color-chart-5)",
-];
-
-function primarySensorId(room: RoomItem): string | null {
+function ConditionStat({
+	icon: Icon,
+	label,
+	value,
+}: {
+	icon: typeof Thermometer;
+	label: string;
+	value: string;
+}) {
 	return (
-		room.devices.find((d) => d.deviceType === "sensor" && d.isOnline)
-			?.tuyaDeviceId ??
-		room.devices.find((d) => d.deviceType === "sensor")?.tuyaDeviceId ??
-		null
+		<div className="flex items-center gap-2.5">
+			<div
+				className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]"
+				style={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+			>
+				<Icon
+					className="h-[15px] w-[15px]"
+					style={{ color: "var(--cc-text-faint)" }}
+				/>
+			</div>
+			<div>
+				<div
+					className="font-mono text-[10px] tracking-[0.04em]"
+					style={{ color: "var(--cc-text-faint)" }}
+				>
+					{label}
+				</div>
+				<div
+					className="font-semibold text-[14px]"
+					style={{ color: "var(--cc-text-primary)" }}
+				>
+					{value}
+				</div>
+			</div>
+		</div>
 	);
 }
 
@@ -36,48 +58,18 @@ const formatTs = (ts: number) =>
 		minute: "2-digit",
 	});
 
-export function CcClimateOverview({ rooms }: { rooms: RoomItem[] }) {
-	const roomsWithSensors = rooms
-		.map((room) => ({ room, sensorId: primarySensorId(room) }))
-		.filter(
-			(r): r is { room: RoomItem; sensorId: string } => r.sensorId !== null,
-		);
-
-	const historyQueries = api.useQueries((t) =>
-		roomsWithSensors.map(({ sensorId }) =>
-			t.device.temperatureHistory(
-				{ tuyaDeviceId: sensorId, range: "24h" },
-				{ staleTime: 60_000 },
-			),
-		),
-	);
-
-	const mergedByTs = new Map<number, Record<string, number | null>>();
-	for (let i = 0; i < roomsWithSensors.length; i++) {
-		const room = roomsWithSensors[i]?.room;
-		if (!room) continue;
-		const rows = historyQueries[i]?.data ?? [];
-		for (const r of rows) {
-			const ts = new Date(r.recordedAt).getTime();
-			const row = mergedByTs.get(ts) ?? {};
-			row[room.roomId] = r.temperatureC;
-			mergedByTs.set(ts, row);
-		}
-	}
-	const chartData = Array.from(mergedByTs.entries())
-		.sort(([a], [b]) => a - b)
-		.map(([ts, vals]) => ({ ts, ...vals }));
-
-	const latestByRoom = roomsWithSensors.map(({ room }, i) => {
-		const rows = historyQueries[i]?.data ?? [];
-		const last = rows.length > 0 ? rows[rows.length - 1] : null;
-		return { room, value: last?.temperatureC ?? null };
+export function CcClimateOverview() {
+	const { data, isLoading } = api.weather.outdoorHistory.useQuery(undefined, {
+		staleTime: 60_000,
 	});
 
-	const isFetching = historyQueries.some((q) => q.isLoading);
-	const roomNameByDataKey = new Map(
-		roomsWithSensors.map(({ room }) => [room.roomId, room.roomName]),
-	);
+	const readings = data?.readings ?? [];
+	const chartData = readings.map((r) => ({
+		ts: new Date(r.recordedAt).getTime(),
+		temperatureC: r.temperatureC,
+	}));
+	const current = data?.current ?? null;
+	const liveTemp = current?.temperatureC ?? chartData.at(-1)?.temperatureC;
 
 	return (
 		<div
@@ -115,50 +107,35 @@ export function CcClimateOverview({ rooms }: { rooms: RoomItem[] }) {
 						className="mt-1 font-mono text-[11px]"
 						style={{ color: "var(--cc-text-faint)" }}
 					>
-						LAST 24 HOURS
+						OUTDOOR · {data?.location ?? "—"} · LAST 24 HOURS
 					</div>
 				</div>
-				{latestByRoom.length > 0 && (
-					<div className="flex flex-wrap gap-[18px]">
-						{latestByRoom.map(({ room, value }, i) => (
-							<div className="flex items-center gap-[7px]" key={room.roomId}>
-								<span
-									className="h-[9px] w-[9px] shrink-0 rounded-[3px]"
-									style={{
-										backgroundColor: SERIES_COLORS[i % SERIES_COLORS.length],
-									}}
-								/>
-								<span
-									className="whitespace-nowrap text-[12px]"
-									style={{ color: "var(--cc-text-secondary)" }}
-								>
-									{room.roomName}
-								</span>
-								<span
-									className="whitespace-nowrap font-mono font-semibold text-[12px]"
-									style={{ color: SERIES_COLORS[i % SERIES_COLORS.length] }}
-								>
-									{value !== null ? `${value.toFixed(1)}°` : "—"}
-								</span>
-							</div>
-						))}
-					</div>
-				)}
+				<div className="flex items-center gap-[7px]">
+					<span
+						className="h-[9px] w-[9px] shrink-0 rounded-[3px]"
+						style={{ backgroundColor: OUTDOOR_COLOR }}
+					/>
+					<span
+						className="whitespace-nowrap text-[12px]"
+						style={{ color: "var(--cc-text-secondary)" }}
+					>
+						Outdoor
+					</span>
+					<span
+						className="whitespace-nowrap font-mono font-semibold text-[12px]"
+						style={{ color: OUTDOOR_COLOR }}
+					>
+						{liveTemp !== undefined ? `${liveTemp.toFixed(1)}°` : "—"}
+					</span>
+				</div>
 			</div>
 
-			{roomsWithSensors.length === 0 ? (
+			{chartData.length === 0 ? (
 				<div
 					className="mt-4 flex items-center justify-center text-sm"
 					style={{ color: "var(--cc-text-faint)", height: 240 }}
 				>
-					No rooms with sensor data
-				</div>
-			) : chartData.length === 0 ? (
-				<div
-					className="mt-4 flex items-center justify-center text-sm"
-					style={{ color: "var(--cc-text-faint)", height: 240 }}
-				>
-					{isFetching ? "Loading…" : "No readings yet"}
+					{isLoading ? "Loading…" : "No weather data yet"}
 				</div>
 			) : (
 				<ResponsiveContainer height={280} width="100%">
@@ -193,29 +170,59 @@ export function CcClimateOverview({ rooms }: { rooms: RoomItem[] }) {
 								color: "var(--popover-foreground)",
 								fontSize: 12,
 							}}
-							formatter={(val: unknown, name: unknown) => [
+							formatter={(val: unknown) => [
 								typeof val === "number" ? `${val.toFixed(1)} °C` : "—",
-								roomNameByDataKey.get(String(name)) ?? String(name),
+								"Outdoor",
 							]}
 							labelFormatter={(ts: unknown) =>
 								typeof ts === "number" ? new Date(ts).toLocaleString() : ""
 							}
 						/>
-						{roomsWithSensors.map(({ room }, i) => (
-							<Line
-								connectNulls={false}
-								dataKey={room.roomId}
-								dot={false}
-								isAnimationActive={false}
-								key={room.roomId}
-								name={room.roomId}
-								stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
-								strokeWidth={2}
-								type="monotone"
-							/>
-						))}
+						<Line
+							connectNulls={false}
+							dataKey="temperatureC"
+							dot={false}
+							isAnimationActive={false}
+							name="temperatureC"
+							stroke={OUTDOOR_COLOR}
+							strokeWidth={2}
+							type="monotone"
+						/>
 					</LineChart>
 				</ResponsiveContainer>
+			)}
+
+			{current && (
+				<div
+					className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-4 border-t pt-4"
+					style={{ borderColor: "var(--cc-glass-border)" }}
+				>
+					<ConditionStat
+						icon={Thermometer}
+						label="FEELS LIKE"
+						value={`${current.feelsLikeC.toFixed(1)}°`}
+					/>
+					<ConditionStat
+						icon={Droplets}
+						label="HUMIDITY"
+						value={`${Math.round(current.humidityPct)}%`}
+					/>
+					<ConditionStat
+						icon={Wind}
+						label="WIND"
+						value={`${current.windKph.toFixed(1)} km/h`}
+					/>
+					{data?.minC !== null &&
+						data?.minC !== undefined &&
+						data?.maxC !== null &&
+						data?.maxC !== undefined && (
+							<ConditionStat
+								icon={Thermometer}
+								label="24H RANGE"
+								value={`${data.minC.toFixed(1)}° – ${data.maxC.toFixed(1)}°`}
+							/>
+						)}
+				</div>
 			)}
 		</div>
 	);
