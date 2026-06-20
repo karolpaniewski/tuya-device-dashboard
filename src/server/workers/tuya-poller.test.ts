@@ -34,7 +34,9 @@ describe("pollOnce › happy path", () => {
 		vi.mocked(db.select)
 			// First call: gateways
 			.mockReturnValueOnce({
-				from: vi.fn().mockResolvedValue([GATEWAY]),
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([GATEWAY]),
+				}),
 			} as never)
 			// Second call: devices for gateway
 			.mockReturnValueOnce({
@@ -74,7 +76,9 @@ describe("pollOnce › happy path", () => {
 	it("does not insert when temperatureC and setpointC are both null", async () => {
 		vi.mocked(db.select)
 			.mockReturnValueOnce({
-				from: vi.fn().mockResolvedValue([GATEWAY]),
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([GATEWAY]),
+				}),
 			} as never)
 			.mockReturnValueOnce({
 				from: vi.fn().mockReturnValue({
@@ -117,7 +121,9 @@ describe("pollOnce › DB error", () => {
 		});
 
 		vi.mocked(db.select).mockReturnValue({
-			from: vi.fn().mockRejectedValue(new Error("SQLITE_ERROR")),
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockRejectedValue(new Error("SQLITE_ERROR")),
+			}),
 		} as never);
 
 		await pollOnce();
@@ -133,7 +139,9 @@ describe("pollOnce › gateway fetch error", () => {
 	it("catches the error, logs it, and does not write to the store", async () => {
 		vi.mocked(db.select)
 			.mockReturnValueOnce({
-				from: vi.fn().mockResolvedValue([GATEWAY]),
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([GATEWAY]),
+				}),
 			} as never)
 			.mockReturnValueOnce({
 				from: vi.fn().mockReturnValue({

@@ -11,13 +11,14 @@ import {
 	roomThresholds,
 	sites,
 } from "~/server/db/schema";
+import { ACTIVE_DEVICE_SOURCE } from "~/server/lib/device-source";
 import { deviceStateStore } from "~/server/lib/device-state-store";
+import { sendPlugCommand } from "~/server/lib/plug-control";
 import {
 	DEFAULT_THRESHOLDS,
 	type RoomBadge,
 	scoreRoom,
 } from "~/server/lib/scoring";
-import { sendPlugCommand } from "~/server/lib/plug-control";
 import { sendSetpointCommand } from "~/server/lib/valve-control";
 
 const STALE_THRESHOLD_MS = 60_000;
@@ -305,8 +306,13 @@ export const deviceRouter = createTRPCRouter({
 
 			const rows =
 				input.siteId !== "all"
-					? await baseQuery.where(eq(devices.siteId, input.siteId))
-					: await baseQuery;
+					? await baseQuery.where(
+							and(
+								eq(devices.siteId, input.siteId),
+								eq(devices.source, ACTIVE_DEVICE_SOURCE),
+							),
+						)
+					: await baseQuery.where(eq(devices.source, ACTIVE_DEVICE_SOURCE));
 
 			const roomsMap = new Map<
 				string,

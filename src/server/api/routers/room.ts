@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -11,6 +11,7 @@ import {
 	roomThresholds,
 	sites,
 } from "~/server/db/schema";
+import { ACTIVE_DEVICE_SOURCE } from "~/server/lib/device-source";
 
 export const roomRouter = createTRPCRouter({
 	list: protectedProcedure
@@ -21,9 +22,18 @@ export const roomRouter = createTRPCRouter({
 					? await ctx.db
 							.select()
 							.from(rooms)
-							.where(eq(rooms.siteId, input.siteId))
+							.where(
+								and(
+									eq(rooms.siteId, input.siteId),
+									eq(rooms.source, ACTIVE_DEVICE_SOURCE),
+								),
+							)
 							.orderBy(rooms.createdAt)
-					: await ctx.db.select().from(rooms).orderBy(rooms.createdAt);
+					: await ctx.db
+							.select()
+							.from(rooms)
+							.where(eq(rooms.source, ACTIVE_DEVICE_SOURCE))
+							.orderBy(rooms.createdAt);
 
 			const assignments = await ctx.db
 				.select({ roomId: deviceRoomAssignments.roomId })

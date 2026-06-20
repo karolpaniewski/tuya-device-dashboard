@@ -9,6 +9,7 @@ import {
 	devices,
 	rooms,
 } from "~/server/db/schema";
+import { ACTIVE_DEVICE_SOURCE } from "~/server/lib/device-source";
 
 const createInput = z.object({
 	name: z.string().min(1).max(255),
@@ -41,8 +42,13 @@ export const automationRouter = createTRPCRouter({
 
 			const rows =
 				input.siteId !== "all"
-					? await baseQuery.where(eq(devices.siteId, input.siteId))
-					: await baseQuery;
+					? await baseQuery.where(
+							and(
+								eq(devices.siteId, input.siteId),
+								eq(devices.source, ACTIVE_DEVICE_SOURCE),
+							),
+						)
+					: await baseQuery.where(eq(devices.source, ACTIVE_DEVICE_SOURCE));
 
 			return rows.map((row) => ({
 				id: row.rule.id,

@@ -6,6 +6,7 @@ import {
 	gateways,
 } from "~/server/db/schema";
 import { decryptLocalKey } from "~/server/lib/crypto";
+import { ACTIVE_DEVICE_SOURCE } from "~/server/lib/device-source";
 import { deviceStateStore } from "~/server/lib/device-state-store";
 import { getLogger, runWithWorkerContext } from "~/server/lib/log-context";
 import { getTuyaClient } from "~/server/lib/tuya";
@@ -18,7 +19,10 @@ let pollCounter = 0;
 export async function pollOnce(): Promise<void> {
 	let allGateways: (typeof gateways.$inferSelect)[];
 	try {
-		allGateways = await db.select().from(gateways);
+		allGateways = await db
+			.select()
+			.from(gateways)
+			.where(eq(gateways.source, ACTIVE_DEVICE_SOURCE));
 	} catch (err) {
 		getLogger().error({ err }, "DB error fetching gateways");
 		return;

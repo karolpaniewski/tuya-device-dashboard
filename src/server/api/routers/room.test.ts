@@ -70,11 +70,13 @@ describe("room.list", () => {
 				.fn()
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
-						orderBy: vi
-							.fn()
-							.mockResolvedValue([
-								{ id: "r1", name: "Room 1", createdAt: new Date() },
-							]),
+						where: vi.fn().mockReturnValue({
+							orderBy: vi
+								.fn()
+								.mockResolvedValue([
+									{ id: "r1", name: "Room 1", createdAt: new Date() },
+								]),
+						}),
 					}),
 				})
 				.mockReturnValueOnce({
@@ -96,11 +98,13 @@ describe("room.list", () => {
 				.fn()
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
-						orderBy: vi
-							.fn()
-							.mockResolvedValue([
-								{ id: "r1", name: "Empty Room", createdAt: new Date() },
-							]),
+						where: vi.fn().mockReturnValue({
+							orderBy: vi
+								.fn()
+								.mockResolvedValue([
+									{ id: "r1", name: "Empty Room", createdAt: new Date() },
+								]),
+						}),
 					}),
 				})
 				.mockReturnValueOnce({
@@ -376,10 +380,12 @@ describe("room.list — scoping", () => {
 				.fn()
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
-						orderBy: vi.fn().mockResolvedValue([
-							{ id: "r1", name: "Room A", createdAt: new Date() },
-							{ id: "r2", name: "Room B", createdAt: new Date() },
-						]),
+						where: vi.fn().mockReturnValue({
+							orderBy: vi.fn().mockResolvedValue([
+								{ id: "r1", name: "Room A", createdAt: new Date() },
+								{ id: "r2", name: "Room B", createdAt: new Date() },
+							]),
+						}),
 					}),
 				})
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) }),

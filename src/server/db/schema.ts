@@ -60,13 +60,19 @@ export const gateways = createTable(
 			.notNull()
 			.default("default")
 			.references(() => sites.id, { onDelete: "restrict" }),
+		// 'real' = live hardware, 'demo' = fabricated fixtures for demoing without
+		// touching real devices. Hardcoded filter for now — see ACTIVE_DEVICE_SOURCE.
+		source: d.text({ length: 10 }).notNull().default("real"),
 		createdAt: d
 			.integer({ mode: "timestamp" })
 			.notNull()
 			.default(sql`(unixepoch())`),
 		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
 	}),
-	(t) => [index("gateway_site_idx").on(t.siteId)],
+	(t) => [
+		index("gateway_site_idx").on(t.siteId),
+		check("gateway_source_check", sql`${t.source} IN ('real', 'demo')`),
+	],
 );
 
 export const rooms = createTable(
@@ -82,13 +88,19 @@ export const rooms = createTable(
 			.notNull()
 			.default("default")
 			.references(() => sites.id, { onDelete: "restrict" }),
+		// 'real' = live hardware, 'demo' = fabricated fixtures for demoing without
+		// touching real devices. Hardcoded filter for now — see ACTIVE_DEVICE_SOURCE.
+		source: d.text({ length: 10 }).notNull().default("real"),
 		createdAt: d
 			.integer({ mode: "timestamp" })
 			.notNull()
 			.default(sql`(unixepoch())`),
 		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
 	}),
-	(t) => [index("room_site_idx").on(t.siteId)],
+	(t) => [
+		index("room_site_idx").on(t.siteId),
+		check("room_source_check", sql`${t.source} IN ('real', 'demo')`),
+	],
 );
 
 export const devices = createTable(
@@ -117,6 +129,9 @@ export const devices = createTable(
 			.notNull()
 			.default("default")
 			.references(() => sites.id, { onDelete: "restrict" }),
+		// 'real' = live hardware, 'demo' = fabricated fixtures for demoing without
+		// touching real devices. Hardcoded filter for now — see ACTIVE_DEVICE_SOURCE.
+		source: d.text({ length: 10 }).notNull().default("real"),
 		createdAt: d
 			.integer({ mode: "timestamp" })
 			.notNull()
@@ -128,6 +143,7 @@ export const devices = createTable(
 			"device_type_check",
 			sql`${t.deviceType} IN ('sensor', 'valve', 'plug')`,
 		),
+		check("device_source_check", sql`${t.source} IN ('real', 'demo')`),
 		index("device_gateway_idx").on(t.gatewayId),
 		index("device_site_idx").on(t.siteId),
 	],

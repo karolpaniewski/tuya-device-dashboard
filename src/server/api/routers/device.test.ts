@@ -48,7 +48,9 @@ describe("device.overview — stale detection", () => {
 					from: vi.fn().mockReturnValue({
 						leftJoin: vi.fn().mockReturnValue({
 							leftJoin: vi.fn().mockReturnValue({
-								orderBy: vi.fn().mockResolvedValue([syntheticRow]),
+								orderBy: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue([syntheticRow]),
+								}),
 							}),
 						}),
 					}),
@@ -139,7 +141,9 @@ describe("device.overview — room scoring", () => {
 					from: vi.fn().mockReturnValue({
 						leftJoin: vi.fn().mockReturnValue({
 							leftJoin: vi.fn().mockReturnValue({
-								orderBy: vi.fn().mockResolvedValue([sensorRow]),
+								orderBy: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue([sensorRow]),
+								}),
 							}),
 						}),
 					}),
@@ -320,7 +324,9 @@ describe("device.overview — scoping", () => {
 					from: vi.fn().mockReturnValue({
 						leftJoin: vi.fn().mockReturnValue({
 							leftJoin: vi.fn().mockReturnValue({
-								orderBy: vi.fn().mockResolvedValue(rows),
+								orderBy: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue(rows),
+								}),
 							}),
 						}),
 					}),
