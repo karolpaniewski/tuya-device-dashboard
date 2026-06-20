@@ -112,6 +112,10 @@ export function DeviceOverview() {
 	const automationListQuery = api.automation.list.useQuery({
 		siteId: activeSiteId,
 	});
+	const defaultThresholdsQuery = api.settings.getDefaultThresholds.useQuery();
+	// Keep the static constant as the value until the query resolves, to
+	// avoid a layout flash on the gauge below.
+	const effectiveThresholds = defaultThresholdsQuery.data ?? DEFAULT_THRESHOLDS;
 
 	const [roomFilter, setRoomFilter] = useState("");
 	const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
@@ -546,7 +550,7 @@ export function DeviceOverview() {
 							{avgTempC !== null && (
 								<div className="mt-3.5 flex items-center gap-2">
 									<span className="font-mono text-[#5d6876] text-[10px]">
-										{DEFAULT_THRESHOLDS.minTempC}°
+										{effectiveThresholds.minTempC}°
 									</span>
 									<div className="relative h-[5px] flex-1 rounded-[3px] bg-white/[0.07]">
 										<div
@@ -555,7 +559,7 @@ export function DeviceOverview() {
 												background:
 													"linear-gradient(90deg, var(--cc-emerald), var(--cc-cyan))",
 												left: 0,
-												width: `${Math.min(100, Math.max(0, ((avgTempC - DEFAULT_THRESHOLDS.minTempC) / (DEFAULT_THRESHOLDS.maxTempC - DEFAULT_THRESHOLDS.minTempC)) * 100))}%`,
+												width: `${Math.min(100, Math.max(0, ((avgTempC - effectiveThresholds.minTempC) / (effectiveThresholds.maxTempC - effectiveThresholds.minTempC)) * 100))}%`,
 											}}
 										/>
 										<div
@@ -563,13 +567,13 @@ export function DeviceOverview() {
 											style={{
 												backgroundColor: "var(--cc-cyan)",
 												boxShadow: "0 0 10px var(--cc-cyan)",
-												left: `${Math.min(100, Math.max(0, ((avgTempC - DEFAULT_THRESHOLDS.minTempC) / (DEFAULT_THRESHOLDS.maxTempC - DEFAULT_THRESHOLDS.minTempC)) * 100))}%`,
+												left: `${Math.min(100, Math.max(0, ((avgTempC - effectiveThresholds.minTempC) / (effectiveThresholds.maxTempC - effectiveThresholds.minTempC)) * 100))}%`,
 												transform: "translate(-50%, -50%)",
 											}}
 										/>
 									</div>
 									<span className="font-mono text-[#5d6876] text-[10px]">
-										{DEFAULT_THRESHOLDS.maxTempC}°
+										{effectiveThresholds.maxTempC}°
 									</span>
 								</div>
 							)}

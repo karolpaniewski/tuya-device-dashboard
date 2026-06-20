@@ -62,6 +62,12 @@ describe("device.overview — stale detection", () => {
 				// Third call: sites query
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([]),
+				})
+				// Fourth call: defaultThresholds query — no row, falls back to constant
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([]),
+					}),
 				}),
 		};
 		return createCaller({
@@ -158,6 +164,12 @@ describe("device.overview — room scoring", () => {
 				// Sites query
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([{ id: "default", name: "Default" }]),
+				})
+				// defaultThresholds query — irrelevant here, room has its own override
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([]),
+					}),
 				}),
 		};
 
@@ -171,6 +183,65 @@ describe("device.overview — room scoring", () => {
 		// Oracle: 15 < minTempC(18) → "Too Cold"; setpointC null → anomaly false
 		expect(result.rooms[0]?.badge).toBe("Too Cold");
 		expect(result.rooms[0]?.anomaly).toBe(false);
+	});
+
+	it("room with no override falls back to the DB-backed default threshold, not the hardcoded constant (PRD §FR-012)", async () => {
+		deviceStateStore.set("tuya-d1", {
+			isOnline: true,
+			temperatureC: 20,
+			setpointC: null,
+			humidityPct: null,
+			isOn: null,
+			lastPolledAt: new Date(),
+		});
+
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							leftJoin: vi.fn().mockReturnValue({
+								orderBy: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue([sensorRow]),
+								}),
+							}),
+						}),
+					}),
+				})
+				// roomThresholds — no per-room override for r1
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				// Sites query
+				.mockReturnValueOnce({
+					from: vi.fn().mockResolvedValue([{ id: "default", name: "Default" }]),
+				})
+				// defaultThresholds — DB row present, stricter than the hardcoded
+				// constant (18-24): 20 < minTempC(21) → "Too Cold" only if the
+				// DB row is actually used instead of the constant.
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([
+							{
+								id: "default",
+								minTempC: 21,
+								maxTempC: 25,
+								anomalyGapC: 2,
+							},
+						]),
+					}),
+				}),
+		};
+
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+
+		const result = await caller.device.overview({ siteId: "all" });
+		// Oracle: 20 < dbDefault.minTempC(21) → "Too Cold"; the hardcoded
+		// constant's minTempC(18) would have scored this "OK" instead.
+		expect(result.rooms[0]?.badge).toBe("Too Cold");
 	});
 });
 
@@ -278,6 +349,12 @@ describe("device.overview — scoping", () => {
 				// Third: sites
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([{ id: "site-a", name: "Site A" }]),
+				})
+				// Fourth: defaultThresholds
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([]),
+					}),
 				}),
 		};
 
@@ -339,6 +416,12 @@ describe("device.overview — scoping", () => {
 						{ id: "site-a", name: "Site A" },
 						{ id: "site-b", name: "Site B" },
 					]),
+				})
+				// Fourth: defaultThresholds
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([]),
+					}),
 				}),
 		};
 

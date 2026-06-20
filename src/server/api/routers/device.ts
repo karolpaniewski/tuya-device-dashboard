@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
+	defaultThresholds,
 	deviceRoomAssignments,
 	devices,
 	deviceTemperatureReadings,
@@ -385,6 +386,18 @@ export const deviceRouter = createTRPCRouter({
 				.from(sites);
 			const siteMap = new Map(siteRows.map((s) => [s.id, s.name]));
 
+			const [defaultThresholdRow] = await ctx.db
+				.select()
+				.from(defaultThresholds)
+				.where(eq(defaultThresholds.id, "default"));
+			const dbDefaultThresholds = defaultThresholdRow
+				? {
+						minTempC: defaultThresholdRow.minTempC,
+						maxTempC: defaultThresholdRow.maxTempC,
+						anomalyGapC: defaultThresholdRow.anomalyGapC,
+					}
+				: DEFAULT_THRESHOLDS;
+
 			const scoredRooms = Array.from(roomsMap.values()).map((room) => {
 				const roomTempC = room.devices
 					.filter((d) => d.deviceType === "sensor")
@@ -397,7 +410,7 @@ export const deviceRouter = createTRPCRouter({
 				const valveSetpointC = valve
 					? (deviceStateStore.get(valve.tuyaDeviceId)?.setpointC ?? null)
 					: null;
-				const thresholds = thresholdMap.get(room.roomId) ?? DEFAULT_THRESHOLDS;
+				const thresholds = thresholdMap.get(room.roomId) ?? dbDefaultThresholds;
 				const score = scoreRoom(roomTempC, valveSetpointC, thresholds);
 				return { ...room, siteName: siteMap.get(room.siteId) ?? "", ...score };
 			});

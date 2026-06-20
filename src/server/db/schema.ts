@@ -293,6 +293,26 @@ export const automationExecutionLogs = createTable(
 	],
 );
 
+export const defaultThresholds = createTable(
+	"default_threshold",
+	(d) => ({
+		// Always the literal string "default" — singleton row, app-wide fallback
+		// used when a room has no per-room override (see roomThresholds).
+		id: d.text({ length: 255 }).primaryKey(),
+		minTempC: d.real("min_temp_c").notNull(),
+		maxTempC: d.real("max_temp_c").notNull(),
+		anomalyGapC: d.real("anomaly_gap_c").notNull(),
+		createdAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+	}),
+	(t) => [
+		check("default_threshold_order_check", sql`${t.minTempC} < ${t.maxTempC}`),
+	],
+);
+
 export const dashboardLayout = createTable("dashboard_layout", (d) => ({
 	// Always the literal string "default" — singleton row, no per-user scoping
 	// (see context/changes/dashboard-personalization/frame.md).
