@@ -372,9 +372,9 @@ Additive only — `roomHeatState` has no backfill requirement (absence of a row 
 
 #### Automated
 
-- [x] 5.1 All new and existing unit tests pass: `npm run test`
-- [x] 5.2 Full local CI gate passes: `npm run ci`
+- [x] 5.1 All new and existing unit tests pass: `npm run test` — 3bae486
+- [x] 5.2 Full local CI gate passes: `npm run ci` — 3bae486
 
 #### Manual
 
-- [ ] 5.3 No skipped/pending tests related to this change
+- [x] 5.3 No skipped/pending tests related to this change — 3bae486
