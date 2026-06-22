@@ -1,9 +1,17 @@
 ---
 id: multi-site
 title: Multi-Site Support
-status: planned
-updated: 2026-06-11
+status: implemented
+created: 2026-06-12
+updated: 2026-06-22
 ---
+
+Shipped via one consolidated commit (`2a79987`, combined with
+`mobile-responsive`/S-08) rather than the granular per-phase commits
+`plan.md`'s Progress section expects — its checkboxes were never
+filled in even though the work landed. Confirmed live in the codebase
+(`sites` table in `src/server/db/schema.ts` with `siteId` on
+rooms/gateways/devices). Roadmap S-13 already marks this `done`.
 
 # Multi-Site Support
 

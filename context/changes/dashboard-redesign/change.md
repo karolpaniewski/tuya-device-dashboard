@@ -1,12 +1,20 @@
 ---
 id: dashboard-redesign
 title: Dashboard & Setup Redesign (S-15)
-status: planned
+status: implemented
 created: 2026-06-12
-updated: 2026-06-12
+updated: 2026-06-22
 roadmap_id: S-15
 plan: context/changes/dashboard-redesign/plan.md
 ---
+
+Shipped via one consolidated commit (`a425930`) rather than the
+granular per-phase commits `plan.md`'s Progress section expects — its
+checkboxes were left mostly unfilled even though the work landed.
+Confirmed live in the codebase (`cc-kpi-card.tsx`, sparklines in
+`device-overview.tsx`) and superseded by later passes
+(`dashboard-command-center-redesign`, `dashboard-ux-redesign`,
+`dashboard-personalization`). Roadmap S-15 already marks this `done`.
 
 Pełny redesign dashboardu i okna Setup w kierunku klasycznego, nowoczesnego dashboardu.
 
