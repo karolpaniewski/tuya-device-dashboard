@@ -3,7 +3,6 @@
 import { Gauge, Plug, Thermometer, Wifi } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Input } from "~/components/ui/input";
 import {
@@ -34,8 +33,6 @@ const TYPE_ICON = {
 	plug: Plug,
 } as const;
 
-const PAGE_SIZE = 20;
-
 interface Props {
 	devices: DeviceItem[];
 	rooms: Pick<RoomItem, "id" | "name">[];
@@ -46,7 +43,6 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 	const [sortBy, setSortBy] = useState<SortCol>("name");
 	const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 	const [search, setSearch] = useState("");
-	const [page, setPage] = useState(0);
 
 	const [errorById, setErrorById] = useState<Record<string, string>>({});
 	const [savingById, setSavingById] = useState<Record<string, boolean>>({});
@@ -99,9 +95,6 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 			return sortDir === "asc" ? cmp : -cmp;
 		});
 
-	const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-	const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
-
 	if (devices.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center py-16 text-center">
@@ -126,28 +119,34 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 		<div>
 			<Input
 				className="mb-4 max-w-xs text-sm"
-				onChange={(e) => {
-					setSearch(e.target.value);
-					setPage(0);
-				}}
+				onChange={(e) => setSearch(e.target.value)}
 				placeholder="Search devices…"
 				type="text"
 				value={search}
 			/>
 
-			<div className="overflow-hidden rounded-xl border border-[var(--s-border)]">
+			<div
+				className="overflow-hidden rounded-xl border"
+				style={{ borderColor: "var(--cc-glass-border)" }}
+			>
 				<table className="w-full text-sm">
-					<thead className="border-[var(--s-border)] border-b bg-[var(--s-bg-alt)]">
+					<thead
+						className="border-b"
+						style={{
+							backgroundColor: "rgba(255, 255, 255, 0.03)",
+							borderColor: "var(--cc-glass-border)",
+						}}
+					>
 						<tr>
 							{COLS.map(({ key, label }) => (
 								<th
-									className="cursor-pointer px-4 py-3 text-left font-medium text-[var(--s-text-muted)] capitalize hover:text-[var(--s-text-secondary-hov)]"
+									className="cursor-pointer px-4 py-3 text-left font-medium text-[var(--cc-text-muted)] capitalize hover:text-[var(--cc-text-secondary)]"
 									key={key}
 									onClick={() => toggleSort(key)}
 								>
 									{label}
 									{sortBy === key && (
-										<span className="ml-1 text-[var(--s-text-dim)]">
+										<span className="ml-1 text-[var(--cc-text-faint)]">
 											{sortDir === "asc" ? "↑" : "↓"}
 										</span>
 									)}
@@ -155,9 +154,9 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 							))}
 						</tr>
 					</thead>
-					<tbody className="divide-y divide-[var(--s-divide)]">
-						{paged.map((device) => (
-							<tr className="hover:bg-[var(--s-row-hov)]" key={device.id}>
+					<tbody className="divide-y divide-[rgba(255,255,255,0.06)]">
+						{filtered.map((device) => (
+							<tr className="hover:bg-[rgba(255,255,255,0.03)]" key={device.id}>
 								<td className="px-4 py-3 text-foreground">{device.name}</td>
 								<td className="px-4 py-3">
 									<Badge
@@ -218,32 +217,6 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 					</tbody>
 				</table>
 			</div>
-
-			{totalPages > 1 && (
-				<div className="mt-3 flex items-center gap-3">
-					<Button
-						disabled={page === 0}
-						onClick={() => setPage((p) => p - 1)}
-						size="sm"
-						type="button"
-						variant="outline"
-					>
-						Prev
-					</Button>
-					<span className="text-[var(--s-text-dim)] text-xs">
-						{page + 1} / {totalPages}
-					</span>
-					<Button
-						disabled={page >= totalPages - 1}
-						onClick={() => setPage((p) => p + 1)}
-						size="sm"
-						type="button"
-						variant="outline"
-					>
-						Next
-					</Button>
-				</div>
-			)}
 		</div>
 	);
 }

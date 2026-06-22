@@ -76,7 +76,13 @@ export function AutomationForm({ onClose, utils, valveDevices }: Props) {
 
 	if (valveDevices.length === 0) {
 		return (
-			<div className="rounded-xl border border-[var(--s-border)] bg-[var(--s-bg-alt)] p-4 text-gray-400 text-sm">
+			<div
+				className="rounded-xl border p-4 text-gray-400 text-sm"
+				style={{
+					backgroundColor: "rgba(255, 255, 255, 0.03)",
+					borderColor: "rgba(255, 255, 255, 0.06)",
+				}}
+			>
 				No valve devices available. Pair a valve device before creating a rule.
 				<div className="mt-3">
 					<Button onClick={onClose} type="button" variant="outline">
@@ -102,7 +108,7 @@ export function AutomationForm({ onClose, utils, valveDevices }: Props) {
 
 	return (
 		<form
-			className="flex flex-col gap-4 rounded-xl border border-[var(--s-border)] bg-[var(--s-bg-alt)] p-4"
+			className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto rounded-xl border p-4"
 			onSubmit={(e) => {
 				e.preventDefault();
 				if (!canSubmit) return;
@@ -120,6 +126,10 @@ export function AutomationForm({ onClose, utils, valveDevices }: Props) {
 						? parseFloat(trimmedThreshold)
 						: undefined,
 				});
+			}}
+			style={{
+				backgroundColor: "rgba(255, 255, 255, 0.03)",
+				borderColor: "rgba(255, 255, 255, 0.06)",
 			}}
 		>
 			<label

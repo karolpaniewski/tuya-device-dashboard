@@ -375,33 +375,33 @@ The new `defaultThresholds` table starts empty; `getDefaultThresholds` falls bac
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Lint passes: `npm run check` (same pre-existing drizzle-metadata diagnostics noted in Phase 1; no new errors from any Phase 2 file — confirmed via targeted `biome check` on each touched file)
-- [x] 2.3 Existing suite still passes: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck` — 6743960
+- [x] 2.2 Lint passes: `npm run check` (same pre-existing drizzle-metadata diagnostics noted in Phase 1; no new errors from any Phase 2 file — confirmed via targeted `biome check` on each touched file) — 6743960
+- [x] 2.3 Existing suite still passes: `npm run test` — 6743960
 
 #### Manual
 
-- [x] 2.4 Six-card grid renders, dark-only, matches dashboard visual language
-- [x] 2.5 Clicking Rooms/Devices/Automations/Sites opens a working popup
-- [x] 2.6 Devices popup is visibly wider than the others
-- [x] 2.7 375px viewport: grid collapses to one column, cards remain tappable
+- [x] 2.4 Six-card grid renders, dark-only, matches dashboard visual language — 6743960
+- [x] 2.5 Clicking Rooms/Devices/Automations/Sites opens a working popup — 6743960
+- [x] 2.6 Devices popup is visibly wider than the others — 6743960
+- [x] 2.7 375px viewport: grid collapses to one column, cards remain tappable — 6743960
 
 ### Phase 3: Restyle existing CRUD inside their popups
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run typecheck`
-- [ ] 3.2 Lint passes: `npm run check`
-- [ ] 3.3 Existing suite still passes: `npm run test`
+- [x] 3.1 Type checking passes: `npm run typecheck`
+- [x] 3.2 Lint passes: `npm run check` (verified via targeted `biome check` on each touched file)
+- [x] 3.3 Existing suite still passes: `npm run test`
 
 #### Manual
 
-- [ ] 3.4 All four popups visually match the dashboard's dark glass aesthetic
-- [ ] 3.5 Rooms: inline threshold form still works, still inline
-- [ ] 3.6 Rooms: nested "move to site" dialog renders correctly, stacked above the popup
-- [ ] 3.7 Automations: rule-creation form scrolls internally
-- [ ] 3.8 Sites: blocked-deletion error still shows for non-empty sites
-- [ ] 3.9 375px viewport: all four popups remain usable
+- [x] 3.4 All four popups visually match the dashboard's dark glass aesthetic
+- [x] 3.5 Rooms: inline threshold form still works, still inline
+- [x] 3.6 Rooms: nested "move to site" dialog renders correctly, stacked above the popup
+- [x] 3.7 Automations: rule-creation form scrolls internally
+- [x] 3.8 Sites: blocked-deletion error still shows for non-empty sites
+- [x] 3.9 375px viewport: all four popups remain usable
 
 ### Phase 4: Display/Appearance settings section
 

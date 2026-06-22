@@ -109,7 +109,12 @@ function DialogDescription({
 }
 
 function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
-	return <div className={cn("px-6 py-4", className)} {...props} />;
+	return (
+		<div
+			className={cn("max-h-[70vh] overflow-y-auto px-6 py-4", className)}
+			{...props}
+		/>
+	);
 }
 
 export {

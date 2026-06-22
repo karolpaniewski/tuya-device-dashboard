@@ -114,8 +114,12 @@ export function RoomManager({ activeSiteId, rooms, sites, utils }: Props) {
 			<ul className="flex flex-col gap-2">
 				{rooms.map((room) => (
 					<li
-						className="flex flex-col gap-2 rounded-xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] px-4 py-3"
+						className="flex flex-col gap-2 rounded-xl border px-4 py-3"
 						key={room.id}
+						style={{
+							background: "var(--cc-glass-bg)",
+							borderColor: "var(--cc-glass-border)",
+						}}
 					>
 						<div className="flex items-center gap-1.5 sm:gap-3">
 							{editingId === room.id ? (
@@ -131,9 +135,20 @@ export function RoomManager({ activeSiteId, rooms, sites, utils }: Props) {
 									value={editingName}
 								/>
 							) : (
-								<span className="flex-1 text-foreground">{room.name}</span>
+								<span
+									className="flex-1"
+									style={{ color: "var(--cc-text-primary)" }}
+								>
+									{room.name}
+								</span>
 							)}
-							<span className="rounded bg-[var(--s-badge-bg)] px-2 py-0.5 text-[var(--s-badge-text)] text-xs">
+							<span
+								className="rounded px-2 py-0.5 text-xs"
+								style={{
+									backgroundColor: "rgba(255, 255, 255, 0.08)",
+									color: "var(--cc-text-muted)",
+								}}
+							>
 								{room.deviceCount}{" "}
 								{room.deviceCount === 1 ? "device" : "devices"}
 							</span>
@@ -274,13 +289,24 @@ export function RoomManager({ activeSiteId, rooms, sites, utils }: Props) {
 				}}
 				open={moveTarget !== null}
 			>
-				<DialogContent>
+				<DialogContent
+					className="command-center"
+					style={{
+						background: "var(--cc-glass-bg)",
+						borderColor: "var(--cc-glass-border)",
+					}}
+				>
 					<DialogHeader>
-						<DialogTitle>Move room</DialogTitle>
+						<DialogTitle style={{ color: "var(--cc-text-primary)" }}>
+							Move room
+						</DialogTitle>
 					</DialogHeader>
 					<DialogBody>
 						{moveTarget && (
-							<p className="text-sm text-white/70">
+							<p
+								className="text-sm"
+								style={{ color: "var(--cc-text-secondary)" }}
+							>
 								Move "{moveTarget.room.name}" and its{" "}
 								{moveTarget.room.deviceCount} device(s) to {moveTarget.siteName}
 								?

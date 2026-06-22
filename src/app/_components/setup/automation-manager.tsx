@@ -81,17 +81,26 @@ export function AutomationManager({
 			<ul className="flex flex-col gap-2">
 				{rules.map((rule) => (
 					<li
-						className="flex flex-col gap-2 rounded-xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+						className="flex flex-col gap-2 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
 						key={rule.id}
+						style={{
+							background: "var(--cc-glass-bg)",
+							borderColor: "var(--cc-glass-border)",
+						}}
 					>
 						<div className="flex flex-col gap-1">
 							<div className="flex items-center gap-2">
-								<span className="font-medium text-foreground">{rule.name}</span>
+								<span
+									className="font-medium"
+									style={{ color: "var(--cc-text-primary)" }}
+								>
+									{rule.name}
+								</span>
 								<Badge variant={rule.isEnabled ? "default" : "outline"}>
 									{rule.isEnabled ? "Enabled" : "Disabled"}
 								</Badge>
 							</div>
-							<p className="text-[var(--s-text-muted)] text-xs">
+							<p className="text-[var(--cc-text-muted)] text-xs">
 								{rule.deviceName} · {rule.roomName ?? "–"} ·{" "}
 								{formatDays(rule.daysOfWeek)} ·{" "}
 								{formatTime(rule.fireHour, rule.fireMinute)} ·{" "}

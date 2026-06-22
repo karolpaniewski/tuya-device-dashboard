@@ -77,8 +77,12 @@ export function SiteManager({ utils }: Props) {
 			<ul className="flex flex-col gap-2">
 				{sites.map((site) => (
 					<li
-						className="flex items-center gap-1.5 rounded-xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] px-4 py-3 sm:gap-3"
+						className="flex items-center gap-1.5 rounded-xl border px-4 py-3 sm:gap-3"
 						key={site.id}
+						style={{
+							background: "var(--cc-glass-bg)",
+							borderColor: "var(--cc-glass-border)",
+						}}
 					>
 						{editingId === site.id ? (
 							<Input
@@ -93,7 +97,12 @@ export function SiteManager({ utils }: Props) {
 								value={editingName}
 							/>
 						) : (
-							<span className="flex-1 text-foreground">{site.name}</span>
+							<span
+								className="flex-1"
+								style={{ color: "var(--cc-text-primary)" }}
+							>
+								{site.name}
+							</span>
 						)}
 						<Button
 							onClick={() => startRename(site)}
