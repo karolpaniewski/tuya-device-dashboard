@@ -1,10 +1,10 @@
 ---
 change_id: ux-polish
 title: Ux polish
-status: implemented
+status: archived
 created: 2026-06-10
 updated: 2026-06-22
-archived_at: null
+archived_at: 2026-06-22T08:00:00Z
 ---
 
 ## Notes
