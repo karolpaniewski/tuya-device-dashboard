@@ -51,7 +51,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-18  | room-site-reassignment | move a room — and its assigned devices and, if exclusive to it, its gateway — to a different site in one atomic operation, via a confirmation-gated picker in Setup → Rooms | S-13 | user-requested v2 | done |
 | S-19  | dashboard-personalization | drag-and-drop reorder/hide summary widgets (KPI cards, donut, room temperature panel) and reorder room groups on the dashboard; layout persists across sessions and server restarts (single shared deployment-level layout — no per-account identity boundary exists in this app, confirmed via `/10x-frame`) | S-15, S-16, S-17 | user-requested v2 | done |
 | S-20  | room-heat-toggle       | one-click "turn off heat in room X" quick action on the dashboard — closes the valve (DP `valve_state`) directly, independent of setpoint; manual action overrides automation, which may re-engage on its next tick | S-01, S-04, S-11         | user-requested v2                 | needs-shaping |
-| S-21  | dashboard-ux-redesign  | visual design-system pass finishing what S-17 started — palette/density tightened within existing layout, primitive consistency restored (e.g. `temperature-history-modal.tsx`, `device-modal.tsx` one-off styling), desktop-only | S-15, S-16, S-17, S-19   | user-requested v2                 | proposed |
+| S-21  | dashboard-ux-redesign  | visual design-system pass finishing what S-17 started — palette/density tightened within existing layout, primitive consistency restored (e.g. `temperature-history-modal.tsx`, `device-modal.tsx` one-off styling), desktop-only | S-15, S-16, S-17, S-19   | user-requested v2                 | done |
 | S-22  | setup-to-settings      | Setup page reorganized to read as an actual Settings experience (app-wide config / browser-local display preferences), instead of relocating its existing Rooms/Devices/Automations/Sites CRUD screens | S-15, S-19                | user-requested v2                 | done |
 
 ## Streams
@@ -324,7 +324,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Touches widely-used shared components (cards, modals, buttons) — screenshot-level regressions are easy to miss without manual review across both light and dark mode.
-- **Status:** proposed
+- **Status:** done
 
 ### S-22: Setup → Settings reorganization
 
