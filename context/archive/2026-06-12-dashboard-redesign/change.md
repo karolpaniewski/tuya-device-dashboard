@@ -1,11 +1,12 @@
 ---
 id: dashboard-redesign
 title: Dashboard & Setup Redesign (S-15)
-status: implemented
+status: archived
 created: 2026-06-12
 updated: 2026-06-22
 roadmap_id: S-15
 plan: context/changes/dashboard-redesign/plan.md
+archived_at: 2026-06-22T08:00:00Z
 ---
 
 Shipped via one consolidated commit (`a425930`) rather than the
