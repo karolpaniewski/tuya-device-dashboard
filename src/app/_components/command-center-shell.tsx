@@ -84,7 +84,7 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 
 	return (
 		<div
-			className="command-center fixed inset-0 flex overflow-y-auto"
+			className="command-center fixed inset-0 flex overflow-hidden"
 			data-density={density}
 			style={{
 				backgroundColor: "var(--cc-bg)",
@@ -146,7 +146,7 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 				</div>
 			</aside>
 
-			<main className="relative z-10 flex min-w-0 flex-1 flex-col gap-[18px] px-[30px] py-6 pb-[60px]">
+			<main className="relative z-10 flex min-w-0 flex-1 flex-col gap-[18px] overflow-y-auto px-[30px] py-6 pb-[60px]">
 				<header className="flex flex-wrap items-center justify-between gap-5">
 					<div className="flex items-center gap-3">
 						<h1
