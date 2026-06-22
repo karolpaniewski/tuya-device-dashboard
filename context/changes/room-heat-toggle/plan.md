@@ -345,20 +345,20 @@ Additive only — `roomHeatState` has no backfill requirement (absence of a row 
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npm run typecheck`
-- [x] 3.2 Unit tests pass: `npm run test`
+- [x] 3.1 Type checking passes: `npm run typecheck` — 264b0ca
+- [x] 3.2 Unit tests pass: `npm run test` — 264b0ca
 
 #### Manual
 
-- [ ] 3.3 Pinned room + enabled rule produces a `skipped` execution log and no device write
+- [x] 3.3 Pinned room + enabled rule produces a `skipped` execution log and no device write — 264b0ca
 
 ### Phase 4: Dashboard UI
 
 #### Automated
 
-- [ ] 4.1 Type checking passes: `npm run typecheck`
-- [ ] 4.2 Linting passes: `npm run lint`
-- [ ] 4.3 Build succeeds: `npm run build`
+- [x] 4.1 Type checking passes: `npm run typecheck`
+- [x] 4.2 Linting passes: `npm run lint`
+- [x] 4.3 Build succeeds: `npm run build`
 
 #### Manual
 

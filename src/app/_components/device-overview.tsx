@@ -170,6 +170,9 @@ export function DeviceOverview() {
 		onError: () => void utils.device.overview.invalidate(),
 		onSuccess: () => void utils.device.overview.invalidate(),
 	});
+	const toggleHeatMutation = api.room.toggleHeat.useMutation({
+		onSuccess: () => void utils.device.overview.invalidate(),
+	});
 	// Pending layout save — at most one `dashboardLayout.save` request is ever
 	// in flight; a newer call supersedes an older one still in flight instead
 	// of racing it, so two requests can never resolve in an order that lets a
@@ -987,6 +990,13 @@ export function DeviceOverview() {
 															devices={room.devices}
 															dndEnabled={dndEnabled}
 															onDeviceClick={setSelectedDevice}
+															onToggleHeat={(pinnedOff) =>
+																toggleHeatMutation.mutate({
+																	roomId: room.roomId,
+																	pinnedOff,
+																})
+															}
+															pinnedOff={room.pinnedOff}
 															primarySensorId={
 																room.devices.find(
 																	(d) =>
@@ -1019,6 +1029,13 @@ export function DeviceOverview() {
 													devices={room.devices}
 													dndEnabled={dndEnabled}
 													onDeviceClick={setSelectedDevice}
+													onToggleHeat={(pinnedOff) =>
+														toggleHeatMutation.mutate({
+															roomId: room.roomId,
+															pinnedOff,
+														})
+													}
+													pinnedOff={room.pinnedOff}
 													primarySensorId={
 														room.devices.find(
 															(d) => d.deviceType === "sensor" && d.isOnline,

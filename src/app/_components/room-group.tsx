@@ -2,8 +2,16 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
+import { Flame } from "lucide-react";
+import { useState } from "react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "~/components/ui/popover";
 import { ROOM_STATUS_BADGE_CLASSES } from "~/lib/room-status-colors";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -44,6 +52,66 @@ function RoomSparkline({ deviceId }: { deviceId: string }) {
 	);
 }
 
+interface HeatToggleProps {
+	onToggleHeat: (pinnedOff: boolean) => void;
+	pinnedOff: boolean;
+}
+
+function HeatToggle({ onToggleHeat, pinnedOff }: HeatToggleProps) {
+	const [confirmOpen, setConfirmOpen] = useState(false);
+
+	if (pinnedOff) {
+		return (
+			<Button
+				aria-label="Turn heat back on"
+				onClick={() => onToggleHeat(false)}
+				size="sm"
+				variant="outline"
+			>
+				<Flame size={14} />
+				Turn heat on
+			</Button>
+		);
+	}
+
+	return (
+		<Popover onOpenChange={setConfirmOpen} open={confirmOpen}>
+			<PopoverTrigger
+				render={
+					<Button aria-label="Turn heat off" size="sm" variant="outline">
+						<Flame size={14} />
+						Turn heat off
+					</Button>
+				}
+			/>
+			<PopoverContent>
+				<p className="mb-3 text-foreground text-sm">
+					Turn off heat in this room?
+				</p>
+				<div className="flex justify-end gap-2">
+					<Button
+						onClick={() => setConfirmOpen(false)}
+						size="sm"
+						variant="ghost"
+					>
+						Cancel
+					</Button>
+					<Button
+						onClick={() => {
+							setConfirmOpen(false);
+							onToggleHeat(true);
+						}}
+						size="sm"
+						variant="destructive"
+					>
+						Confirm
+					</Button>
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
 interface RoomGroupProps {
 	anomaly?: boolean;
 	badge?: "OK" | "Too Cold" | "Too Hot" | null;
@@ -51,6 +119,8 @@ interface RoomGroupProps {
 	dndEnabled?: boolean;
 	isUnassigned?: boolean;
 	onDeviceClick?: (device: DeviceItem) => void;
+	onToggleHeat?: (pinnedOff: boolean) => void;
+	pinnedOff?: boolean;
 	primarySensorId?: string | null;
 	roomId: string;
 	roomName: string;
@@ -64,6 +134,8 @@ export function RoomGroup({
 	dndEnabled,
 	isUnassigned,
 	onDeviceClick,
+	onToggleHeat,
+	pinnedOff,
 	primarySensorId,
 	roomId,
 	roomName,
@@ -109,24 +181,36 @@ export function RoomGroup({
 	return (
 		<section className="flex flex-col gap-4">
 			<div className="flex items-center justify-between">
-				<h2
-					className={`font-semibold text-xl ${isUnassigned ? "text-[var(--s-text-dim)]" : "text-foreground"}`}
-				>
-					{roomName}
-					<span className="ml-2 font-normal text-[var(--s-text-dim)] text-sm">
-						({devices.length})
-					</span>
-				</h2>
-				{badge && (
-					<Badge
-						className={cn(
-							"h-auto rounded-lg px-3 py-1 font-semibold text-sm",
-							ROOM_STATUS_BADGE_CLASSES[badge] ?? "",
-						)}
+				<div className="flex items-center gap-2">
+					<h2
+						className={`font-semibold text-xl ${isUnassigned ? "text-[var(--s-text-dim)]" : "text-foreground"}`}
 					>
-						{badge}
-					</Badge>
-				)}
+						{roomName}
+						<span className="ml-2 font-normal text-[var(--s-text-dim)] text-sm">
+							({devices.length})
+						</span>
+					</h2>
+					{pinnedOff && (
+						<Badge className="h-auto rounded-lg bg-amber-700 px-3 py-1 font-semibold text-amber-100 text-sm">
+							Manually off
+						</Badge>
+					)}
+				</div>
+				<div className="flex items-center gap-2">
+					{badge && (
+						<Badge
+							className={cn(
+								"h-auto rounded-lg px-3 py-1 font-semibold text-sm",
+								ROOM_STATUS_BADGE_CLASSES[badge] ?? "",
+							)}
+						>
+							{badge}
+						</Badge>
+					)}
+					{onToggleHeat && (
+						<HeatToggle onToggleHeat={onToggleHeat} pinnedOff={!!pinnedOff} />
+					)}
+				</div>
 			</div>
 			{anomaly && suggestion && (
 				<p className="text-amber-400 text-sm italic">{suggestion}</p>
