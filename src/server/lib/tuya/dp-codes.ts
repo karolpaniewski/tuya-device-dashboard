@@ -18,3 +18,10 @@ if (Object.keys(DP_CODE_MAP).length === 0 && process.env.TUYA_STUB !== "true") {
 		"DP_CODE_MAP is empty — no productKeys registered. All setpoint commands will be rejected.",
 	);
 }
+
+// Maps productKey → tuyapi DPS number for direct valve_state write (open/close),
+// independent of the setpoint DP above.
+export const VALVE_STATE_DP_CODE_MAP: Record<string, number> = {
+	// wkf thermostat valve (product ogx8u5z6) — DP 3 = valve_state ("opened"/"closed")
+	ogx8u5z6: 3,
+};

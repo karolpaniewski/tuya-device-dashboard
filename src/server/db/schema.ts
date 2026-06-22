@@ -224,6 +224,29 @@ export const roomThresholds = createTable(
 	],
 );
 
+export const roomHeatState = createTable("room_heat_state", (d) => ({
+	id: d
+		.text({ length: 255 })
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	roomId: d
+		.text("room_id", { length: 255 })
+		.notNull()
+		.unique()
+		.references(() => rooms.id, { onDelete: "cascade" }),
+	pinnedOff: d
+		.integer("pinned_off", { mode: "boolean" })
+		.notNull()
+		.default(false),
+	pinnedAt: d.integer("pinned_at", { mode: "timestamp" }),
+	releasedAt: d.integer("released_at", { mode: "timestamp" }),
+	createdAt: d
+		.integer({ mode: "timestamp" })
+		.notNull()
+		.default(sql`(unixepoch())`),
+	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+}));
+
 export const automationRules = createTable(
 	"automation_rule",
 	(d) => ({
