@@ -599,12 +599,12 @@ from a database backup.
 ### Phase 2: Mode CRUD API + shared activation logic
 
 #### Automated
-- [x] 2.1 Unit tests pass: `npm run test`
-- [x] 2.2 Type checking passes: `npm run typecheck`
-- [x] 2.3 Lint passes: `npm run check`
+- [x] 2.1 Unit tests pass: `npm run test` — 428e528
+- [x] 2.2 Type checking passes: `npm run typecheck` — 428e528
+- [x] 2.3 Lint passes: `npm run check` — 428e528
 
 #### Manual
-- [x] 2.4 Exercise mode.create/trigger against a dev device
+- [x] 2.4 Exercise mode.create/trigger against a dev device — 428e528
 
 ### Phase 3: Scheduler rework
 
