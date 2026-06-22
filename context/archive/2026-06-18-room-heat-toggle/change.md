@@ -1,10 +1,10 @@
 ---
 change_id: room-heat-toggle
 title: Quick-action room heat toggle
-status: impl_reviewed
+status: archived
 created: 2026-06-18
 updated: 2026-06-22
-archived_at: null
+archived_at: 2026-06-22T12:02:11Z
 ---
 
 ## Notes

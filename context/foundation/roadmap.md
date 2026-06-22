@@ -50,7 +50,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-17  | visual-ux-redesign     | full dark/light mode toggle (no FOUC), CSS token system replacing glass-morphism dark: variants (Turbopack-safe), device-type icons + watermark on cards, per-room 24h temperature overview panel, donut KPI card for device distribution by room | S-15, S-16 | user-requested v2 | done |
 | S-18  | room-site-reassignment | move a room — and its assigned devices and, if exclusive to it, its gateway — to a different site in one atomic operation, via a confirmation-gated picker in Setup → Rooms | S-13 | user-requested v2 | done |
 | S-19  | dashboard-personalization | drag-and-drop reorder/hide summary widgets (KPI cards, donut, room temperature panel) and reorder room groups on the dashboard; layout persists across sessions and server restarts (single shared deployment-level layout — no per-account identity boundary exists in this app, confirmed via `/10x-frame`) | S-15, S-16, S-17 | user-requested v2 | done |
-| S-20  | room-heat-toggle       | one-click "turn off heat in room X" quick action on the dashboard — closes the valve (DP `valve_state`) directly, independent of setpoint; manual action overrides automation, which may re-engage on its next tick | S-01, S-04, S-11         | user-requested v2                 | needs-shaping |
+| S-20  | room-heat-toggle       | one-click "turn off heat in room X" quick action on the dashboard — closes the valve (DP `valve_state`) directly, independent of setpoint; manual action overrides automation, which may re-engage on its next tick | S-01, S-04, S-11         | user-requested v2                 | done |
 | S-21  | dashboard-ux-redesign  | visual design-system pass finishing what S-17 started — palette/density tightened within existing layout, primitive consistency restored (e.g. `temperature-history-modal.tsx`, `device-modal.tsx` one-off styling), desktop-only | S-15, S-16, S-17, S-19   | user-requested v2                 | done |
 | S-22  | setup-to-settings      | Setup page reorganized to read as an actual Settings experience (app-wide config / browser-local display preferences), instead of relocating its existing Rooms/Devices/Automations/Sites CRUD screens | S-15, S-19                | user-requested v2                 | done |
 
@@ -312,7 +312,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - "Turn back on" semantics — does the toggle have an explicit reverse action, or does any subsequent setpoint write implicitly re-open the valve? Owner: user. Block: yes for UX, not for backend.
   - Exact dashboard placement (room card affordance vs detail modal). Owner: user. Block: no.
 - **Risk:** Low — device-protocol feasibility already confirmed (`src/server/lib/tuya/dp-codes.ts`). Automation-conflict behavior was resolved during scoping discussion: manual toggle is a simple override, automation may re-engage on its next scheduled tick (no new "paused rule" state).
-- **Status:** needs-shaping
+- **Status:** done
 
 ### S-21: Visual design-system pass
 
@@ -397,3 +397,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-11       | automation-rules       | 2026-06-16  |
 | S-18       | room-site-reassignment | 2026-06-16  |
 | S-19       | dashboard-personalization | 2026-06-17 |
+| S-20       | room-heat-toggle       | 2026-06-22  |
