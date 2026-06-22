@@ -390,31 +390,31 @@ The new `defaultThresholds` table starts empty; `getDefaultThresholds` falls bac
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npm run typecheck`
-- [x] 3.2 Lint passes: `npm run check` (verified via targeted `biome check` on each touched file)
-- [x] 3.3 Existing suite still passes: `npm run test`
+- [x] 3.1 Type checking passes: `npm run typecheck` — 69b13da
+- [x] 3.2 Lint passes: `npm run check` (verified via targeted `biome check` on each touched file) — 69b13da
+- [x] 3.3 Existing suite still passes: `npm run test` — 69b13da
 
 #### Manual
 
-- [x] 3.4 All four popups visually match the dashboard's dark glass aesthetic
-- [x] 3.5 Rooms: inline threshold form still works, still inline
-- [x] 3.6 Rooms: nested "move to site" dialog renders correctly, stacked above the popup
-- [x] 3.7 Automations: rule-creation form scrolls internally
-- [x] 3.8 Sites: blocked-deletion error still shows for non-empty sites
-- [x] 3.9 375px viewport: all four popups remain usable
+- [x] 3.4 All four popups visually match the dashboard's dark glass aesthetic — 69b13da
+- [x] 3.5 Rooms: inline threshold form still works, still inline — 69b13da
+- [x] 3.6 Rooms: nested "move to site" dialog renders correctly, stacked above the popup — 69b13da
+- [x] 3.7 Automations: rule-creation form scrolls internally — 69b13da
+- [x] 3.8 Sites: blocked-deletion error still shows for non-empty sites — 69b13da
+- [x] 3.9 375px viewport: all four popups remain usable — 69b13da
 
 ### Phase 4: Display/Appearance settings section
 
 #### Automated
 
-- [ ] 4.1 Type checking passes: `npm run typecheck`
-- [ ] 4.2 Existing suite still passes: `npm run test`
+- [x] 4.1 Type checking passes: `npm run typecheck`
+- [x] 4.2 Existing suite still passes: `npm run test`
 
 #### Manual
 
-- [ ] 4.3 Toggling density visibly changes dashboard card spacing
-- [ ] 4.4 Density choice persists across reload
-- [ ] 4.5 Settings page itself is unaffected by density
+- [x] 4.3 Toggling density visibly changes dashboard card spacing
+- [x] 4.4 Density choice persists across reload
+- [x] 4.5 Settings page itself is unaffected by density
 
 ### Phase 5: Default Thresholds settings section
 

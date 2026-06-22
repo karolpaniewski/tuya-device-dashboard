@@ -220,7 +220,7 @@ export function DeviceCard({
 		// biome-ignore lint/a11y/useSemanticElements: card contains nested interactive controls (SetpointControl), preventing use of a <button> wrapper
 		// biome-ignore lint/a11y/useKeyWithClickEvents: supplementary action; primary keyboard interaction is via drag handle
 		<div
-			className="fade-in slide-in-from-bottom-2 relative flex animate-in cursor-pointer flex-col overflow-hidden rounded-[18px] p-[17px] transition-colors duration-300"
+			className="cc-device-card fade-in slide-in-from-bottom-2 relative flex animate-in cursor-pointer flex-col overflow-hidden rounded-[18px] p-[17px] transition-colors duration-300"
 			onClick={onClick}
 			role="button"
 			style={{

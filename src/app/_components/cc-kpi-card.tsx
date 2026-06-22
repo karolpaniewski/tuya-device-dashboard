@@ -28,7 +28,7 @@ export function CcKpiCard({
 	return (
 		<div
 			className={cn(
-				"relative overflow-hidden rounded-[18px] border p-[18px] transition-colors hover:border-[rgba(34,211,238,0.35)]",
+				"cc-kpi-card relative overflow-hidden rounded-[18px] border p-[18px] transition-colors hover:border-[rgba(34,211,238,0.35)]",
 				TONE_CLASSES[tone],
 			)}
 		>

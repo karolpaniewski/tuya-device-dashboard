@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/select";
 import { cn } from "~/lib/utils";
 import { CommandCenterClock } from "./command-center-clock";
+import { DensityProvider, useDensity } from "./density-provider";
 
 function RailLink({
 	href,
@@ -64,8 +65,17 @@ function RailLink({
 }
 
 export function CommandCenterShell({ children }: { children: ReactNode }) {
+	return (
+		<DensityProvider>
+			<CommandCenterShellInner>{children}</CommandCenterShellInner>
+		</DensityProvider>
+	);
+}
+
+function CommandCenterShellInner({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
 	const { activeSiteId, sites, setActiveSite } = useSiteContext();
+	const { density } = useDensity();
 
 	const siteItems = Object.fromEntries([
 		...sites.map((site) => [site.id, site.name]),
@@ -75,6 +85,7 @@ export function CommandCenterShell({ children }: { children: ReactNode }) {
 	return (
 		<div
 			className="command-center fixed inset-0 flex overflow-y-auto"
+			data-density={density}
 			style={{
 				backgroundColor: "var(--cc-bg)",
 				color: "var(--cc-text-primary)",

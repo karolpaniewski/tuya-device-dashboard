@@ -7,6 +7,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
 import { AutomationManager } from "./automation-manager";
 import { DeviceTable } from "./device-table";
+import { DisplaySettings } from "./display-settings";
 import { RoomManager } from "./room-manager";
 import { SettingsCard } from "./settings-card";
 import { SiteManager } from "./site-manager";
@@ -89,7 +90,7 @@ export function SettingsShell() {
 				icon={Palette}
 				title="Display / Appearance"
 			>
-				<p style={{ color: "var(--cc-text-muted)" }}>Coming soon.</p>
+				<DisplaySettings />
 			</SettingsCard>
 
 			<SettingsCard

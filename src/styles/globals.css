@@ -218,6 +218,14 @@
 	--cc-glow-2: rgba(167, 139, 250, 0.1);
 }
 
+.command-center[data-density="compact"] .cc-device-card {
+	padding: 10px;
+}
+
+.command-center[data-density="compact"] .cc-kpi-card {
+	padding: 12px;
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

@@ -3,7 +3,7 @@ change_id: setup-to-settings
 title: Setup → Settings reorganization
 status: implementing
 created: 2026-06-18
-updated: 2026-06-20
+updated: 2026-06-22
 roadmap_id: S-22
 archived_at: null
 ---
