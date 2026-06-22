@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { devices, gateways } from "~/server/db/schema";
 import { decryptLocalKey } from "~/server/lib/crypto";
+import { getLogger } from "~/server/lib/log-context";
 import { getTuyaClient } from "~/server/lib/tuya";
 import {
 	DP_CODE_MAP,
@@ -131,7 +132,11 @@ export async function sendValveStateCommand(
 				cid: device.nodeId ?? undefined,
 			},
 		);
-	} catch {
+	} catch (err) {
+		getLogger().error(
+			{ err, deviceId, dps, isOpen },
+			"valve-control.send-switch-failed",
+		);
 		throw new Error("COMMAND_FAILED");
 	}
 }

@@ -53,17 +53,19 @@ function RoomSparkline({ deviceId }: { deviceId: string }) {
 }
 
 interface HeatToggleProps {
+	isPending?: boolean;
 	onToggleHeat: (pinnedOff: boolean) => void;
 	pinnedOff: boolean;
 }
 
-function HeatToggle({ onToggleHeat, pinnedOff }: HeatToggleProps) {
+function HeatToggle({ isPending, onToggleHeat, pinnedOff }: HeatToggleProps) {
 	const [confirmOpen, setConfirmOpen] = useState(false);
 
 	if (pinnedOff) {
 		return (
 			<Button
 				aria-label="Turn heat back on"
+				disabled={isPending}
 				onClick={() => onToggleHeat(false)}
 				size="sm"
 				variant="outline"
@@ -78,7 +80,12 @@ function HeatToggle({ onToggleHeat, pinnedOff }: HeatToggleProps) {
 		<Popover onOpenChange={setConfirmOpen} open={confirmOpen}>
 			<PopoverTrigger
 				render={
-					<Button aria-label="Turn heat off" size="sm" variant="outline">
+					<Button
+						aria-label="Turn heat off"
+						disabled={isPending}
+						size="sm"
+						variant="outline"
+					>
 						<Flame size={14} />
 						Turn heat off
 					</Button>
@@ -117,6 +124,7 @@ interface RoomGroupProps {
 	badge?: "OK" | "Too Cold" | "Too Hot" | null;
 	devices: DeviceItem[];
 	dndEnabled?: boolean;
+	isToggleHeatPending?: boolean;
 	isUnassigned?: boolean;
 	onDeviceClick?: (device: DeviceItem) => void;
 	onToggleHeat?: (pinnedOff: boolean) => void;
@@ -132,6 +140,7 @@ export function RoomGroup({
 	badge,
 	devices,
 	dndEnabled,
+	isToggleHeatPending,
 	isUnassigned,
 	onDeviceClick,
 	onToggleHeat,
@@ -208,7 +217,11 @@ export function RoomGroup({
 						</Badge>
 					)}
 					{onToggleHeat && (
-						<HeatToggle onToggleHeat={onToggleHeat} pinnedOff={!!pinnedOff} />
+						<HeatToggle
+							isPending={isToggleHeatPending}
+							onToggleHeat={onToggleHeat}
+							pinnedOff={!!pinnedOff}
+						/>
 					)}
 				</div>
 			</div>

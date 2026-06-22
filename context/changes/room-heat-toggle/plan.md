@@ -300,6 +300,10 @@ None beyond what already exists — the new mutation and queries follow the same
 
 Additive only — `roomHeatState` has no backfill requirement (absence of a row means "not pinned," which is the correct default for every existing room). No data migration for `devices` or `rooms` is needed.
 
+## Addenda
+
+**Phase 2 — `device.test.ts` (discovered during implementation, not in original Changes Required):** extending `device.overview` with a separate `roomHeatState` query shifted the positional `db.select()` mock-call order that 5 existing tests in `src/server/api/routers/device.test.ts` depend on. Each affected test's mock chain was updated to insert a no-op `roomHeatState` mock (`from: vi.fn().mockResolvedValue([])`) at the correct position — no test assertions changed. Flagged by `/10x-impl-review`; verified safe by the full test suite.
+
 ## References
 
 - Original discussion notes: `context/changes/room-heat-toggle/change.md`

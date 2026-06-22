@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useSiteContext } from "~/components/site-context";
 import { Button } from "~/components/ui/button";
 import { ErrorMessage } from "~/components/ui/error-message";
@@ -171,7 +172,14 @@ export function DeviceOverview() {
 		onSuccess: () => void utils.device.overview.invalidate(),
 	});
 	const toggleHeatMutation = api.room.toggleHeat.useMutation({
-		onSuccess: () => void utils.device.overview.invalidate(),
+		onSuccess: (data) => {
+			void utils.device.overview.invalidate();
+			if (data.deviceErrors.length > 0) {
+				toast.error(
+					`${data.deviceErrors.length} device(s) failed to respond — pin still applied`,
+				);
+			}
+		},
 	});
 	// Pending layout save — at most one `dashboardLayout.save` request is ever
 	// in flight; a newer call supersedes an older one still in flight instead
@@ -989,6 +997,7 @@ export function DeviceOverview() {
 															badge={room.badge}
 															devices={room.devices}
 															dndEnabled={dndEnabled}
+															isToggleHeatPending={toggleHeatMutation.isPending}
 															onDeviceClick={setSelectedDevice}
 															onToggleHeat={(pinnedOff) =>
 																toggleHeatMutation.mutate({
@@ -1028,6 +1037,7 @@ export function DeviceOverview() {
 													badge={room.badge}
 													devices={room.devices}
 													dndEnabled={dndEnabled}
+													isToggleHeatPending={toggleHeatMutation.isPending}
 													onDeviceClick={setSelectedDevice}
 													onToggleHeat={(pinnedOff) =>
 														toggleHeatMutation.mutate({
