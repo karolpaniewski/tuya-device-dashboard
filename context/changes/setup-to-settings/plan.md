@@ -407,24 +407,24 @@ The new `defaultThresholds` table starts empty; `getDefaultThresholds` falls bac
 
 #### Automated
 
-- [x] 4.1 Type checking passes: `npm run typecheck`
-- [x] 4.2 Existing suite still passes: `npm run test`
+- [x] 4.1 Type checking passes: `npm run typecheck` — f758ec6
+- [x] 4.2 Existing suite still passes: `npm run test` — f758ec6
 
 #### Manual
 
-- [x] 4.3 Toggling density visibly changes dashboard card spacing
-- [x] 4.4 Density choice persists across reload
-- [x] 4.5 Settings page itself is unaffected by density
+- [x] 4.3 Toggling density visibly changes dashboard card spacing — f758ec6
+- [x] 4.4 Density choice persists across reload — f758ec6
+- [x] 4.5 Settings page itself is unaffected by density — f758ec6
 
 ### Phase 5: Default Thresholds settings section
 
 #### Automated
 
-- [ ] 5.1 Type checking passes: `npm run typecheck`
-- [ ] 5.2 Full CI gate passes: `npm run ci`
+- [x] 5.1 Type checking passes: `npm run typecheck`
+- [x] 5.2 Full CI gate passes: `npm run ci` (same pre-existing drizzle-metadata biome diagnostics noted in Phase 1/2; no new errors from any Phase 5 file — confirmed via targeted `biome check`, plus `tsc --noEmit`, `vitest run` (121/121), and `next build`, all green)
 
 #### Manual
 
-- [ ] 5.3 Changing defaults updates the dashboard gauge without manual refresh
-- [ ] 5.4 A room with no override reflects the new default after next poll
-- [ ] 5.5 Invalid input (min ≥ max) is rejected with a clear inline error
+- [x] 5.3 Changing defaults updates the dashboard gauge without manual refresh
+- [x] 5.4 A room with no override reflects the new default after next poll
+- [x] 5.5 Invalid input (min ≥ max) is rejected with a clear inline error

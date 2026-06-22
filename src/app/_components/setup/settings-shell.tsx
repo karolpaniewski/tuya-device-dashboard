@@ -6,6 +6,7 @@ import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
 import { AutomationManager } from "./automation-manager";
+import { DefaultThresholdsForm } from "./default-thresholds-form";
 import { DeviceTable } from "./device-table";
 import { DisplaySettings } from "./display-settings";
 import { RoomManager } from "./room-manager";
@@ -98,7 +99,7 @@ export function SettingsShell() {
 				icon={Thermometer}
 				title="Default Thresholds"
 			>
-				<p style={{ color: "var(--cc-text-muted)" }}>Coming soon.</p>
+				<DefaultThresholdsForm />
 			</SettingsCard>
 		</div>
 	);
