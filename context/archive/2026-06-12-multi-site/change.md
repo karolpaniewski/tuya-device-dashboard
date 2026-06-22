@@ -1,9 +1,10 @@
 ---
 id: multi-site
 title: Multi-Site Support
-status: implemented
+status: archived
 created: 2026-06-12
 updated: 2026-06-22
+archived_at: 2026-06-22T08:00:00Z
 ---
 
 Shipped via one consolidated commit (`2a79987`, combined with
