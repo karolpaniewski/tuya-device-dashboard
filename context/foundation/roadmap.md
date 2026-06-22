@@ -3,7 +3,7 @@ project: Tuya Device Dashboard
 version: 1
 status: draft
 created: 2026-06-08
-updated: 2026-06-18
+updated: 2026-06-22
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -52,7 +52,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-19  | dashboard-personalization | drag-and-drop reorder/hide summary widgets (KPI cards, donut, room temperature panel) and reorder room groups on the dashboard; layout persists across sessions and server restarts (single shared deployment-level layout — no per-account identity boundary exists in this app, confirmed via `/10x-frame`) | S-15, S-16, S-17 | user-requested v2 | done |
 | S-20  | room-heat-toggle       | one-click "turn off heat in room X" quick action on the dashboard — closes the valve (DP `valve_state`) directly, independent of setpoint; manual action overrides automation, which may re-engage on its next tick | S-01, S-04, S-11         | user-requested v2                 | needs-shaping |
 | S-21  | dashboard-ux-redesign  | visual design-system pass finishing what S-17 started — palette/density tightened within existing layout, primitive consistency restored (e.g. `temperature-history-modal.tsx`, `device-modal.tsx` one-off styling), desktop-only | S-15, S-16, S-17, S-19   | user-requested v2                 | proposed |
-| S-22  | setup-to-settings      | Setup page reorganized to read as an actual Settings experience (app-wide config / browser-local display preferences), instead of relocating its existing Rooms/Devices/Automations/Sites CRUD screens | S-15, S-19                | user-requested v2                 | needs-shaping |
+| S-22  | setup-to-settings      | Setup page reorganized to read as an actual Settings experience (app-wide config / browser-local display preferences), instead of relocating its existing Rooms/Devices/Automations/Sites CRUD screens | S-15, S-19                | user-requested v2                 | done |
 
 ## Streams
 
@@ -338,7 +338,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - What actually belongs in "Settings" for this app — app-wide config? notification/threshold defaults relocated here? theme controls? Owner: user. Block: yes.
   - Whether the existing CRUD tabs move, get relabeled, or stay as-is alongside a new dedicated settings section. Owner: user. Block: yes.
 - **Risk:** Must stay inside this app's flat, single-admin identity model — S-19's `/10x-frame` already confirmed no per-account preference table exists. Any "settings" content implying per-user preferences needs that model revisited first, not assumed.
-- **Status:** needs-shaping
+- **Status:** done
 
 ## Backlog Handoff
 

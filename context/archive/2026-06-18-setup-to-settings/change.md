@@ -1,11 +1,11 @@
 ---
 change_id: setup-to-settings
 title: Setup → Settings reorganization
-status: implemented
+status: archived
 created: 2026-06-18
 updated: 2026-06-22
 roadmap_id: S-22
-archived_at: null
+archived_at: 2026-06-22T07:45:15Z
 ---
 
 ## Notes
