@@ -1,10 +1,10 @@
 ---
 change_id: testing-valve-control-scoring
 title: Valve control + threshold scoring tests (Phase 3 rollout)
-status: impl_reviewed
+status: archived
 created: 2026-06-09
-updated: 2026-06-10
-archived_at: null
+updated: 2026-06-22
+archived_at: 2026-06-22T08:00:00Z
 ---
 
 ## Notes
