@@ -55,15 +55,19 @@ describe("device.overview — stale detection", () => {
 						}),
 					}),
 				})
-				// Second call: roomThresholds query — no rooms assigned, returns []
+				// Second call: roomHeatState query — no pins, returns []
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([]),
 				})
-				// Third call: sites query
+				// Third call: roomThresholds query — no rooms assigned, returns []
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([]),
 				})
-				// Fourth call: defaultThresholds query — no row, falls back to constant
+				// Fourth call: sites query
+				.mockReturnValueOnce({
+					from: vi.fn().mockResolvedValue([]),
+				})
+				// Fifth call: defaultThresholds query — no row, falls back to constant
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
 						where: vi.fn().mockResolvedValue([]),
@@ -154,6 +158,8 @@ describe("device.overview — room scoring", () => {
 						}),
 					}),
 				})
+				// roomHeatState query — no pins
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
 				.mockReturnValueOnce({
 					from: vi
 						.fn()
@@ -209,6 +215,8 @@ describe("device.overview — room scoring", () => {
 						}),
 					}),
 				})
+				// roomHeatState query — no pins
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
 				// roomThresholds — no per-room override for r1
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
 				// Sites query
@@ -344,13 +352,15 @@ describe("device.overview — scoping", () => {
 						}),
 					}),
 				})
-				// Second: roomThresholds
+				// Second: roomHeatState
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
-				// Third: sites
+				// Third: roomThresholds
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				// Fourth: sites
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([{ id: "site-a", name: "Site A" }]),
 				})
-				// Fourth: defaultThresholds
+				// Fifth: defaultThresholds
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
 						where: vi.fn().mockResolvedValue([]),
@@ -408,16 +418,18 @@ describe("device.overview — scoping", () => {
 						}),
 					}),
 				})
-				// Second: roomThresholds
+				// Second: roomHeatState
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
-				// Third: sites
+				// Third: roomThresholds
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				// Fourth: sites
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([
 						{ id: "site-a", name: "Site A" },
 						{ id: "site-b", name: "Site B" },
 					]),
 				})
-				// Fourth: defaultThresholds
+				// Fifth: defaultThresholds
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
 						where: vi.fn().mockResolvedValue([]),

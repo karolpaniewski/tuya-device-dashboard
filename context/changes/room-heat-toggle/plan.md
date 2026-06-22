@@ -319,21 +319,21 @@ Additive only — `roomHeatState` has no backfill requirement (absence of a row 
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly: `npm run db:migrate`
-- [x] 1.2 Type checking passes: `npm run typecheck`
-- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.1 Migration applies cleanly: `npm run db:migrate` — a23170e
+- [x] 1.2 Type checking passes: `npm run typecheck` — a23170e
+- [x] 1.3 Linting passes: `npm run lint` — a23170e
 
 #### Manual
 
-- [ ] 1.4 Confirm the generated migration file only adds the new table
+- [x] 1.4 Confirm the generated migration file only adds the new table — a23170e
 
 ### Phase 2: Backend mutations
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run typecheck`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Unit tests pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Unit tests pass: `npm run test`
 
 #### Manual
 

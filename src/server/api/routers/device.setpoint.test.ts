@@ -40,13 +40,20 @@ const MOCK_GATEWAY = {
 
 const AUTH_SESSION = { user: { id: "u1", email: "test@test.com" } };
 
-// Queues two db.select() resolutions: device lookup, then gateway lookup —
-// matches the two sequential selects inside sendSetpointCommand.
+// Queues three db.select() resolutions: the pinned-room guard's assignment
+// lookup (no room assigned, so the guard is skipped), then device lookup,
+// then gateway lookup — matches the two sequential selects inside
+// sendSetpointCommand.
 function mockDbSelect(
 	deviceRows: unknown[],
 	gatewayRows: unknown[] = [MOCK_GATEWAY],
 ) {
 	vi.mocked(db.select)
+		.mockReturnValueOnce({
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue([]),
+			}),
+		} as never)
 		.mockReturnValueOnce({
 			from: vi.fn().mockReturnValue({
 				where: vi.fn().mockResolvedValue(deviceRows),

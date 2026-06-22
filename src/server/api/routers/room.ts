@@ -7,11 +7,13 @@ import {
 	deviceRoomAssignments,
 	devices,
 	gateways,
+	roomHeatState,
 	rooms,
 	roomThresholds,
 	sites,
 } from "~/server/db/schema";
 import { ACTIVE_DEVICE_SOURCE } from "~/server/lib/device-source";
+import { sendValveStateCommand } from "~/server/lib/valve-control";
 
 export const roomRouter = createTRPCRouter({
 	list: protectedProcedure
@@ -328,5 +330,70 @@ export const roomRouter = createTRPCRouter({
 				});
 
 			return { success: true as const };
+		}),
+
+	toggleHeat: protectedProcedure
+		.input(z.object({ roomId: z.string(), pinnedOff: z.boolean() }))
+		.mutation(async ({ ctx, input }) => {
+			const [room] = await ctx.db
+				.select({ id: rooms.id })
+				.from(rooms)
+				.where(eq(rooms.id, input.roomId));
+
+			if (!room) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
+			}
+
+			const valveDevices = await ctx.db
+				.select({ deviceId: devices.id })
+				.from(deviceRoomAssignments)
+				.innerJoin(devices, eq(devices.id, deviceRoomAssignments.deviceId))
+				.where(
+					and(
+						eq(deviceRoomAssignments.roomId, input.roomId),
+						eq(devices.deviceType, "valve"),
+					),
+				);
+
+			const now = new Date();
+			await ctx.db
+				.insert(roomHeatState)
+				.values({
+					roomId: input.roomId,
+					pinnedOff: input.pinnedOff,
+					pinnedAt: input.pinnedOff ? now : null,
+					releasedAt: input.pinnedOff ? null : now,
+				})
+				.onConflictDoUpdate({
+					target: roomHeatState.roomId,
+					set: {
+						pinnedOff: input.pinnedOff,
+						pinnedAt: input.pinnedOff ? now : null,
+						releasedAt: input.pinnedOff ? null : now,
+					},
+				});
+
+			const results = await Promise.allSettled(
+				valveDevices.map((d) =>
+					sendValveStateCommand(d.deviceId, !input.pinnedOff),
+				),
+			);
+
+			const deviceErrors = results.flatMap((result, i) => {
+				if (result.status === "fulfilled") return [];
+				const device = valveDevices[i];
+				if (!device) return [];
+				const message =
+					result.reason instanceof Error
+						? result.reason.message
+						: "COMMAND_FAILED";
+				return [{ deviceId: device.deviceId, message }];
+			});
+
+			return {
+				success: true as const,
+				pinnedOff: input.pinnedOff,
+				deviceErrors,
+			};
 		}),
 });

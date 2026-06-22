@@ -3,11 +3,13 @@ import { and, asc, eq, gte, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { db } from "~/server/db";
 import {
 	defaultThresholds,
 	deviceRoomAssignments,
 	devices,
 	deviceTemperatureReadings,
+	roomHeatState,
 	rooms,
 	roomThresholds,
 	sites,
@@ -30,6 +32,22 @@ export const deviceRouter = createTRPCRouter({
 			z.object({ deviceId: z.string(), setpointC: z.number().min(5).max(35) }),
 		)
 		.mutation(async ({ input }) => {
+			const [assignment] = await db
+				.select({ roomId: deviceRoomAssignments.roomId })
+				.from(deviceRoomAssignments)
+				.where(eq(deviceRoomAssignments.deviceId, input.deviceId));
+
+			if (assignment) {
+				const [heatState] = await db
+					.select({ pinnedOff: roomHeatState.pinnedOff })
+					.from(roomHeatState)
+					.where(eq(roomHeatState.roomId, assignment.roomId));
+
+				if (heatState?.pinnedOff) {
+					return { success: true as const, setpointC: input.setpointC };
+				}
+			}
+
 			try {
 				await sendSetpointCommand(input.deviceId, input.setpointC);
 			} catch (err) {
@@ -369,6 +387,15 @@ export const deviceRouter = createTRPCRouter({
 			}
 
 			// Separate query to avoid deepening the existing mock chain in tests
+			const heatStateRows = await ctx.db.select().from(roomHeatState);
+			const heatStateMap = new Map(
+				heatStateRows.map((h) => [
+					h.roomId,
+					{ pinnedOff: h.pinnedOff, pinnedAt: h.pinnedAt ?? null },
+				]),
+			);
+
+			// Separate query to avoid deepening the existing mock chain in tests
 			const thresholdRows = await ctx.db.select().from(roomThresholds);
 			const thresholdMap = new Map(
 				thresholdRows.map((t) => [
@@ -412,7 +439,16 @@ export const deviceRouter = createTRPCRouter({
 					: null;
 				const thresholds = thresholdMap.get(room.roomId) ?? dbDefaultThresholds;
 				const score = scoreRoom(roomTempC, valveSetpointC, thresholds);
-				return { ...room, siteName: siteMap.get(room.siteId) ?? "", ...score };
+				const heatState = heatStateMap.get(room.roomId) ?? {
+					pinnedOff: false,
+					pinnedAt: null,
+				};
+				return {
+					...room,
+					siteName: siteMap.get(room.siteId) ?? "",
+					...score,
+					...heatState,
+				};
 			});
 
 			return { rooms: scoredRooms, unassigned };
