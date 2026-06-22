@@ -420,11 +420,11 @@ The new `defaultThresholds` table starts empty; `getDefaultThresholds` falls bac
 
 #### Automated
 
-- [x] 5.1 Type checking passes: `npm run typecheck`
-- [x] 5.2 Full CI gate passes: `npm run ci` (same pre-existing drizzle-metadata biome diagnostics noted in Phase 1/2; no new errors from any Phase 5 file — confirmed via targeted `biome check`, plus `tsc --noEmit`, `vitest run` (121/121), and `next build`, all green)
+- [x] 5.1 Type checking passes: `npm run typecheck` — c598f8c
+- [x] 5.2 Full CI gate passes: `npm run ci` (same pre-existing drizzle-metadata biome diagnostics noted in Phase 1/2; no new errors from any Phase 5 file — confirmed via targeted `biome check`, plus `tsc --noEmit`, `vitest run` (121/121), and `next build`, all green) — c598f8c
 
 #### Manual
 
-- [x] 5.3 Changing defaults updates the dashboard gauge without manual refresh
-- [x] 5.4 A room with no override reflects the new default after next poll
-- [x] 5.5 Invalid input (min ≥ max) is rejected with a clear inline error
+- [x] 5.3 Changing defaults updates the dashboard gauge without manual refresh — c598f8c
+- [x] 5.4 A room with no override reflects the new default after next poll — c598f8c
+- [x] 5.5 Invalid input (min ≥ max) is rejected with a clear inline error — c598f8c
