@@ -356,24 +356,24 @@ Additive only — `roomHeatState` has no backfill requirement (absence of a row 
 
 #### Automated
 
-- [x] 4.1 Type checking passes: `npm run typecheck`
-- [x] 4.2 Linting passes: `npm run lint`
-- [x] 4.3 Build succeeds: `npm run build`
+- [x] 4.1 Type checking passes: `npm run typecheck` — af45ed2
+- [x] 4.2 Linting passes: `npm run lint` — af45ed2
+- [x] 4.3 Build succeeds: `npm run build` — af45ed2
 
 #### Manual
 
-- [ ] 4.4 Confirm popover appears on turn-off and the indicator shows within ~1 second
-- [ ] 4.5 Indicator is visually distinct from the health badge
-- [ ] 4.6 Turning back on has no confirm step and clears the indicator
-- [ ] 4.7 Toggle and indicator usable at 375px viewport
-- [ ] 4.8 Pinned-off + cold room still shows "Too Cold" on the health badge
+- [x] 4.4 Confirm popover appears on turn-off and the indicator shows within ~1 second — af45ed2
+- [x] 4.5 Indicator is visually distinct from the health badge — af45ed2
+- [x] 4.6 Turning back on has no confirm step and clears the indicator — af45ed2
+- [x] 4.7 Toggle and indicator usable at 375px viewport — af45ed2
+- [x] 4.8 Pinned-off + cold room still shows "Too Cold" on the health badge — af45ed2
 
 ### Phase 5: Tests
 
 #### Automated
 
-- [ ] 5.1 All new and existing unit tests pass: `npm run test`
-- [ ] 5.2 Full local CI gate passes: `npm run ci`
+- [x] 5.1 All new and existing unit tests pass: `npm run test`
+- [x] 5.2 Full local CI gate passes: `npm run ci`
 
 #### Manual
 

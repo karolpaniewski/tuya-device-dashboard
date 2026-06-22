@@ -154,6 +154,38 @@ describe("device.setpoint — command failure", () => {
 	});
 });
 
+describe("device.setpoint — inert while room pinned off", () => {
+	afterEach(() => vi.resetAllMocks());
+
+	it("does not call sendSetpoint when the device's room is pinned off, still returns success", async () => {
+		const sendSetpointMock = vi.fn();
+		vi.mocked(getTuyaClient).mockReturnValue({
+			sendSetpoint: sendSetpointMock,
+		} as never);
+
+		vi.mocked(db.select)
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ roomId: "r1" }]),
+				}),
+			} as never)
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ pinnedOff: true }]),
+				}),
+			} as never);
+
+		const caller = makeCaller();
+		const result = await caller.device.setpoint({
+			deviceId: "dev-1",
+			setpointC: 22,
+		});
+
+		expect(result).toEqual({ success: true, setpointC: 22 });
+		expect(sendSetpointMock).not.toHaveBeenCalled();
+	});
+});
+
 describe("device.setpoint — success", () => {
 	afterEach(() => vi.resetAllMocks());
 
