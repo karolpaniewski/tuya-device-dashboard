@@ -331,22 +331,22 @@ Additive only — `roomHeatState` has no backfill requirement (absence of a row 
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Unit tests pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run typecheck` — 3f54b71
+- [x] 2.2 Linting passes: `npm run lint` — 3f54b71
+- [x] 2.3 Unit tests pass: `npm run test` — 3f54b71
 
 #### Manual
 
-- [ ] 2.4 Toggling a room off via direct call flips the live valve's `valve_state` DP
-- [ ] 2.5 Setpoint edit against a pinned-off room's valve does not change the device's live setpoint
-- [ ] 2.6 `device.overview` response includes `pinnedOff`/`pinnedAt`
+- [x] 2.4 Toggling a room off via direct call flips the live valve's `valve_state` DP — 3f54b71
+- [x] 2.5 Setpoint edit against a pinned-off room's valve does not change the device's live setpoint — 3f54b71
+- [x] 2.6 `device.overview` response includes `pinnedOff`/`pinnedAt` — 3f54b71
 
 ### Phase 3: Automation guard
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run typecheck`
-- [ ] 3.2 Unit tests pass: `npm run test`
+- [x] 3.1 Type checking passes: `npm run typecheck`
+- [x] 3.2 Unit tests pass: `npm run test`
 
 #### Manual
 

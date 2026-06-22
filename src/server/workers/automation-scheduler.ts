@@ -7,6 +7,7 @@ import {
 	automationRules,
 	deviceRoomAssignments,
 	devices,
+	roomHeatState,
 } from "~/server/db/schema";
 import { deviceStateStore } from "~/server/lib/device-state-store";
 import { getLogger, runWithWorkerContext } from "~/server/lib/log-context";
@@ -85,6 +86,23 @@ export async function runAutomationTick(): Promise<void> {
 			if (!daysOfWeek.includes(currentDay)) return;
 			if (rule.fireHour !== currentHour || rule.fireMinute !== currentMinute) {
 				return;
+			}
+
+			const [assignment] = await db
+				.select({ roomId: deviceRoomAssignments.roomId })
+				.from(deviceRoomAssignments)
+				.where(eq(deviceRoomAssignments.deviceId, rule.deviceId));
+
+			if (assignment) {
+				const [heatState] = await db
+					.select({ pinnedOff: roomHeatState.pinnedOff })
+					.from(roomHeatState)
+					.where(eq(roomHeatState.roomId, assignment.roomId));
+
+				if (heatState?.pinnedOff) {
+					await logExecution(rule.id, "skipped", "Room manually pinned off");
+					return;
+				}
 			}
 
 			if (rule.tempThresholdC !== null) {

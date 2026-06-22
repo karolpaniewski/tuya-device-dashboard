@@ -81,6 +81,12 @@ describe("runAutomationTick", () => {
 		mockRulesQuery([baseRule]);
 		const logValues = mockInsert();
 		vi.mocked(sendSetpointCommand).mockResolvedValue(undefined);
+		// Room-pin assignment lookup — no room assigned, guard skipped
+		vi.mocked(db.select).mockReturnValueOnce({
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue([]),
+			}),
+		} as never);
 
 		await runAutomationTick();
 
@@ -94,6 +100,12 @@ describe("runAutomationTick", () => {
 		mockRulesQuery([{ ...baseRule, tempThresholdC: 20 }]);
 		const logValues = mockInsert();
 		vi.mocked(db.select)
+			// Room-pin assignment lookup — no room assigned, guard skipped
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([]),
+				}),
+			} as never)
 			.mockReturnValueOnce({
 				from: vi.fn().mockReturnValue({
 					where: vi.fn().mockResolvedValue([{ roomId: "room-1" }]),
@@ -126,12 +138,45 @@ describe("runAutomationTick", () => {
 		);
 	});
 
+	it("skips execution and logs 'skipped' when the rule's room is pinned off", async () => {
+		mockRulesQuery([{ ...baseRule, tempThresholdC: 20 }]);
+		const logValues = mockInsert();
+		vi.mocked(db.select)
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ roomId: "room-1" }]),
+				}),
+			} as never)
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ pinnedOff: true }]),
+				}),
+			} as never);
+
+		await runAutomationTick();
+
+		expect(sendSetpointCommand).not.toHaveBeenCalled();
+		expect(logValues).toHaveBeenCalledWith(
+			expect.objectContaining({
+				ruleId: "rule-1",
+				status: "skipped",
+				error: "Room manually pinned off",
+			}),
+		);
+	});
+
 	it("logs 'failed' with the error message when sendSetpointCommand throws", async () => {
 		mockRulesQuery([baseRule]);
 		const logValues = mockInsert();
 		vi.mocked(sendSetpointCommand).mockRejectedValue(
 			new Error("COMMAND_FAILED"),
 		);
+		// Room-pin assignment lookup — no room assigned, guard skipped
+		vi.mocked(db.select).mockReturnValueOnce({
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue([]),
+			}),
+		} as never);
 
 		await runAutomationTick();
 
