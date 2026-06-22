@@ -589,12 +589,12 @@ from a database backup.
 ### Phase 1: Schema — mode tables
 
 #### Automated
-- [x] 1.1 Type checking passes: `npm run typecheck`
-- [x] 1.2 Lint passes: `npm run check`
-- [x] 1.3 Migration applies cleanly: `npm run db:migrate`
+- [x] 1.1 Type checking passes: `npm run typecheck` — ff0db16
+- [x] 1.2 Lint passes: `npm run check` — ff0db16
+- [x] 1.3 Migration applies cleanly: `npm run db:migrate` — ff0db16
 
 #### Manual
-- [ ] 1.4 Inspect generated migration SQL — only new `CREATE TABLE` statements
+- [x] 1.4 Inspect generated migration SQL — only new `CREATE TABLE` statements — ff0db16
 
 ### Phase 2: Mode CRUD API + shared activation logic
 
