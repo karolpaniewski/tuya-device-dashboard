@@ -1,5 +1,10 @@
 import { sql } from "drizzle-orm";
-import { check, index, sqliteTableCreator } from "drizzle-orm/sqlite-core";
+import {
+	check,
+	index,
+	sqliteTableCreator,
+	unique,
+} from "drizzle-orm/sqlite-core";
 
 /**
  * Multi-project schema — all tables share the `.bootstrap-scaffold_` prefix.
@@ -312,6 +317,91 @@ export const automationExecutionLogs = createTable(
 		check(
 			"exec_log_status_check",
 			sql`${t.status} IN ('success', 'failed', 'skipped')`,
+		),
+	],
+);
+
+export const automationModes = createTable("automation_mode", (d) => ({
+	id: d
+		.text({ length: 255 })
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	name: d.text({ length: 255 }).notNull(),
+	// JSON array of Date.getDay() values, same shape as automationRules.daysOfWeek.
+	// null means manual-trigger-only — no schedule attached.
+	daysOfWeek: d.text("days_of_week", { length: 20 }),
+	fireHour: d.integer("fire_hour"),
+	fireMinute: d.integer("fire_minute"),
+	createdAt: d
+		.integer({ mode: "timestamp" })
+		.notNull()
+		.default(sql`(unixepoch())`),
+	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+}));
+
+export const automationModeTargets = createTable(
+	"automation_mode_target",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		modeId: d
+			.text("mode_id", { length: 255 })
+			.notNull()
+			.references(() => automationModes.id, { onDelete: "cascade" }),
+		roomId: d
+			.text("room_id", { length: 255 })
+			.notNull()
+			.references(() => rooms.id, { onDelete: "cascade" }),
+		// true = open valve, false = close valve
+		targetOn: d.integer("target_on", { mode: "boolean" }).notNull(),
+	}),
+	(t) => [
+		unique("mode_target_mode_room_unique").on(t.modeId, t.roomId),
+		index("mode_target_room_idx").on(t.roomId),
+	],
+);
+
+export const automationModeActivationLogs = createTable(
+	"automation_mode_activation_log",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		modeId: d
+			.text("mode_id", { length: 255 })
+			.notNull()
+			.references(() => automationModes.id, { onDelete: "cascade" }),
+		roomId: d
+			.text("room_id", { length: 255 })
+			.notNull()
+			.references(() => rooms.id, { onDelete: "cascade" }),
+		triggeredBy: d.text("triggered_by", { length: 10 }).notNull(),
+		// Denormalized snapshot of what was attempted, so the log stays meaningful
+		// after a mode is later edited.
+		targetOn: d.integer("target_on", { mode: "boolean" }).notNull(),
+		status: d.text({ length: 10 }).notNull(),
+		// nullable — populated on status = 'failed'
+		error: d.text({ length: 500 }),
+		firedAt: d.integer("fired_at", { mode: "timestamp" }).notNull(),
+		createdAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+	}),
+	(t) => [
+		index("mode_log_mode_idx").on(t.modeId),
+		index("mode_log_room_idx").on(t.roomId),
+		index("mode_log_fired_at_idx").on(t.firedAt),
+		check(
+			"mode_log_triggered_by_check",
+			sql`${t.triggeredBy} IN ('schedule', 'manual')`,
+		),
+		check(
+			"mode_log_status_check",
+			sql`${t.status} IN ('applied', 'skipped-pinned', 'failed')`,
 		),
 	],
 );

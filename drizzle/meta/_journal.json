@@ -71,6 +71,13 @@
       "when": 1782125809270,
       "tag": "0009_stormy_professor_monster",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1782135442479,
+      "tag": "0010_cooing_patriot",
+      "breakpoints": true
     }
   ]
 }
