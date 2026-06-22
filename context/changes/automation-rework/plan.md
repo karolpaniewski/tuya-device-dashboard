@@ -609,11 +609,11 @@ from a database backup.
 ### Phase 3: Scheduler rework
 
 #### Automated
-- [x] 3.1 Unit tests pass: `npm run test`
-- [x] 3.2 Type checking passes: `npm run typecheck`
+- [x] 3.1 Unit tests pass: `npm run test` — 3b425c6
+- [x] 3.2 Type checking passes: `npm run typecheck` — 3b425c6
 
 #### Manual
-- [x] 3.3 Two same-room same-tick modes — later-created mode wins on real/dev device
+- [x] 3.3 Two same-room same-tick modes — later-created mode wins on real/dev device — 3b425c6
 
 ### Phase 4: Cutover UI
 
