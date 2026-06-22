@@ -1,9 +1,10 @@
 ---
 id: observability
 title: Observability infrastructure
-status: impl_reviewed
+status: archived
 created: 2026-06-17
-updated: 2026-06-18
+updated: 2026-06-22
+archived_at: 2026-06-22T08:00:00Z
 roadmap_id: S-07
 ---
 
