@@ -1,9 +1,10 @@
 ---
 id: device-dnd-modal
 title: Device drag-and-drop reorder + management modal
-status: impl_reviewed
+status: archived
 created: 2026-06-12
-updated: 2026-06-12
+updated: 2026-06-22
+archived_at: 2026-06-22T08:00:00Z
 plan: context/changes/device-dnd-modal/plan.md
 ---
 
