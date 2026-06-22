@@ -722,10 +722,10 @@ purely additive and have no effect on existing sensor/valve devices.
 
 ### Phase 6: Alerts toast
 
-- [x] 6.1 Build `cc-alert-toast.tsx`
+- [x] 6.1 Build `cc-alert-toast.tsx` — f421f79
 
 #### Manual
 
-- [x] 6.2 Toast appears only with real alerting rooms, names correct
-- [x] 6.3 Dismiss/reappear behavior correct
-- [x] 6.4 No toast when all rooms OK
+- [x] 6.2 Toast appears only with real alerting rooms, names correct — f421f79
+- [x] 6.3 Dismiss/reappear behavior correct — f421f79
+- [x] 6.4 No toast when all rooms OK — f421f79

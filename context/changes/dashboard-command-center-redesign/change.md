@@ -1,9 +1,9 @@
 ---
 change_id: dashboard-command-center-redesign
 title: Glassmorphic command-center redesign of the Tuya dashboard
-status: implementing
+status: implemented
 created: 2026-06-19
-updated: 2026-06-19
+updated: 2026-06-22
 roadmap_id: null
 archived_at: null
 ---
@@ -37,3 +37,7 @@ live-device DP-discovery step (mirroring how the valve's setpoint DP
 was originally confirmed).
 
 See `plan.md` / `plan-brief.md`.
+
+All 6 phases complete (closing SHA f421f79). Post-implementation fix
+(c7cfbd6) addressed the left nav rail scrolling with content instead of
+staying pinned.
