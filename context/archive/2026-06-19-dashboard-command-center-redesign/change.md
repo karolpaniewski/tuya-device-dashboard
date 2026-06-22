@@ -1,11 +1,11 @@
 ---
 change_id: dashboard-command-center-redesign
 title: Glassmorphic command-center redesign of the Tuya dashboard
-status: implemented
+status: archived
 created: 2026-06-19
 updated: 2026-06-22
 roadmap_id: null
-archived_at: null
+archived_at: 2026-06-22T07:53:08Z
 ---
 
 ## Notes
