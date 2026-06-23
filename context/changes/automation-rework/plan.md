@@ -640,14 +640,14 @@ from a database backup.
 ### Phase 6: Decommission old schema
 
 #### Automated
-- [x] 6.1 Type checking passes: `npm run typecheck`
-- [x] 6.2 Lint passes: `npm run check`
-- [x] 6.3 Unit tests pass: `npm run test`
-- [x] 6.4 Build passes: `npm run build`
-- [x] 6.5 Migration applies cleanly: `npm run db:migrate`
+- [x] 6.1 Type checking passes: `npm run typecheck` — 1880082
+- [x] 6.2 Lint passes: `npm run check` — 1880082
+- [x] 6.3 Unit tests pass: `npm run test` — 1880082
+- [x] 6.4 Build passes: `npm run build` — 1880082
+- [x] 6.5 Migration applies cleanly: `npm run db:migrate` — 1880082
 
 #### Manual
-- [x] 6.6 Confirm `automation_rule` has zero rows in the live/dev DB before applying the drop migration
+- [x] 6.6 Confirm `automation_rule` has zero rows in the live/dev DB before applying the drop migration — 1880082
 
 #### Scope discovered during execution (not in original Phase 4/6 file list)
 - `src/app/_components/cc-automations-widget.tsx` and the "Active Automations"
