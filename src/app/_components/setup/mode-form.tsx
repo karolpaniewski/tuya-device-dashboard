@@ -101,6 +101,16 @@ export function ModeForm({ onClose, utils, rooms, initialMode }: Props) {
 		Object.keys(targets).length > 0 &&
 		(manualOnly || (days.length > 0 && /^\d{2}:\d{2}$/.test(time)));
 
+	const previewTargets = Object.entries(targets).map(([roomId, targetOn]) => ({
+		roomName: rooms.find((r) => r.id === roomId)?.name ?? roomId,
+		targetOn,
+	}));
+	const previewSchedule = manualOnly
+		? "on manual trigger only"
+		: days.length > 0 && /^\d{2}:\d{2}$/.test(time)
+			? `${days.map((d) => DAY_LABELS[d]).join(" ")} at ${time}`
+			: null;
+
 	return (
 		<form
 			className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto rounded-xl border p-4"
@@ -270,6 +280,28 @@ export function ModeForm({ onClose, utils, rooms, initialMode }: Props) {
 						/>
 					</label>
 				</>
+			)}
+
+			{previewTargets.length > 0 && (
+				<div
+					className="rounded-lg border p-3 text-xs"
+					style={{ borderColor: "var(--cc-glass-border)" }}
+				>
+					<p className="mb-1 font-medium text-foreground">This mode will:</p>
+					<ul className="flex flex-col gap-0.5 text-[var(--cc-text-muted)]">
+						{previewTargets.map((t) => (
+							<li key={t.roomName}>
+								Turn <span className="text-foreground">{t.roomName}</span>{" "}
+								{t.targetOn ? "ON" : "OFF"}
+							</li>
+						))}
+					</ul>
+					<p className="mt-1 text-[var(--cc-text-muted)]">
+						{previewSchedule
+							? `Fires ${previewSchedule}`
+							: "No schedule set yet"}
+					</p>
+				</div>
 			)}
 
 			<ErrorMessage message={formError} variant="inline" />
