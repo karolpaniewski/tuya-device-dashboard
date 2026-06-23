@@ -640,11 +640,25 @@ from a database backup.
 ### Phase 6: Decommission old schema
 
 #### Automated
-- [ ] 6.1 Type checking passes: `npm run typecheck`
-- [ ] 6.2 Lint passes: `npm run check`
-- [ ] 6.3 Unit tests pass: `npm run test`
-- [ ] 6.4 Build passes: `npm run build`
-- [ ] 6.5 Migration applies cleanly: `npm run db:migrate`
+- [x] 6.1 Type checking passes: `npm run typecheck`
+- [x] 6.2 Lint passes: `npm run check`
+- [x] 6.3 Unit tests pass: `npm run test`
+- [x] 6.4 Build passes: `npm run build`
+- [x] 6.5 Migration applies cleanly: `npm run db:migrate`
 
 #### Manual
-- [ ] 6.6 Confirm `automation_rule` has zero rows in the live/dev DB before applying the drop migration
+- [x] 6.6 Confirm `automation_rule` has zero rows in the live/dev DB before applying the drop migration
+
+#### Scope discovered during execution (not in original Phase 4/6 file list)
+- `src/app/_components/cc-automations-widget.tsx` and the "Active Automations"
+  KPI card in `device-overview.tsx` were a second, dashboard-level UI surface
+  reading `api.automation.list` — missed by the plan's original Current State
+  Analysis (which only covered the Setup/Settings automation UI). Deleting
+  the schema broke them; replaced with `cc-modes-widget.tsx` (mirrors the old
+  widget's visual style, swaps the enable/disable toggle for a Trigger
+  button since modes have no enabled flag) and a "kpi-modes" KPI card
+  (scheduled-mode count / total mode count), per explicit user request.
+- The Phase 4 "migrate old rules" panel in `mode-manager.tsx` (reading
+  `api.automation.list` / calling `api.automation.confirmMigration`) was
+  removed — it has nothing to call once the `automation` router and schema
+  are gone, which is expected once Phase 6 actually runs.

@@ -1,4 +1,3 @@
-import { automationRouter } from "~/server/api/routers/automation";
 import { dashboardLayoutRouter } from "~/server/api/routers/dashboard-layout";
 import { deviceRouter } from "~/server/api/routers/device";
 import { modeRouter } from "~/server/api/routers/mode";
@@ -9,7 +8,6 @@ import { weatherRouter } from "~/server/api/routers/weather";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 export const appRouter = createTRPCRouter({
-	automation: automationRouter,
 	dashboardLayout: dashboardLayoutRouter,
 	device: deviceRouter,
 	mode: modeRouter,

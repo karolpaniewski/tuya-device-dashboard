@@ -1,10 +1,10 @@
 "use client";
 
-import { Timer } from "lucide-react";
+import { Timer, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { api, type RouterOutputs } from "~/trpc/react";
 
-type AutomationItem = RouterOutputs["automation"]["list"][number];
+type ModeItem = RouterOutputs["mode"]["list"][number];
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const WEEKDAYS = [1, 2, 3, 4, 5];
@@ -14,11 +14,18 @@ function includesAll(days: number[], target: number[]): boolean {
 	return days.length === target.length && target.every((d) => days.includes(d));
 }
 
-function formatSchedule(rule: AutomationItem): string {
-	const time = `${String(rule.fireHour).padStart(2, "0")}:${String(
-		rule.fireMinute,
+function formatSchedule(mode: ModeItem): string {
+	if (
+		mode.daysOfWeek === null ||
+		mode.fireHour === null ||
+		mode.fireMinute === null
+	) {
+		return "MANUAL TRIGGER ONLY";
+	}
+	const time = `${String(mode.fireHour).padStart(2, "0")}:${String(
+		mode.fireMinute,
 	).padStart(2, "0")}`;
-	const days = [...rule.daysOfWeek].sort((a, b) => a - b);
+	const days = [...mode.daysOfWeek].sort((a, b) => a - b);
 	const dayLabel = includesAll(days, [0, 1, 2, 3, 4, 5, 6])
 		? "DAILY"
 		: includesAll(days, WEEKDAYS)
@@ -32,32 +39,37 @@ function formatSchedule(rule: AutomationItem): string {
 	return `${time} · ${dayLabel}`;
 }
 
-function AutomationRow({
-	rule,
+function ModeRow({
+	mode,
 	siteId,
 	utils,
 }: {
-	rule: AutomationItem;
+	mode: ModeItem;
 	siteId: string;
 	utils: ReturnType<typeof api.useUtils>;
 }) {
-	const mutation = api.automation.toggle.useMutation({
-		onMutate: async (input) => {
-			await utils.automation.list.cancel({ siteId });
-			const previous = utils.automation.list.getData({ siteId });
-			utils.automation.list.setData({ siteId }, (old) =>
-				old?.map((r) =>
-					r.id === input.id ? { ...r, isEnabled: input.isEnabled } : r,
-				),
-			);
-			return { previous };
+	const isScheduled = mode.daysOfWeek !== null;
+
+	const triggerMutation = api.mode.trigger.useMutation({
+		onError: (e) => toast.error(e.message),
+		onSuccess: ({ results }) => {
+			const applied = results.filter((r) => r.status === "applied").length;
+			const skipped = results.filter(
+				(r) => r.status === "skipped-pinned",
+			).length;
+			const failed = results.filter((r) => r.status === "failed").length;
+			const parts = [
+				applied > 0 ? `${applied} applied` : null,
+				skipped > 0 ? `${skipped} skipped (pinned)` : null,
+				failed > 0 ? `${failed} failed` : null,
+			].filter((p): p is string => p !== null);
+			if (failed > 0) {
+				toast.error(`${mode.name}: ${parts.join(", ")}`);
+			} else {
+				toast.success(`${mode.name}: ${parts.join(", ") || "no rooms"}`);
+			}
+			void utils.mode.list.invalidate({ siteId });
 		},
-		onError: (_err, _input, ctx) => {
-			if (ctx?.previous)
-				utils.automation.list.setData({ siteId }, ctx.previous);
-			toast.error("Failed to update automation");
-		},
-		onSettled: () => void utils.automation.list.invalidate({ siteId }),
 	});
 
 	return (
@@ -71,7 +83,7 @@ function AutomationRow({
 			<div
 				className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px]"
 				style={{
-					backgroundColor: rule.isEnabled
+					backgroundColor: isScheduled
 						? "rgba(34, 211, 238, 0.14)"
 						: "rgba(91, 103, 118, 0.18)",
 				}}
@@ -79,8 +91,8 @@ function AutomationRow({
 				<div
 					className="h-[11px] w-[11px] rounded-full"
 					style={{
-						backgroundColor: rule.isEnabled ? "var(--cc-cyan)" : "#7a8694",
-						boxShadow: rule.isEnabled ? "0 0 10px var(--cc-cyan)" : undefined,
+						backgroundColor: isScheduled ? "var(--cc-cyan)" : "#7a8694",
+						boxShadow: isScheduled ? "0 0 10px var(--cc-cyan)" : undefined,
 					}}
 				/>
 			</div>
@@ -88,57 +100,40 @@ function AutomationRow({
 				<div
 					className="truncate font-medium text-[13px]"
 					style={{
-						color: rule.isEnabled
+						color: isScheduled
 							? "var(--cc-text-primary)"
 							: "var(--cc-text-secondary)",
 					}}
 				>
-					{rule.name}
+					{mode.name}
 				</div>
 				<div
-					className="font-mono text-[10px]"
+					className="truncate font-mono text-[10px]"
 					style={{ color: "var(--cc-text-faint)" }}
 				>
-					{formatSchedule(rule)}
+					{formatSchedule(mode)} · {mode.targets.length} room
+					{mode.targets.length === 1 ? "" : "s"}
 				</div>
 			</div>
 			<button
-				aria-label={
-					rule.isEnabled ? `Disable ${rule.name}` : `Enable ${rule.name}`
-				}
-				aria-pressed={rule.isEnabled}
-				className="flex h-[21px] w-[38px] flex-none items-center rounded-full p-[3px] transition-colors disabled:opacity-60"
-				disabled={mutation.isPending}
-				onClick={() =>
-					mutation.mutate({ id: rule.id, isEnabled: !rule.isEnabled })
-				}
-				style={{
-					background: rule.isEnabled
-						? "linear-gradient(90deg, var(--cc-cyan-dark), var(--cc-cyan))"
-						: "rgba(255, 255, 255, 0.08)",
-					boxShadow: rule.isEnabled
-						? "0 0 12px rgba(34, 211, 238, 0.3)"
-						: undefined,
-					justifyContent: rule.isEnabled ? "flex-end" : "flex-start",
-				}}
+				aria-label={`Trigger ${mode.name}`}
+				className="flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[9px] transition-colors disabled:opacity-60"
+				disabled={triggerMutation.isPending}
+				onClick={() => triggerMutation.mutate({ id: mode.id })}
+				style={{ backgroundColor: "rgba(34, 211, 238, 0.14)" }}
 				type="button"
 			>
-				<span
-					className="h-[15px] w-[15px] rounded-full"
-					style={{
-						backgroundColor: rule.isEnabled ? "var(--cc-bg)" : "#7a8694",
-					}}
-				/>
+				<Zap size={14} style={{ color: "var(--cc-cyan)" }} />
 			</button>
 		</div>
 	);
 }
 
-export function CcAutomationsWidget({ siteId }: { siteId: string }) {
+export function CcModesWidget({ siteId }: { siteId: string }) {
 	const utils = api.useUtils();
-	const { data } = api.automation.list.useQuery({ siteId });
-	const rules = data ?? [];
-	const activeCount = rules.filter((r) => r.isEnabled).length;
+	const { data } = api.mode.list.useQuery({ siteId });
+	const modes = data ?? [];
+	const scheduledCount = modes.filter((m) => m.daysOfWeek !== null).length;
 
 	return (
 		<div
@@ -154,16 +149,16 @@ export function CcAutomationsWidget({ siteId }: { siteId: string }) {
 					className="font-semibold text-[15px]"
 					style={{ color: "var(--cc-text-primary)" }}
 				>
-					Automations
+					Modes
 				</h2>
 				<span
 					className="font-mono text-[10px] tracking-[0.06em]"
 					style={{ color: "var(--cc-cyan)" }}
 				>
-					{activeCount} ACTIVE
+					{scheduledCount} SCHEDULED
 				</span>
 			</div>
-			{rules.length === 0 ? (
+			{modes.length === 0 ? (
 				<div className="flex flex-col items-center justify-center py-6 text-center">
 					<Timer
 						className="mb-2"
@@ -171,18 +166,13 @@ export function CcAutomationsWidget({ siteId }: { siteId: string }) {
 						style={{ color: "var(--cc-text-faint)" }}
 					/>
 					<p className="text-[12px]" style={{ color: "var(--cc-text-faint)" }}>
-						No automation rules yet
+						No modes yet
 					</p>
 				</div>
 			) : (
 				<div className="flex flex-col gap-[10px]">
-					{rules.map((rule) => (
-						<AutomationRow
-							key={rule.id}
-							rule={rule}
-							siteId={siteId}
-							utils={utils}
-						/>
+					{modes.map((mode) => (
+						<ModeRow key={mode.id} mode={mode} siteId={siteId} utils={utils} />
 					))}
 				</div>
 			)}

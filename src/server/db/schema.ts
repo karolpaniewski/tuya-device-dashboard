@@ -252,82 +252,13 @@ export const roomHeatState = createTable("room_heat_state", (d) => ({
 	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
 }));
 
-export const automationRules = createTable(
-	"automation_rule",
-	(d) => ({
-		id: d
-			.text({ length: 255 })
-			.primaryKey()
-			.$defaultFn(() => crypto.randomUUID()),
-		name: d.text({ length: 255 }).notNull(),
-		deviceId: d
-			.text("device_id", { length: 255 })
-			.notNull()
-			.references(() => devices.id, { onDelete: "cascade" }),
-		// JSON array of Date.getDay() values, e.g. "[1,2,3,4,5]" for weekdays
-		daysOfWeek: d.text("days_of_week", { length: 20 }).notNull(),
-		fireHour: d.integer("fire_hour").notNull(),
-		fireMinute: d.integer("fire_minute").notNull(),
-		targetSetpointC: d.real("target_setpoint_c").notNull(),
-		// nullable — skip firing if room avg temp >= this value
-		tempThresholdC: d.real("temp_threshold_c"),
-		isEnabled: d
-			.integer("is_enabled", { mode: "boolean" })
-			.notNull()
-			.default(true),
-		createdAt: d
-			.integer({ mode: "timestamp" })
-			.notNull()
-			.default(sql`(unixepoch())`),
-		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
-	}),
-	(t) => [
-		index("automation_rule_device_idx").on(t.deviceId),
-		check("automation_rule_hour_check", sql`${t.fireHour} BETWEEN 0 AND 23`),
-		check(
-			"automation_rule_minute_check",
-			sql`${t.fireMinute} BETWEEN 0 AND 59`,
-		),
-	],
-);
-
-export const automationExecutionLogs = createTable(
-	"automation_execution_log",
-	(d) => ({
-		id: d
-			.text({ length: 255 })
-			.primaryKey()
-			.$defaultFn(() => crypto.randomUUID()),
-		ruleId: d
-			.text("rule_id", { length: 255 })
-			.notNull()
-			.references(() => automationRules.id, { onDelete: "cascade" }),
-		firedAt: d.integer("fired_at", { mode: "timestamp" }).notNull(),
-		status: d.text({ length: 10 }).notNull(),
-		// nullable — populated on status = 'failed'
-		error: d.text({ length: 500 }),
-		createdAt: d
-			.integer({ mode: "timestamp" })
-			.notNull()
-			.default(sql`(unixepoch())`),
-	}),
-	(t) => [
-		index("exec_log_rule_idx").on(t.ruleId),
-		index("exec_log_fired_at_idx").on(t.firedAt),
-		check(
-			"exec_log_status_check",
-			sql`${t.status} IN ('success', 'failed', 'skipped')`,
-		),
-	],
-);
-
 export const automationModes = createTable("automation_mode", (d) => ({
 	id: d
 		.text({ length: 255 })
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	name: d.text({ length: 255 }).notNull(),
-	// JSON array of Date.getDay() values, same shape as automationRules.daysOfWeek.
+	// JSON array of Date.getDay() values.
 	// null means manual-trigger-only — no schedule attached.
 	daysOfWeek: d.text("days_of_week", { length: 20 }),
 	fireHour: d.integer("fire_hour"),

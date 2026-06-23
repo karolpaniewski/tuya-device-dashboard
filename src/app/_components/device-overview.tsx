@@ -40,10 +40,10 @@ import { applySavedOrder, spliceSectionOrder } from "~/lib/layout-order";
 import { DEFAULT_THRESHOLDS } from "~/server/lib/scoring";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { CcAlertToast } from "./cc-alert-toast";
-import { CcAutomationsWidget } from "./cc-automations-widget";
 import { CcClimateOverview } from "./cc-climate-overview";
 import { CcDevicesByRoom } from "./cc-devices-by-room";
 import { CcKpiCard } from "./cc-kpi-card";
+import { CcModesWidget } from "./cc-modes-widget";
 import { DeviceCard } from "./device-card";
 import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
@@ -110,9 +110,7 @@ export function DeviceOverview() {
 	);
 	const roomsListQuery = api.room.list.useQuery({ siteId: activeSiteId });
 	const layoutQuery = api.dashboardLayout.get.useQuery();
-	const automationListQuery = api.automation.list.useQuery({
-		siteId: activeSiteId,
-	});
+	const modeListQuery = api.mode.list.useQuery({ siteId: activeSiteId });
 	const defaultThresholdsQuery = api.settings.getDefaultThresholds.useQuery();
 	// Keep the static constant as the value until the query resolves, to
 	// avoid a layout flash on the gauge below.
@@ -478,9 +476,9 @@ export function DeviceOverview() {
 		) ?? [];
 	const hasActiveAlerts = alertingRooms.length > 0;
 	const allRoomsHealthy = roomCount > 0 && roomsOk === roomCount;
-	const activeAutomationsCount =
-		automationListQuery.data?.filter((a) => a.isEnabled).length ?? 0;
-	const totalAutomationsCount = automationListQuery.data?.length ?? 0;
+	const scheduledModesCount =
+		modeListQuery.data?.filter((m) => m.daysOfWeek !== null).length ?? 0;
+	const totalModesCount = modeListQuery.data?.length ?? 0;
 
 	const activeFilterCount =
 		(roomFilter ? 1 : 0) +
@@ -705,17 +703,17 @@ export function DeviceOverview() {
 					),
 				},
 				{
-					id: "kpi-automations",
-					label: "Active Automations",
+					id: "kpi-modes",
+					label: "Active Modes",
 					render: (
 						<CcKpiCard
 							icon={
 								<Timer className="h-3.5 w-3.5" style={{ color: "#5d6876" }} />
 							}
-							label="Active Automations"
-							sub={`of ${totalAutomationsCount} rule${totalAutomationsCount === 1 ? "" : "s"}`}
+							label="Active Modes"
+							sub={`of ${totalModesCount} mode${totalModesCount === 1 ? "" : "s"}`}
 							value={
-								<span className={CC_KPI_BIG_NUM}>{activeAutomationsCount}</span>
+								<span className={CC_KPI_BIG_NUM}>{scheduledModesCount}</span>
 							}
 						/>
 					),
@@ -875,7 +873,7 @@ export function DeviceOverview() {
 						<CcClimateOverview />
 						<div className="flex flex-col gap-[14px]">
 							<CcDevicesByRoom roomDeviceCounts={roomDeviceCounts} />
-							<CcAutomationsWidget siteId={activeSiteId} />
+							<CcModesWidget siteId={activeSiteId} />
 						</div>
 					</div>
 				</div>

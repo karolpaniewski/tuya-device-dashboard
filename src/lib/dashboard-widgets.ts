@@ -9,7 +9,7 @@ export const DEFAULT_WIDGET_ORDER = [
 	"kpi-avg-temp",
 	"kpi-alerts",
 	"kpi-rooms-ok",
-	"kpi-automations",
+	"kpi-modes",
 	"kpi-by-room",
 	"room-temp-panel",
 ] as const;

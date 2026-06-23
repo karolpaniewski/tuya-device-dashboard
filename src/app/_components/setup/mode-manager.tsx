@@ -57,7 +57,6 @@ export function ModeManager({ activeSiteId, utils, rooms }: Props) {
 	const [editingMode, setEditingMode] = useState<ModeSummary | null>(null);
 
 	const modesQuery = api.mode.list.useQuery({ siteId: activeSiteId });
-	const legacyRulesQuery = api.automation.list.useQuery({ siteId: "all" });
 
 	const invalidate = () => void utils.mode.list.invalidate();
 
@@ -90,16 +89,7 @@ export function ModeManager({ activeSiteId, utils, rooms }: Props) {
 		},
 	});
 
-	const confirmMigrationMutation = api.automation.confirmMigration.useMutation({
-		onError: (e) => toast.error(e.message),
-		onSuccess: ({ deletedCount }) => {
-			toast.success(`Removed ${deletedCount} old rule(s)`);
-			void utils.automation.list.invalidate();
-		},
-	});
-
 	const modes = modesQuery.data ?? [];
-	const legacyRules = legacyRulesQuery.data ?? [];
 
 	function openCreate() {
 		setEditingMode(null);
@@ -134,55 +124,6 @@ export function ModeManager({ activeSiteId, utils, rooms }: Props) {
 						rooms={rooms}
 						utils={utils}
 					/>
-				</div>
-			)}
-
-			{legacyRules.length > 0 && (
-				<div
-					className="mb-4 flex flex-col gap-3 rounded-xl border p-4"
-					style={{
-						backgroundColor: "rgba(251, 191, 36, 0.06)",
-						borderColor: "rgba(251, 191, 36, 0.3)",
-					}}
-				>
-					<div>
-						<p className="font-semibold text-foreground text-sm">
-							Migrate old automation rules
-						</p>
-						<p className="text-[var(--cc-text-muted)] text-xs">
-							These per-device rules still exist from before modes. Review them,
-							then confirm to remove them permanently — they are not converted
-							into modes automatically.
-						</p>
-					</div>
-					<ul className="flex flex-col gap-1">
-						{legacyRules.map((rule) => (
-							<li className="text-[var(--cc-text-muted)] text-xs" key={rule.id}>
-								{rule.name} — {rule.deviceName} · {rule.roomName ?? "–"} ·{" "}
-								{formatTime(rule.fireHour, rule.fireMinute)} ·{" "}
-								{rule.targetSetpointC}°C
-							</li>
-						))}
-					</ul>
-					<div>
-						<Button
-							disabled={confirmMigrationMutation.isPending}
-							onClick={() => {
-								if (
-									confirm(
-										`Remove all ${legacyRules.length} old automation rule(s)? This cannot be undone.`,
-									)
-								) {
-									confirmMigrationMutation.mutate();
-								}
-							}}
-							size="sm"
-							type="button"
-							variant="destructive"
-						>
-							Confirm and remove old rules
-						</Button>
-					</div>
 				</div>
 			)}
 
