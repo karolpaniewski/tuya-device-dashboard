@@ -1,0 +1,1203 @@
+{
+	"version": "6",
+	"dialect": "sqlite",
+	"id": "243b90bf-f8ca-4a55-878b-c6318ce554db",
+	"prevId": "a73e24a4-8cef-433c-ac0d-4bf778a8b32a",
+	"tables": {
+		".bootstrap-scaffold_automation_mode_activation_log": {
+			"name": ".bootstrap-scaffold_automation_mode_activation_log",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"mode_id": {
+					"name": "mode_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"room_id": {
+					"name": "room_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"triggered_by": {
+					"name": "triggered_by",
+					"type": "text(10)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"target_on": {
+					"name": "target_on",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"status": {
+					"name": "status",
+					"type": "text(10)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"error": {
+					"name": "error",
+					"type": "text(500)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"fired_at": {
+					"name": "fired_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				}
+			},
+			"indexes": {
+				"mode_log_mode_idx": {
+					"name": "mode_log_mode_idx",
+					"columns": ["mode_id"],
+					"isUnique": false
+				},
+				"mode_log_room_idx": {
+					"name": "mode_log_room_idx",
+					"columns": ["room_id"],
+					"isUnique": false
+				},
+				"mode_log_fired_at_idx": {
+					"name": "mode_log_fired_at_idx",
+					"columns": ["fired_at"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_automation_mode_activation_log_mode_id_.bootstrap-scaffold_automation_mode_id_fk": {
+					"name": ".bootstrap-scaffold_automation_mode_activation_log_mode_id_.bootstrap-scaffold_automation_mode_id_fk",
+					"tableFrom": ".bootstrap-scaffold_automation_mode_activation_log",
+					"tableTo": ".bootstrap-scaffold_automation_mode",
+					"columnsFrom": ["mode_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				".bootstrap-scaffold_automation_mode_activation_log_room_id_.bootstrap-scaffold_room_id_fk": {
+					"name": ".bootstrap-scaffold_automation_mode_activation_log_room_id_.bootstrap-scaffold_room_id_fk",
+					"tableFrom": ".bootstrap-scaffold_automation_mode_activation_log",
+					"tableTo": ".bootstrap-scaffold_room",
+					"columnsFrom": ["room_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"mode_log_triggered_by_check": {
+					"name": "mode_log_triggered_by_check",
+					"value": "\".bootstrap-scaffold_automation_mode_activation_log\".\"triggered_by\" IN ('schedule', 'manual')"
+				},
+				"mode_log_status_check": {
+					"name": "mode_log_status_check",
+					"value": "\".bootstrap-scaffold_automation_mode_activation_log\".\"status\" IN ('applied', 'skipped-pinned', 'failed')"
+				}
+			}
+		},
+		".bootstrap-scaffold_automation_mode_target": {
+			"name": ".bootstrap-scaffold_automation_mode_target",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"mode_id": {
+					"name": "mode_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"room_id": {
+					"name": "room_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"target_on": {
+					"name": "target_on",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				"mode_target_room_idx": {
+					"name": "mode_target_room_idx",
+					"columns": ["room_id"],
+					"isUnique": false
+				},
+				"mode_target_mode_room_unique": {
+					"name": "mode_target_mode_room_unique",
+					"columns": ["mode_id", "room_id"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_automation_mode_target_mode_id_.bootstrap-scaffold_automation_mode_id_fk": {
+					"name": ".bootstrap-scaffold_automation_mode_target_mode_id_.bootstrap-scaffold_automation_mode_id_fk",
+					"tableFrom": ".bootstrap-scaffold_automation_mode_target",
+					"tableTo": ".bootstrap-scaffold_automation_mode",
+					"columnsFrom": ["mode_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				".bootstrap-scaffold_automation_mode_target_room_id_.bootstrap-scaffold_room_id_fk": {
+					"name": ".bootstrap-scaffold_automation_mode_target_room_id_.bootstrap-scaffold_room_id_fk",
+					"tableFrom": ".bootstrap-scaffold_automation_mode_target",
+					"tableTo": ".bootstrap-scaffold_room",
+					"columnsFrom": ["room_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		".bootstrap-scaffold_automation_mode": {
+			"name": ".bootstrap-scaffold_automation_mode",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"name": {
+					"name": "name",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"days_of_week": {
+					"name": "days_of_week",
+					"type": "text(20)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"fire_hour": {
+					"name": "fire_hour",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"fire_minute": {
+					"name": "fire_minute",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		".bootstrap-scaffold_dashboard_layout": {
+			"name": ".bootstrap-scaffold_dashboard_layout",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"widget_order": {
+					"name": "widget_order",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"hidden_widgets": {
+					"name": "hidden_widgets",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'[]'"
+				},
+				"room_order": {
+					"name": "room_order",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'[]'"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		".bootstrap-scaffold_default_threshold": {
+			"name": ".bootstrap-scaffold_default_threshold",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"min_temp_c": {
+					"name": "min_temp_c",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"max_temp_c": {
+					"name": "max_temp_c",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"anomaly_gap_c": {
+					"name": "anomaly_gap_c",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"default_threshold_order_check": {
+					"name": "default_threshold_order_check",
+					"value": "\".bootstrap-scaffold_default_threshold\".\"min_temp_c\" < \".bootstrap-scaffold_default_threshold\".\"max_temp_c\""
+				}
+			}
+		},
+		".bootstrap-scaffold_device_room_assignment": {
+			"name": ".bootstrap-scaffold_device_room_assignment",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"device_id": {
+					"name": "device_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"room_id": {
+					"name": "room_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"assignedAt": {
+					"name": "assignedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				}
+			},
+			"indexes": {
+				".bootstrap-scaffold_device_room_assignment_device_id_unique": {
+					"name": ".bootstrap-scaffold_device_room_assignment_device_id_unique",
+					"columns": ["device_id"],
+					"isUnique": true
+				},
+				"assignment_room_idx": {
+					"name": "assignment_room_idx",
+					"columns": ["room_id"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_device_room_assignment_device_id_.bootstrap-scaffold_device_id_fk": {
+					"name": ".bootstrap-scaffold_device_room_assignment_device_id_.bootstrap-scaffold_device_id_fk",
+					"tableFrom": ".bootstrap-scaffold_device_room_assignment",
+					"tableTo": ".bootstrap-scaffold_device",
+					"columnsFrom": ["device_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				},
+				".bootstrap-scaffold_device_room_assignment_room_id_.bootstrap-scaffold_room_id_fk": {
+					"name": ".bootstrap-scaffold_device_room_assignment_room_id_.bootstrap-scaffold_room_id_fk",
+					"tableFrom": ".bootstrap-scaffold_device_room_assignment",
+					"tableTo": ".bootstrap-scaffold_room",
+					"columnsFrom": ["room_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		".bootstrap-scaffold_device_temperature_reading": {
+			"name": ".bootstrap-scaffold_device_temperature_reading",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"tuya_device_id": {
+					"name": "tuya_device_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"temperature_c": {
+					"name": "temperature_c",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"setpoint_c": {
+					"name": "setpoint_c",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"recorded_at": {
+					"name": "recorded_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				}
+			},
+			"indexes": {
+				"reading_device_time_idx": {
+					"name": "reading_device_time_idx",
+					"columns": ["tuya_device_id", "recorded_at"],
+					"isUnique": false
+				},
+				"reading_time_idx": {
+					"name": "reading_time_idx",
+					"columns": ["recorded_at"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		".bootstrap-scaffold_device": {
+			"name": ".bootstrap-scaffold_device",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"tuya_device_id": {
+					"name": "tuya_device_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"gateway_id": {
+					"name": "gateway_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"name": {
+					"name": "name",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"device_type": {
+					"name": "device_type",
+					"type": "text(10)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"ip_address": {
+					"name": "ip_address",
+					"type": "text(45)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"local_key": {
+					"name": "local_key",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"product_key": {
+					"name": "product_key",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"node_id": {
+					"name": "node_id",
+					"type": "text(20)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"sort_order": {
+					"name": "sort_order",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": 0
+				},
+				"site_id": {
+					"name": "site_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'default'"
+				},
+				"source": {
+					"name": "source",
+					"type": "text(10)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'real'"
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				".bootstrap-scaffold_device_tuya_device_id_unique": {
+					"name": ".bootstrap-scaffold_device_tuya_device_id_unique",
+					"columns": ["tuya_device_id"],
+					"isUnique": true
+				},
+				"device_gateway_idx": {
+					"name": "device_gateway_idx",
+					"columns": ["gateway_id"],
+					"isUnique": false
+				},
+				"device_site_idx": {
+					"name": "device_site_idx",
+					"columns": ["site_id"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_device_gateway_id_.bootstrap-scaffold_gateway_id_fk": {
+					"name": ".bootstrap-scaffold_device_gateway_id_.bootstrap-scaffold_gateway_id_fk",
+					"tableFrom": ".bootstrap-scaffold_device",
+					"tableTo": ".bootstrap-scaffold_gateway",
+					"columnsFrom": ["gateway_id"],
+					"columnsTo": ["id"],
+					"onDelete": "set null",
+					"onUpdate": "no action"
+				},
+				".bootstrap-scaffold_device_site_id_.bootstrap-scaffold_site_id_fk": {
+					"name": ".bootstrap-scaffold_device_site_id_.bootstrap-scaffold_site_id_fk",
+					"tableFrom": ".bootstrap-scaffold_device",
+					"tableTo": ".bootstrap-scaffold_site",
+					"columnsFrom": ["site_id"],
+					"columnsTo": ["id"],
+					"onDelete": "restrict",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"device_type_check": {
+					"name": "device_type_check",
+					"value": "\".bootstrap-scaffold_device\".\"device_type\" IN ('sensor', 'valve', 'plug')"
+				},
+				"device_source_check": {
+					"name": "device_source_check",
+					"value": "\".bootstrap-scaffold_device\".\"source\" IN ('real', 'demo')"
+				}
+			}
+		},
+		".bootstrap-scaffold_gateway": {
+			"name": ".bootstrap-scaffold_gateway",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"tuya_gateway_id": {
+					"name": "tuya_gateway_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"name": {
+					"name": "name",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"ip_address": {
+					"name": "ip_address",
+					"type": "text(45)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"local_key": {
+					"name": "local_key",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"site_id": {
+					"name": "site_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'default'"
+				},
+				"source": {
+					"name": "source",
+					"type": "text(10)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'real'"
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				".bootstrap-scaffold_gateway_tuya_gateway_id_unique": {
+					"name": ".bootstrap-scaffold_gateway_tuya_gateway_id_unique",
+					"columns": ["tuya_gateway_id"],
+					"isUnique": true
+				},
+				"gateway_site_idx": {
+					"name": "gateway_site_idx",
+					"columns": ["site_id"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_gateway_site_id_.bootstrap-scaffold_site_id_fk": {
+					"name": ".bootstrap-scaffold_gateway_site_id_.bootstrap-scaffold_site_id_fk",
+					"tableFrom": ".bootstrap-scaffold_gateway",
+					"tableTo": ".bootstrap-scaffold_site",
+					"columnsFrom": ["site_id"],
+					"columnsTo": ["id"],
+					"onDelete": "restrict",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"gateway_source_check": {
+					"name": "gateway_source_check",
+					"value": "\".bootstrap-scaffold_gateway\".\"source\" IN ('real', 'demo')"
+				}
+			}
+		},
+		".bootstrap-scaffold_notification_contact": {
+			"name": ".bootstrap-scaffold_notification_contact",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"email": {
+					"name": "email",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				}
+			},
+			"indexes": {
+				".bootstrap-scaffold_notification_contact_email_unique": {
+					"name": ".bootstrap-scaffold_notification_contact_email_unique",
+					"columns": ["email"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		".bootstrap-scaffold_room_alert_state": {
+			"name": ".bootstrap-scaffold_room_alert_state",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"room_id": {
+					"name": "room_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"last_badge": {
+					"name": "last_badge",
+					"type": "text(10)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'OK'"
+				},
+				"entered_at": {
+					"name": "entered_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"notified_at": {
+					"name": "notified_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				".bootstrap-scaffold_room_alert_state_room_id_unique": {
+					"name": ".bootstrap-scaffold_room_alert_state_room_id_unique",
+					"columns": ["room_id"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_room_alert_state_room_id_.bootstrap-scaffold_room_id_fk": {
+					"name": ".bootstrap-scaffold_room_alert_state_room_id_.bootstrap-scaffold_room_id_fk",
+					"tableFrom": ".bootstrap-scaffold_room_alert_state",
+					"tableTo": ".bootstrap-scaffold_room",
+					"columnsFrom": ["room_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"room_alert_state_last_badge_check": {
+					"name": "room_alert_state_last_badge_check",
+					"value": "\".bootstrap-scaffold_room_alert_state\".\"last_badge\" IN ('OK', 'Too Cold', 'Too Hot')"
+				}
+			}
+		},
+		".bootstrap-scaffold_room_heat_state": {
+			"name": ".bootstrap-scaffold_room_heat_state",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"room_id": {
+					"name": "room_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"pinned_off": {
+					"name": "pinned_off",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": false
+				},
+				"pinned_at": {
+					"name": "pinned_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"released_at": {
+					"name": "released_at",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				".bootstrap-scaffold_room_heat_state_room_id_unique": {
+					"name": ".bootstrap-scaffold_room_heat_state_room_id_unique",
+					"columns": ["room_id"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_room_heat_state_room_id_.bootstrap-scaffold_room_id_fk": {
+					"name": ".bootstrap-scaffold_room_heat_state_room_id_.bootstrap-scaffold_room_id_fk",
+					"tableFrom": ".bootstrap-scaffold_room_heat_state",
+					"tableTo": ".bootstrap-scaffold_room",
+					"columnsFrom": ["room_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		".bootstrap-scaffold_room_threshold": {
+			"name": ".bootstrap-scaffold_room_threshold",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"room_id": {
+					"name": "room_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"min_temp_c": {
+					"name": "min_temp_c",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"max_temp_c": {
+					"name": "max_temp_c",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"anomaly_gap_c": {
+					"name": "anomaly_gap_c",
+					"type": "real",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				".bootstrap-scaffold_room_threshold_room_id_unique": {
+					"name": ".bootstrap-scaffold_room_threshold_room_id_unique",
+					"columns": ["room_id"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_room_threshold_room_id_.bootstrap-scaffold_room_id_fk": {
+					"name": ".bootstrap-scaffold_room_threshold_room_id_.bootstrap-scaffold_room_id_fk",
+					"tableFrom": ".bootstrap-scaffold_room_threshold",
+					"tableTo": ".bootstrap-scaffold_room",
+					"columnsFrom": ["room_id"],
+					"columnsTo": ["id"],
+					"onDelete": "cascade",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"threshold_order_check": {
+					"name": "threshold_order_check",
+					"value": "\".bootstrap-scaffold_room_threshold\".\"min_temp_c\" IS NULL OR \".bootstrap-scaffold_room_threshold\".\"max_temp_c\" IS NULL OR \".bootstrap-scaffold_room_threshold\".\"min_temp_c\" < \".bootstrap-scaffold_room_threshold\".\"max_temp_c\""
+				}
+			}
+		},
+		".bootstrap-scaffold_room": {
+			"name": ".bootstrap-scaffold_room",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"name": {
+					"name": "name",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"site_id": {
+					"name": "site_id",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'default'"
+				},
+				"source": {
+					"name": "source",
+					"type": "text(10)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "'real'"
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				"room_site_idx": {
+					"name": "room_site_idx",
+					"columns": ["site_id"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {
+				".bootstrap-scaffold_room_site_id_.bootstrap-scaffold_site_id_fk": {
+					"name": ".bootstrap-scaffold_room_site_id_.bootstrap-scaffold_site_id_fk",
+					"tableFrom": ".bootstrap-scaffold_room",
+					"tableTo": ".bootstrap-scaffold_site",
+					"columnsFrom": ["site_id"],
+					"columnsTo": ["id"],
+					"onDelete": "restrict",
+					"onUpdate": "no action"
+				}
+			},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {
+				"room_source_check": {
+					"name": "room_source_check",
+					"value": "\".bootstrap-scaffold_room\".\"source\" IN ('real', 'demo')"
+				}
+			}
+		},
+		".bootstrap-scaffold_site": {
+			"name": ".bootstrap-scaffold_site",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"name": {
+					"name": "name",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		".bootstrap-scaffold_user": {
+			"name": ".bootstrap-scaffold_user",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "text(255)",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"email": {
+					"name": "email",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"passwordHash": {
+					"name": "passwordHash",
+					"type": "text(255)",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"createdAt": {
+					"name": "createdAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false,
+					"default": "(unixepoch())"
+				},
+				"updatedAt": {
+					"name": "updatedAt",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
+				}
+			},
+			"indexes": {
+				".bootstrap-scaffold_user_email_unique": {
+					"name": ".bootstrap-scaffold_user_email_unique",
+					"columns": ["email"],
+					"isUnique": true
+				},
+				"user_email_idx": {
+					"name": "user_email_idx",
+					"columns": ["email"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		}
+	},
+	"views": {},
+	"enums": {},
+	"_meta": {
+		"schemas": {},
+		"tables": {},
+		"columns": {}
+	},
+	"internal": {
+		"indexes": {}
+	}
+}

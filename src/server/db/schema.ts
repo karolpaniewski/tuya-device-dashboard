@@ -252,6 +252,50 @@ export const roomHeatState = createTable("room_heat_state", (d) => ({
 	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
 }));
 
+export const notificationContacts = createTable(
+	"notification_contact",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		email: d.text({ length: 255 }).notNull().unique(),
+		createdAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+	}),
+);
+
+export const roomAlertState = createTable(
+	"room_alert_state",
+	(d) => ({
+		id: d
+			.text({ length: 255 })
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		roomId: d
+			.text("room_id", { length: 255 })
+			.notNull()
+			.unique()
+			.references(() => rooms.id, { onDelete: "cascade" }),
+		lastBadge: d.text("last_badge", { length: 10 }).notNull().default("OK"),
+		enteredAt: d.integer("entered_at", { mode: "timestamp" }),
+		notifiedAt: d.integer("notified_at", { mode: "timestamp" }),
+		createdAt: d
+			.integer({ mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+		updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+	}),
+	(t) => [
+		check(
+			"room_alert_state_last_badge_check",
+			sql`${t.lastBadge} IN ('OK', 'Too Cold', 'Too Hot')`,
+		),
+	],
+);
+
 export const automationModes = createTable("automation_mode", (d) => ({
 	id: d
 		.text({ length: 255 })
