@@ -342,23 +342,23 @@ Purely additive — two new tables, no changes to existing table shapes. No back
 
 #### Automated
 
-- [x] 1.1 Typecheck passes
-- [x] 1.2 Migration generates cleanly with no unexpected diffs
-- [x] 1.3 Migration applies cleanly
-- [x] 1.4 Lint passes
+- [x] 1.1 Typecheck passes — ab5319d
+- [x] 1.2 Migration generates cleanly with no unexpected diffs — ab5319d
+- [x] 1.3 Migration applies cleanly — ab5319d
+- [x] 1.4 Lint passes — ab5319d
 
 #### Manual
 
-- [ ] 1.5 New tables appear in the new snapshot diff
-- [ ] 1.6 Local db.sqlite shows both tables with expected columns
+- [x] 1.5 New tables appear in the new snapshot diff — ab5319d
+- [x] 1.6 Local db.sqlite shows both tables with expected columns — ab5319d
 
 ### Phase 2: Contact management (backend + UI)
 
 #### Automated
 
-- [ ] 2.1 Typecheck passes
-- [ ] 2.2 Unit tests pass (notification.test.ts)
-- [ ] 2.3 Lint passes
+- [x] 2.1 Typecheck passes
+- [x] 2.2 Unit tests pass (notification.test.ts)
+- [x] 2.3 Lint passes
 
 #### Manual
 

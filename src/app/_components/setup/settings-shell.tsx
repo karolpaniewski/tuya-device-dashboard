@@ -1,6 +1,14 @@
 "use client";
 
-import { Cpu, Home, MapPin, Palette, Thermometer, Zap } from "lucide-react";
+import {
+	Cpu,
+	Home,
+	Mail,
+	MapPin,
+	Palette,
+	Thermometer,
+	Zap,
+} from "lucide-react";
 import { useSiteContext } from "~/components/site-context";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -9,6 +17,7 @@ import { DefaultThresholdsForm } from "./default-thresholds-form";
 import { DeviceTable } from "./device-table";
 import { DisplaySettings } from "./display-settings";
 import { ModeManager } from "./mode-manager";
+import { NotificationContactsManager } from "./notification-contacts-manager";
 import { RoomManager } from "./room-manager";
 import { SettingsCard } from "./settings-card";
 import { SiteManager } from "./site-manager";
@@ -95,6 +104,14 @@ export function SettingsShell() {
 				title="Default Thresholds"
 			>
 				<DefaultThresholdsForm />
+			</SettingsCard>
+
+			<SettingsCard
+				description="Email addresses alerted when a room's comfort threshold is violated"
+				icon={Mail}
+				title="Notification Contacts"
+			>
+				<NotificationContactsManager utils={utils} />
 			</SettingsCard>
 		</div>
 	);
