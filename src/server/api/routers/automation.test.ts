@@ -239,3 +239,44 @@ describe("automation.create — conflict detection", () => {
 		expect(insertValues).toHaveBeenCalled();
 	});
 });
+
+describe("automation.confirmMigration", () => {
+	it("deletes all rule rows (cascading execution logs via FK) and returns the deleted count", async () => {
+		const deleteMock = vi.fn().mockResolvedValue(undefined);
+		const mockDb = {
+			select: vi.fn().mockReturnValue({
+				from: vi.fn().mockResolvedValue([{ id: "rule-1" }, { id: "rule-2" }]),
+			}),
+			delete: deleteMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.automation.confirmMigration();
+
+		expect(result).toEqual({ success: true, deletedCount: 2 });
+		expect(deleteMock).toHaveBeenCalled();
+	});
+
+	it("returns deletedCount 0 when no legacy rules exist", async () => {
+		const deleteMock = vi.fn().mockResolvedValue(undefined);
+		const mockDb = {
+			select: vi.fn().mockReturnValue({
+				from: vi.fn().mockResolvedValue([]),
+			}),
+			delete: deleteMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.automation.confirmMigration();
+
+		expect(result).toEqual({ success: true, deletedCount: 0 });
+	});
+});

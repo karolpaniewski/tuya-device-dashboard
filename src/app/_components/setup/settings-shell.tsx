@@ -5,10 +5,10 @@ import { useSiteContext } from "~/components/site-context";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
-import { AutomationManager } from "./automation-manager";
 import { DefaultThresholdsForm } from "./default-thresholds-form";
 import { DeviceTable } from "./device-table";
 import { DisplaySettings } from "./display-settings";
+import { ModeManager } from "./mode-manager";
 import { RoomManager } from "./room-manager";
 import { SettingsCard } from "./settings-card";
 import { SiteManager } from "./site-manager";
@@ -40,7 +40,6 @@ export function SettingsShell() {
 		...(devicesQuery.data?.rooms.flatMap((r) => r.devices) ?? []),
 		...(devicesQuery.data?.unassigned ?? []),
 	];
-	const valveDevices = allDevices.filter((d) => d.deviceType === "valve");
 
 	return (
 		<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -67,15 +66,11 @@ export function SettingsShell() {
 			</SettingsCard>
 
 			<SettingsCard
-				description="Schedule valve setpoints on a recurring basis"
+				description="Group rooms into named on/off modes, scheduled or manual"
 				icon={Zap}
-				title="Automations"
+				title="Modes"
 			>
-				<AutomationManager
-					activeSiteId={activeSiteId}
-					utils={utils}
-					valveDevices={valveDevices}
-				/>
+				<ModeManager activeSiteId={activeSiteId} rooms={rooms} utils={utils} />
 			</SettingsCard>
 
 			<SettingsCard

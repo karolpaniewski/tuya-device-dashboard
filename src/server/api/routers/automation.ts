@@ -170,4 +170,14 @@ export const automationRouter = createTRPCRouter({
 
 			return { success: true as const };
 		}),
+
+	confirmMigration: protectedProcedure.mutation(async ({ ctx }) => {
+		const existingRules = await ctx.db
+			.select({ id: automationRules.id })
+			.from(automationRules);
+
+		await ctx.db.delete(automationRules);
+
+		return { success: true as const, deletedCount: existingRules.length };
+	}),
 });

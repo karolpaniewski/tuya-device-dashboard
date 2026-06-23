@@ -618,16 +618,16 @@ from a database backup.
 ### Phase 4: Cutover UI
 
 #### Automated
-- [ ] 4.1 Type checking passes: `npm run typecheck`
-- [ ] 4.2 Lint passes: `npm run check`
-- [ ] 4.3 Unit tests pass: `npm run test`
+- [x] 4.1 Type checking passes: `npm run typecheck`
+- [x] 4.2 Lint passes: `npm run check`
+- [x] 4.3 Unit tests pass: `npm run test`
 
 #### Manual
-- [ ] 4.4 Migrate panel appears with legacy rules, confirm removes them and hides panel
-- [ ] 4.5 Migrate panel never renders when no legacy rules exist
-- [ ] 4.6 Full mode CRUD + manual trigger end-to-end through the UI
-- [ ] 4.7 Manually-pinned-off room skipped by a mode, no new badge introduced
-- [ ] 4.8 375px viewport — no regression vs. old automation form
+- [x] 4.4 Migrate panel appears with legacy rules, confirm removes them and hides panel
+- [x] 4.5 Migrate panel never renders when no legacy rules exist
+- [x] 4.6 Full mode CRUD + manual trigger end-to-end through the UI
+- [x] 4.7 Manually-pinned-off room skipped by a mode, no new badge introduced
+- [x] 4.8 375px viewport — no regression vs. old automation form
 
 ### Phase 5: Preview (nice-to-have)
 
