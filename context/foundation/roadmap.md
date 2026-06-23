@@ -3,7 +3,7 @@ project: Tuya Device Dashboard
 version: 1
 status: draft
 created: 2026-06-08
-updated: 2026-06-22
+updated: 2026-06-23
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -42,8 +42,8 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | done     |
 | S-10  | external-notifications | receive email/SMS/push alert when a room threshold is violated                                  | S-05                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
-| S-11  | automation-rules       | create temperature+time rules linking sensor to valve; system maintains comfort temp in office hours, economy mode outside | S-01, S-04 | PRD §Non-Goals (deferred v2) | done |
-| S-12  | automation-history     | view log of automation rule executions (what fired, when, result)                              | S-11                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
+| S-11  | automation-rules       | create temperature+time rules linking sensor to valve; system maintains comfort temp in office hours, economy mode outside | S-01, S-04 | PRD §Non-Goals (deferred v2) | superseded by S-23 |
+| S-12  | automation-history     | view log of automation rule executions (what fired, when, result)                              | S-11                     | PRD §Non-Goals (deferred v2)      | obsolete |
 | S-13  | multi-site             | dashboard supports multiple office locations, each with their own device/room tree              | F-01, F-02               | PRD §Non-Goals (deferred v2)      | done     |
 | S-15  | dashboard-redesign     | KPI summary row, inline sparkline charts per room, sidebar navigation, tabbed setup (Rooms/Devices/Automations/Sites), sortable device table | S-01, S-05, S-09, S-14 | user-requested v2 | done    |
 | S-16  | device-dnd-modal       | drag-and-drop devices to reorder within a room or move between rooms (persisted); click any device card to open management modal with setpoint, rename, room, history chart, humidity | S-01, S-09, S-15 | user-requested v2 | done |
@@ -53,6 +53,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-20  | room-heat-toggle       | one-click "turn off heat in room X" quick action on the dashboard — closes the valve (DP `valve_state`) directly, independent of setpoint; manual action overrides automation, which may re-engage on its next tick | S-01, S-04, S-11         | user-requested v2                 | done |
 | S-21  | dashboard-ux-redesign  | visual design-system pass finishing what S-17 started — palette/density tightened within existing layout, primitive consistency restored (e.g. `temperature-history-modal.tsx`, `device-modal.tsx` one-off styling), desktop-only | S-15, S-16, S-17, S-19   | user-requested v2                 | done |
 | S-22  | setup-to-settings      | Setup page reorganized to read as an actual Settings experience (app-wide config / browser-local display preferences), instead of relocating its existing Rooms/Devices/Automations/Sites CRUD screens | S-15, S-19                | user-requested v2                 | done |
+| S-23  | automation-rework      | replace per-device temperature+time automation rules (S-11) with room-targeted on/off "modes" (schedule-driven or manually triggered), opening/closing valves directly instead of writing setpoints | S-11, S-20 | user-requested v2 | done |
 
 ## Streams
 
@@ -258,7 +259,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** — (S-04 unblocked and shipped before this slice started)
 - **Unknowns:** — (rule schema, conflict resolution, and the execution model were all resolved during shaping/implementation; see `context/changes/automation-rules/plan.md`)
 - **Risk:** Time-based rules interact with the polling worker and valve control pipeline — both had to be stable before this slice landed. Shipped across 6 phases with a scheduler worker, conflict detection, and full unit-test coverage.
-- **Status:** done
+- **Status:** superseded by S-23 (2026-06-23) — `automation_rule`/`automation_execution_log` were deleted; this slice's rule schema, scheduler tick, and Settings UI no longer exist.
 
 ### S-12: Automation history
 
@@ -270,6 +271,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** S-11 (must exist before history can be recorded)
 - **Unknowns:** Schema and retention policy inherit from S-11 and S-09 decisions.
 - **Risk:** Scope is narrow — this is a read-only log view on top of whatever S-11 writes. No independent risk beyond the S-11 dependency.
+- **Status:** obsolete (2026-06-23) — its data source (`automation_execution_log`) was dropped by S-23. The mode equivalent (`automationModeActivationLogs`) exists but has no viewing UI by design (S-23 Non-Goal); re-scope against modes via `/10x-shape` if this is still wanted.
 - **Status:** needs-shaping
 
 ### S-13: Multi-site support
@@ -340,6 +342,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Must stay inside this app's flat, single-admin identity model — S-19's `/10x-frame` already confirmed no per-account preference table exists. Any "settings" content implying per-user preferences needs that model revisited first, not assumed.
 - **Status:** done
 
+### S-23: Automation rework (modes)
+
+- **Outcome:** the per-device temperature+time rule system (S-11) is replaced by a room-targeted "mode" abstraction — a named mode groups one or more rooms, each with an on/off target state, and is either schedule-driven or manually triggered. Modes open/close valves directly (`sendValveStateCommand`, the same mechanism S-20's manual heat-off pin uses), not setpoints — a deliberate capability drop of S-11's temperature-threshold gating. Old rule data is shown read-only during cutover, then deleted via an explicit confirm action; the legacy schema is dropped only after that confirm (or zero legacy rows) is verified.
+- **Change ID:** automation-rework
+- **PRD refs:** user-requested v2 (no PRD trace — open-ended "reprogram automations" request, not separately shaped)
+- **Prerequisites:** S-11 (the system being replaced), S-20 (established the valve open/close command path this reuses)
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** — (conflict policy, migration sequencing, and scope drops were all resolved during planning; see `context/changes/automation-rework/plan.md`)
+- **Risk:** The conflict tie-break (two modes targeting the same room at the same tick) is implemented purely via sequential, ordered iteration — parallelizing the tick loop would silently break it. The schema-drop phase is irreversible and was explicitly gated on confirming zero legacy rows first. A second UI surface the original plan missed — the dashboard's "Active Automations" KPI card/widget — also read the deleted router and had to be caught and replaced (now "Active Modes" / `CcModesWidget`) after the drop.
+- **Status:** done
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID              | Suggested issue title                                             | Ready for `/10x-plan` | Notes                                                                 |
@@ -357,13 +371,14 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-14       | ux-polish              | Feature: skeleton states, empty states, toast feedback, error UX, visual polish | yes      | Run `/10x-plan ux-polish`                                             |
 | S-09       | temperature-history    | Feature: temperature chart per device/room over configurable range| no                    | Run `/10x-shape` first — storage strategy + retention policy needed   |
 | S-10       | external-notifications | Feature: email/SMS/push on threshold violation                    | no                    | Run `/10x-shape` first — channel, provider, throttle rule needed      |
-| S-11       | automation-rules       | Feature: time-based valve setpoint rules                          | done                  | —                                                                      |
-| S-12       | automation-history     | Feature: log of automation rule executions                        | no                    | Needs S-11 first                                                      |
+| S-11       | automation-rules       | Feature: time-based valve setpoint rules                          | superseded            | Replaced by S-23 — schema and code deleted                            |
+| S-12       | automation-history     | Feature: log of automation rule executions                        | no                    | Obsolete — data source deleted by S-23; re-scope against modes if wanted |
 | S-13       | multi-site             | Feature: multiple office locations in one dashboard               | no                    | Run `/10x-shape` first — architecture decision needed                 |
 | S-19       | dashboard-personalization | Feature: drag-and-drop widget reorder/hide + room reorder, persisted layout | done | —                                                                      |
 | S-20       | room-heat-toggle       | Feature: one-click room heat-off quick action (valve close, not setpoint)| no                    | Run `/10x-frame` first — toggle granularity, undo semantics            |
 | S-21       | dashboard-ux-redesign  | Feature: visual design-system pass (finish S-17, fix primitive consistency) | yes            | Run `/10x-plan dashboard-ux-redesign`; scope locked via `/10x-frame`   |
 | S-22       | setup-to-settings      | Feature: Setup page content/IA reorganized to read as Settings       | no                    | Run `/10x-shape` or `/10x-frame` first — what belongs in Settings is still open |
+| S-23       | automation-rework      | Feature: room-targeted on/off modes replacing per-device automation rules | done             | —                                                                      |
 
 ## Open Roadmap Questions
 
@@ -398,3 +413,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-18       | room-site-reassignment | 2026-06-16  |
 | S-19       | dashboard-personalization | 2026-06-17 |
 | S-20       | room-heat-toggle       | 2026-06-22  |
+| S-23       | automation-rework      | 2026-06-23  |
