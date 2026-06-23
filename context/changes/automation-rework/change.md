@@ -1,7 +1,7 @@
 ---
 change_id: automation-rework
 title: Rework the automation rules system
-status: done
+status: implemented
 created: 2026-06-22
 updated: 2026-06-23
 archived_at: null
