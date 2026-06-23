@@ -632,10 +632,10 @@ from a database backup.
 ### Phase 5: Preview (nice-to-have)
 
 #### Automated
-- [x] 5.1 Type checking passes: `npm run typecheck`
+- [x] 5.1 Type checking passes: `npm run typecheck` — ec6d89f
 
 #### Manual
-- [x] 5.2 Preview summary updates live as form state changes
+- [x] 5.2 Preview summary updates live as form state changes — ec6d89f
 
 ### Phase 6: Decommission old schema
 
