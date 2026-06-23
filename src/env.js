@@ -18,6 +18,10 @@ export const env = createEnv({
 			.string()
 			.regex(/^[0-9a-f]{64}$/, "must be 64 lowercase hex chars (32 bytes)"),
 		TUYA_STUB: z.string().optional(),
+		RESEND_API_KEY: z.string().optional(),
+		EMAIL_FROM: z.string().email().optional(),
+		EMAIL_STUB: z.string().optional(),
+		APP_BASE_URL: z.string().url().optional(),
 		LOG_LEVEL: z
 			.enum(["debug", "info", "warn", "error", "silent"])
 			.default("info"),
@@ -46,6 +50,10 @@ export const env = createEnv({
 		AUTH_ADMIN_PASSWORD: process.env.AUTH_ADMIN_PASSWORD,
 		ENCRYPTION_SECRET: process.env.ENCRYPTION_SECRET,
 		TUYA_STUB: process.env.TUYA_STUB,
+		RESEND_API_KEY: process.env.RESEND_API_KEY,
+		EMAIL_FROM: process.env.EMAIL_FROM,
+		EMAIL_STUB: process.env.EMAIL_STUB,
+		APP_BASE_URL: process.env.APP_BASE_URL,
 		LOG_LEVEL: process.env.LOG_LEVEL,
 		LOG_DIR: process.env.LOG_DIR,
 		LOG_RETENTION_DAYS: process.env.LOG_RETENTION_DAYS,

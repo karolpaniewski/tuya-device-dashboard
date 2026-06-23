@@ -356,30 +356,30 @@ Purely additive — two new tables, no changes to existing table shapes. No back
 
 #### Automated
 
-- [x] 2.1 Typecheck passes
-- [x] 2.2 Unit tests pass (notification.test.ts)
-- [x] 2.3 Lint passes
+- [x] 2.1 Typecheck passes — b5d79b1
+- [x] 2.2 Unit tests pass (notification.test.ts) — b5d79b1
+- [x] 2.3 Lint passes — b5d79b1
 
 #### Manual
 
-- [ ] 2.4 Add valid email — appears in list, success toast
-- [ ] 2.5 Malformed email rejected
-- [ ] 2.6 Duplicate email rejected
-- [ ] 2.7 Delete contact works
-- [ ] 2.8 List persists across reload
+- [x] 2.4 Add valid email — appears in list, success toast — b5d79b1
+- [x] 2.5 Malformed email rejected — b5d79b1
+- [x] 2.6 Duplicate email rejected — b5d79b1
+- [x] 2.7 Delete contact works — b5d79b1
+- [x] 2.8 List persists across reload — b5d79b1
 
 ### Phase 3: Email client abstraction
 
 #### Automated
 
-- [ ] 3.1 Typecheck passes
-- [ ] 3.2 Lint passes
-- [ ] 3.3 Full CI gate passes
+- [x] 3.1 Typecheck passes
+- [x] 3.2 Lint passes
+- [x] 3.3 Full CI gate passes
 
 #### Manual
 
-- [ ] 3.4 EMAIL_STUB=true logs structured line, no network call, no PII
-- [ ] 3.5 Real RESEND_API_KEY sends an actual email
+- [x] 3.4 EMAIL_STUB=true logs structured line, no network call, no PII
+- [ ] 3.5 Real RESEND_API_KEY sends an actual email (deferred — needs a real Resend account)
 
 ### Phase 4: Alert detection & dispatch
 

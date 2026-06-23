@@ -16,6 +16,8 @@ export const redact = {
 		"passwordHash",
 		"*.passwordHash",
 		"*.user.passwordHash",
+		"*.email",
+		"*.contactEmail",
 	],
 	censor: "[REDACTED]",
 };
