@@ -273,6 +273,15 @@ export const modeRouter = createTRPCRouter({
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
+			const [existing] = await ctx.db
+				.select({ id: automationModes.id })
+				.from(automationModes)
+				.where(eq(automationModes.id, input.id));
+
+			if (!existing) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Mode not found" });
+			}
+
 			await ctx.db
 				.delete(automationModes)
 				.where(eq(automationModes.id, input.id));

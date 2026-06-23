@@ -317,11 +317,37 @@ describe("mode.update", () => {
 });
 
 describe("mode.delete", () => {
+	it("throws NOT_FOUND when the mode does not exist", async () => {
+		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([]),
+				}),
+			}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.mode.delete({ id: "mode-missing" }),
+		).rejects.toMatchObject({ code: "NOT_FOUND" });
+	});
+
 	it("deletes the mode row and returns success", async () => {
 		const deleteMock = vi
 			.fn()
 			.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
-		const mockDb = { delete: deleteMock };
+		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ id: "mode-1" }]),
+				}),
+			}),
+			delete: deleteMock,
+		};
 		const caller = createCaller({
 			db: mockDb as never,
 			session,
