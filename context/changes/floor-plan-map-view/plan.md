@@ -563,15 +563,15 @@ migration (device → unplaced roster, site → no floor plan).
 
 #### Automated
 
-- [x] 3.1 `npm run typecheck` passes
-- [x] 3.2 `npm run lint` passes
-- [x] 3.3 `npm run test` passes
+- [x] 3.1 `npm run typecheck` passes — e08bcd2
+- [x] 3.2 `npm run lint` passes — e08bcd2
+- [x] 3.3 `npm run test` passes — e08bcd2
 
 #### Manual
 
-- [x] 3.4 Valid upload shows success toast and new thumbnail
-- [x] 3.5 Invalid upload shows clear error toast, no change to stored image
-- [x] 3.6 Switching active site shows that site's own floor plan
+- [x] 3.4 Valid upload shows success toast and new thumbnail — e08bcd2
+- [x] 3.5 Invalid upload shows clear error toast, no change to stored image — e08bcd2
+- [x] 3.6 Switching active site shows that site's own floor plan — e08bcd2
 
 ### Phase 4: Map View Page
 

@@ -17,6 +17,10 @@ interface Props {
 export function FloorPlanManager({ activeSiteId, sites, utils }: Props) {
 	const [error, setError] = useState<string | null>(null);
 	const [isUploading, setIsUploading] = useState(false);
+	// Bumped on every successful upload so the <img> src changes even when the
+	// underlying path string doesn't (same siteId + extension on a replace) —
+	// otherwise the DOM node keeps showing its already-loaded bitmap.
+	const [cacheBuster, setCacheBuster] = useState(0);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const activeSite = sites.find((site) => site.id === activeSiteId);
@@ -44,6 +48,7 @@ export function FloorPlanManager({ activeSiteId, sites, utils }: Props) {
 			}
 
 			toast.success("Floor plan uploaded");
+			setCacheBuster((v) => v + 1);
 			void utils.site.list.invalidate();
 		} catch (err) {
 			const message = err instanceof Error ? err.message : "Upload failed";
@@ -74,7 +79,7 @@ export function FloorPlanManager({ activeSiteId, sites, utils }: Props) {
 				<img
 					alt={`${activeSite.name} floor plan`}
 					className="mb-4 max-h-48 w-full rounded-lg border object-contain"
-					src={activeSite.floorPlanImagePath}
+					src={`${activeSite.floorPlanImagePath}?v=${cacheBuster}`}
 					style={{ borderColor: "var(--cc-glass-border)" }}
 				/>
 			) : (
