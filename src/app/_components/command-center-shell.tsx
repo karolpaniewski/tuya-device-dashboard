@@ -1,10 +1,24 @@
 "use client";
 
-import { LayoutGrid, Map as MapIcon, Moon, Settings, User } from "lucide-react";
+import {
+	LayoutGrid,
+	LogOut,
+	Map as MapIcon,
+	Moon,
+	Settings,
+	User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import type { ReactNode } from "react";
 import { useSiteContext } from "~/components/site-context";
+import { Button } from "~/components/ui/button";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "~/components/ui/popover";
 import {
 	Select,
 	SelectContent,
@@ -13,6 +27,7 @@ import {
 	SelectValue,
 } from "~/components/ui/select";
 import { cn } from "~/lib/utils";
+import { logoutAction } from "./account-menu-actions";
 import { CommandCenterClock } from "./command-center-clock";
 import { DensityProvider, useDensity } from "./density-provider";
 
@@ -76,6 +91,7 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 	const pathname = usePathname();
 	const { activeSiteId, sites, setActiveSite } = useSiteContext();
 	const { density } = useDensity();
+	const { data: session } = useSession();
 
 	const siteItems = Object.fromEntries([
 		...sites.map((site) => [site.id, site.name]),
@@ -141,15 +157,43 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 					label="Setup"
 				/>
 
-				<div
-					className="mt-auto flex h-[34px] w-[34px] items-center justify-center rounded-full"
-					style={{
-						background:
-							"linear-gradient(150deg, var(--cc-violet), var(--cc-violet-dark))",
-					}}
-				>
-					<User color="#fff" size={16} />
-				</div>
+				<Popover>
+					<PopoverTrigger
+						render={
+							<button
+								aria-label="Account menu"
+								className="mt-auto flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full"
+								style={{
+									background:
+										"linear-gradient(150deg, var(--cc-violet), var(--cc-violet-dark))",
+								}}
+								type="button"
+							>
+								<User color="#fff" size={16} />
+							</button>
+						}
+					/>
+					<PopoverContent className="w-56 p-2">
+						{session?.user?.email && (
+							<p
+								className="mb-2 truncate px-2 py-1 text-xs"
+								style={{ color: "var(--cc-text-muted)" }}
+							>
+								{session.user.email}
+							</p>
+						)}
+						<form action={logoutAction}>
+							<Button
+								className="w-full justify-start"
+								type="submit"
+								variant="ghost"
+							>
+								<LogOut size={14} />
+								Log out
+							</Button>
+						</form>
+					</PopoverContent>
+				</Popover>
 			</aside>
 
 			<main className="relative z-10 flex min-w-0 flex-1 flex-col gap-[18px] overflow-y-auto px-[30px] py-6 pb-[60px]">

@@ -27,10 +27,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 		...authConfig.callbacks,
 		jwt({ token, user }) {
 			if (user?.id) token.sub = user.id;
+			if (user?.email) token.email = user.email;
 			return token;
 		},
 		session({ session, token }) {
 			if (token.sub) session.user.id = token.sub;
+			if (token.email) session.user.email = token.email;
 			return session;
 		},
 	},
