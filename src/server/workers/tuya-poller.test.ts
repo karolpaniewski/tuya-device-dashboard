@@ -3,8 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Mocks are hoisted by Vitest before import resolution.
 vi.mock("~/server/db", () => ({ db: { select: vi.fn() } }));
 vi.mock("~/server/lib/tuya", () => ({ getTuyaClient: vi.fn() }));
+vi.mock("~/server/lib/alert-control", () => ({
+	detectAndDispatchAlerts: vi.fn(),
+}));
 
 import { db } from "~/server/db";
+import { detectAndDispatchAlerts } from "~/server/lib/alert-control";
 import { deviceStateStore } from "~/server/lib/device-state-store";
 import { getTuyaClient } from "~/server/lib/tuya";
 import { pollOnce } from "~/server/workers/tuya-poller";
@@ -156,5 +160,60 @@ describe("pollOnce › gateway fetch error", () => {
 		await pollOnce();
 
 		expect(deviceStateStore.has("d1")).toBe(false);
+	});
+});
+
+describe("pollOnce › alert dispatch", () => {
+	it("calls detectAndDispatchAlerts exactly once per tick", async () => {
+		vi.mocked(db.select).mockReturnValue({
+			from: vi.fn().mockReturnValue({
+				where: vi.fn().mockResolvedValue([]),
+			}),
+		} as never);
+
+		await pollOnce();
+
+		expect(detectAndDispatchAlerts).toHaveBeenCalledOnce();
+	});
+
+	it("a thrown error from detectAndDispatchAlerts does not abort the rest of the tick", async () => {
+		vi.mocked(db.select)
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([GATEWAY]),
+				}),
+			} as never)
+			.mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([DEVICE]),
+				}),
+			} as never);
+
+		const mockInsert = vi
+			.fn()
+			.mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) });
+		vi.mocked(db).insert = mockInsert as never;
+
+		vi.mocked(getTuyaClient).mockReturnValue({
+			fetchGatewayDevices: vi.fn().mockResolvedValue([
+				{
+					tuyaDeviceId: "d1",
+					isOnline: true,
+					temperatureC: 21,
+					setpointC: 20,
+				},
+			]),
+		} as never);
+
+		vi.mocked(detectAndDispatchAlerts).mockRejectedValue(
+			new Error("alert-control blew up"),
+		);
+
+		await pollOnce();
+
+		// The earlier steps (store update, history insert) still completed —
+		// the alert-control failure is caught and doesn't unwind the tick.
+		expect(mockInsert).toHaveBeenCalledOnce();
+		expect(deviceStateStore.has("d1")).toBe(true);
 	});
 });

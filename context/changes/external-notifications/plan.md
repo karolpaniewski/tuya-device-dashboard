@@ -372,30 +372,30 @@ Purely additive — two new tables, no changes to existing table shapes. No back
 
 #### Automated
 
-- [x] 3.1 Typecheck passes
-- [x] 3.2 Lint passes
-- [x] 3.3 Full CI gate passes
+- [x] 3.1 Typecheck passes — d362c4e
+- [x] 3.2 Lint passes — d362c4e
+- [x] 3.3 Full CI gate passes — d362c4e
 
 #### Manual
 
-- [x] 3.4 EMAIL_STUB=true logs structured line, no network call, no PII
-- [ ] 3.5 Real RESEND_API_KEY sends an actual email (deferred — needs a real Resend account)
+- [x] 3.4 EMAIL_STUB=true logs structured line, no network call, no PII — d362c4e
+- [x] 3.5 Real RESEND_API_KEY sends an actual email
 
 ### Phase 4: Alert detection & dispatch
 
 #### Automated
 
-- [ ] 4.1 Typecheck passes
-- [ ] 4.2 Unit tests pass (alert-control.test.ts)
-- [ ] 4.3 tuya-poller.test.ts still passes with new call mocked
-- [ ] 4.4 Lint passes
-- [ ] 4.5 Full CI gate passes
+- [x] 4.1 Typecheck passes
+- [x] 4.2 Unit tests pass (alert-control.test.ts)
+- [x] 4.3 tuya-poller.test.ts still passes with new call mocked
+- [x] 4.4 Lint passes
+- [x] 4.5 Full CI gate passes
 
 #### Manual
 
-- [ ] 4.6 Stub send fires within 30s of crossing threshold
-- [ ] 4.7 Second episode after returning to OK re-sends
-- [ ] 4.8 Real send delivers an actual email
+- [x] 4.6 Stub send fires within 30s of crossing threshold
+- [x] 4.7 Second episode after returning to OK re-sends
+- [x] 4.8 Real send delivers an actual email
 
 ### Phase 5: Dashboard "alert sent" indicator
 

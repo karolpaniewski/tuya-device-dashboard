@@ -46,12 +46,20 @@ export const realEmailClient: EmailClient = {
 		if (contacts.length === 0) return;
 
 		const resend = new Resend(env.RESEND_API_KEY);
-		await resend.emails.send({
+		const response = await resend.emails.send({
 			from: env.EMAIL_FROM,
 			to: contacts.map((c) => c.email),
 			subject: "Comfort threshold alert",
 			html: renderHtml(params.violations),
 			text: renderText(params.violations),
 		});
+
+		// The Resend SDK never throws on API-level failures (bad domain, rate
+		// limit, etc.) — it returns { error } instead. Surface it as a thrown
+		// error so the caller's failure handling (leave the episode "pending")
+		// actually triggers.
+		if (response.error) {
+			throw new Error(`Resend send failed: ${response.error.message}`);
+		}
 	},
 };

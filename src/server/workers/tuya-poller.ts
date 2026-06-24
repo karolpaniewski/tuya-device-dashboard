@@ -5,6 +5,7 @@ import {
 	deviceTemperatureReadings,
 	gateways,
 } from "~/server/db/schema";
+import { detectAndDispatchAlerts } from "~/server/lib/alert-control";
 import { decryptLocalKey } from "~/server/lib/crypto";
 import { ACTIVE_DEVICE_SOURCE } from "~/server/lib/device-source";
 import { deviceStateStore } from "~/server/lib/device-state-store";
@@ -90,6 +91,12 @@ export async function pollOnce(): Promise<void> {
 		} catch (err) {
 			getLogger().error({ err }, "Error writing temperature history");
 		}
+	}
+
+	try {
+		await detectAndDispatchAlerts();
+	} catch (err) {
+		getLogger().error({ err }, "Error detecting/dispatching alerts");
 	}
 
 	pollCounter++;
