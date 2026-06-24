@@ -13,6 +13,9 @@
 /prisma/db.sqlite-journal
 db.sqlite
 
+# user-uploaded runtime content
+/public/uploads/
+
 # next.js
 /.next/
 /out/

@@ -3,6 +3,7 @@
 import {
 	Cpu,
 	Home,
+	Image,
 	Mail,
 	MapPin,
 	Palette,
@@ -16,6 +17,7 @@ import { api } from "~/trpc/react";
 import { DefaultThresholdsForm } from "./default-thresholds-form";
 import { DeviceTable } from "./device-table";
 import { DisplaySettings } from "./display-settings";
+import { FloorPlanManager } from "./floor-plan-manager";
 import { ModeManager } from "./mode-manager";
 import { NotificationContactsManager } from "./notification-contacts-manager";
 import { RoomManager } from "./room-manager";
@@ -88,6 +90,18 @@ export function SettingsShell() {
 				title="Sites"
 			>
 				<SiteManager utils={utils} />
+			</SettingsCard>
+
+			<SettingsCard
+				description="Upload a floor-plan image for the active site"
+				icon={Image}
+				title="Floor Plan"
+			>
+				<FloorPlanManager
+					activeSiteId={activeSiteId}
+					sites={sitesQuery.data ?? []}
+					utils={utils}
+				/>
 			</SettingsCard>
 
 			<SettingsCard

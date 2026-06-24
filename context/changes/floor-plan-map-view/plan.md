@@ -548,30 +548,30 @@ migration (device → unplaced roster, site → no floor plan).
 
 #### Automated
 
-- [x] 2.1 `npm run typecheck` passes
-- [x] 2.2 `dropPositionToPercent` unit tests pass
-- [x] 2.3 `validateFloorPlanUpload` unit tests pass
-- [x] 2.4 New/extended router tests pass
-- [x] 2.5 `npm run lint` passes
+- [x] 2.1 `npm run typecheck` passes — 05485d5
+- [x] 2.2 `dropPositionToPercent` unit tests pass — 05485d5
+- [x] 2.3 `validateFloorPlanUpload` unit tests pass — 05485d5
+- [x] 2.4 New/extended router tests pass — 05485d5
+- [x] 2.5 `npm run lint` passes — 05485d5
 
 #### Manual
 
-- [x] 2.6 Valid upload via manual fetch writes file and updates site row
-- [x] 2.7 Invalid upload returns clear 400 and writes nothing
+- [x] 2.6 Valid upload via manual fetch writes file and updates site row — 05485d5
+- [x] 2.7 Invalid upload returns clear 400 and writes nothing — 05485d5
 
 ### Phase 3: Settings — Floor-Plan Upload UI
 
 #### Automated
 
-- [ ] 3.1 `npm run typecheck` passes
-- [ ] 3.2 `npm run lint` passes
-- [ ] 3.3 `npm run test` passes
+- [x] 3.1 `npm run typecheck` passes
+- [x] 3.2 `npm run lint` passes
+- [x] 3.3 `npm run test` passes
 
 #### Manual
 
-- [ ] 3.4 Valid upload shows success toast and new thumbnail
-- [ ] 3.5 Invalid upload shows clear error toast, no change to stored image
-- [ ] 3.6 Switching active site shows that site's own floor plan
+- [x] 3.4 Valid upload shows success toast and new thumbnail
+- [x] 3.5 Invalid upload shows clear error toast, no change to stored image
+- [x] 3.6 Switching active site shows that site's own floor plan
 
 ### Phase 4: Map View Page
 
