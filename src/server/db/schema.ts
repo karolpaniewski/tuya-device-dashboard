@@ -20,6 +20,9 @@ export const sites = createTable("site", (d) => ({
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	name: d.text({ length: 255 }).notNull(),
+	// Path to the site's uploaded floor-plan image under public/uploads/floor-plans/.
+	// Null means no floor plan has been uploaded yet.
+	floorPlanImagePath: d.text("floor_plan_image_path", { length: 255 }),
 	createdAt: d
 		.integer({ mode: "timestamp" })
 		.notNull()
@@ -129,6 +132,10 @@ export const devices = createTable(
 		// Zigbee node ID — used as TuyAPI `cid` for sub-device addressing through gateway
 		nodeId: d.text("node_id", { length: 20 }),
 		sortOrder: d.integer("sort_order").notNull().default(0),
+		// Map View placement, as a percentage pair within the site's floor-plan image.
+		// Both null means the device is in the unplaced roster.
+		mapXPct: d.real("map_x_pct"),
+		mapYPct: d.real("map_y_pct"),
 		siteId: d
 			.text("site_id", { length: 255 })
 			.notNull()
