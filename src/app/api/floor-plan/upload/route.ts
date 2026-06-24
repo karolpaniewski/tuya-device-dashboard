@@ -3,39 +3,16 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
+import {
+	FLOOR_PLAN_MIME_EXTENSIONS,
+	validateFloorPlanUpload,
+} from "~/lib/floor-plan-validation";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { sites } from "~/server/db/schema";
 import { getLogger } from "~/server/lib/log-context";
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_MIME_TYPES = ["image/png", "image/jpeg"] as const;
-
-const MIME_EXTENSIONS: Record<string, string> = {
-	"image/png": "png",
-	"image/jpeg": "jpg",
-};
-
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "floor-plans");
-
-export function validateFloorPlanUpload(
-	file: File | null,
-): { valid: true } | { valid: false; message: string } {
-	if (!file) {
-		return { valid: false, message: "No file provided" };
-	}
-	if (
-		!ALLOWED_MIME_TYPES.includes(
-			file.type as (typeof ALLOWED_MIME_TYPES)[number],
-		)
-	) {
-		return { valid: false, message: "File must be a PNG or JPEG image" };
-	}
-	if (file.size > MAX_FILE_SIZE_BYTES) {
-		return { valid: false, message: "File must be 5MB or smaller" };
-	}
-	return { valid: true };
-}
 
 export async function POST(request: NextRequest) {
 	const session = await auth();
@@ -62,7 +39,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	const uploadedFile = file as File;
-	const extension = MIME_EXTENSIONS[uploadedFile.type];
+	const extension = FLOOR_PLAN_MIME_EXTENSIONS[uploadedFile.type];
 	const filename = `${siteId}.${extension}`;
 	const imagePath = `/uploads/floor-plans/${filename}`;
 

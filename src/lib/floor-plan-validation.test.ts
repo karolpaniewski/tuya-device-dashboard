@@ -1,12 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
-// Mocks are hoisted by Vitest before import resolution.
-// Without these, importing route.ts triggers ~/server/auth and ~/server/db
-// which fire ~/env Zod validation against the real env vars.
-vi.mock("~/server/auth", () => ({ auth: vi.fn() }));
-vi.mock("~/server/db", () => ({ db: {} }));
-
-import { validateFloorPlanUpload } from "./route";
+import { validateFloorPlanUpload } from "./floor-plan-validation";
 
 function makeFile(type: string, sizeBytes: number): File {
 	return new File([new Uint8Array(sizeBytes)], "floor-plan", { type });

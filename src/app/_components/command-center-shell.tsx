@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, Moon, Settings, User } from "lucide-react";
+import { LayoutGrid, Map as MapIcon, Moon, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -127,6 +127,12 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 					href="/"
 					icon={<LayoutGrid size={20} />}
 					label="Dashboard"
+				/>
+				<RailLink
+					active={pathname === "/map"}
+					href="/map"
+					icon={<MapIcon size={20} />}
+					label="Map View"
 				/>
 				<RailLink
 					active={pathname === "/setup"}
