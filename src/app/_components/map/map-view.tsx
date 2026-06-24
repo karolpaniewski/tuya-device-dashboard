@@ -168,7 +168,7 @@ export function MapView() {
 							>
 								<button
 									className={cn(
-										"flex items-center gap-1 rounded-full px-2 py-1 text-xs shadow-lg",
+										"flex cursor-pointer items-center gap-1 rounded-full px-2 py-1 text-xs shadow-lg",
 										nodeColorClass(badgeByDeviceId.get(device.id)),
 									)}
 									onClick={() => setSelectedDevice(device)}
@@ -178,7 +178,7 @@ export function MapView() {
 								</button>
 								<button
 									aria-label={`Remove ${device.name} from map`}
-									className="absolute -top-1.5 -right-1.5 rounded-full bg-black/40 p-0.5 hover:bg-black/60"
+									className="absolute -top-1.5 -right-1.5 cursor-pointer rounded-full bg-black/40 p-0.5 hover:bg-black/60"
 									onClick={() =>
 										clearMapPosition.mutate({
 											deviceId: device.id,
