@@ -1,7 +1,7 @@
 ---
 change_id: floor-plan-map-view
 title: Interactive 2D floor-plan ("digital twin") Map View
-status: implementing
+status: implemented
 created: 2026-06-24
 updated: 2026-06-24
 archived_at: null

@@ -577,18 +577,18 @@ migration (device → unplaced roster, site → no floor plan).
 
 #### Automated
 
-- [x] 4.1 `npm run typecheck` passes
-- [x] 4.2 `npm run lint` passes
-- [x] 4.3 `npm run test` passes
-- [x] 4.4 `npm run build` succeeds
+- [x] 4.1 `npm run typecheck` passes — cb52637
+- [x] 4.2 `npm run lint` passes — cb52637
+- [x] 4.3 `npm run test` passes — cb52637
+- [x] 4.4 `npm run build` succeeds — cb52637
 
 #### Manual
 
-- [x] 4.5 Dragged device position persists across reload
-- [x] 4.6 Placed device node color matches its room's badge
-- [x] 4.7 Click opens modal; setpoint change reflected on Dashboard
-- [x] 4.8 Re-drag updates position; × button returns device to roster
-- [x] 4.9 Switching active site scopes devices and floor plan correctly
-- [x] 4.10 Broken image shows error state; Dashboard list/control unaffected
-- [x] 4.11 375px viewport on `/` and `/setup` shows no regression
-- [x] 4.12 Bulk operations on list/table view still work
+- [x] 4.5 Dragged device position persists across reload — cb52637
+- [x] 4.6 Placed device node color matches its room's badge — cb52637
+- [x] 4.7 Click opens modal; setpoint change reflected on Dashboard — cb52637
+- [x] 4.8 Re-drag updates position; × button returns device to roster — cb52637
+- [x] 4.9 Switching active site scopes devices and floor plan correctly — cb52637
+- [x] 4.10 Broken image shows error state; Dashboard list/control unaffected — cb52637
+- [x] 4.11 375px viewport on `/` and `/setup` shows no regression — cb52637
+- [x] 4.12 Bulk operations on list/table view still work — cb52637
