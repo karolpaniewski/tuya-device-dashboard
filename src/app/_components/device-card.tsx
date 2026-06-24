@@ -3,10 +3,10 @@
 import { Gauge, Plug, Thermometer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
 import { downsampleAverage } from "~/lib/sparkline-data";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { ThermostatDial } from "./thermostat-dial";
 
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
@@ -54,39 +54,20 @@ function SetpointControl({
 		},
 	});
 
-	function adjust(delta: number) {
-		const base = displayed ?? 20;
-		const next = Math.min(35, Math.max(5, Math.round((base + delta) * 2) / 2));
+	function handleChange(next: number) {
 		setLocalSetpoint(next);
 		mutation.mutate({ deviceId, setpointC: next });
 	}
 
 	return (
-		<div className="flex items-center gap-1">
-			<Button
-				className="h-6 w-6 rounded p-0 text-xs"
-				disabled={mutation.isPending || (displayed ?? 0) <= 5}
-				onClick={() => adjust(-0.5)}
-				size="sm"
-				type="button"
-				variant="outline"
-			>
-				−
-			</Button>
-			<span className="w-14 text-center font-semibold text-foreground text-sm">
-				{displayed !== null ? `${displayed}°C` : "—"}
-			</span>
-			<Button
-				className="h-6 w-6 rounded p-0 text-xs"
-				disabled={mutation.isPending || (displayed ?? 0) >= 35}
-				onClick={() => adjust(0.5)}
-				size="sm"
-				type="button"
-				variant="outline"
-			>
-				+
-			</Button>
-		</div>
+		<ThermostatDial
+			max={35}
+			min={5}
+			onChange={handleChange}
+			size="compact"
+			step={0.5}
+			value={displayed}
+		/>
 	);
 }
 

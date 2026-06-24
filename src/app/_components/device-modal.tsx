@@ -12,7 +12,6 @@ import {
 	YAxis,
 } from "recharts";
 import { toast } from "sonner";
-import { Button } from "~/components/ui/button";
 import {
 	Dialog,
 	DialogBody,
@@ -24,6 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { ThermostatDial } from "./thermostat-dial";
 
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
@@ -55,10 +55,6 @@ function DeviceModalContent({
 }) {
 	const [name, setName] = useState(device.name);
 	const [nameSaving, setNameSaving] = useState(false);
-	const [setpointInput, setSetpointInput] = useState(
-		device.setpointC?.toFixed(1) ?? "",
-	);
-	const [setpointSaving, setSetpointSaving] = useState(false);
 	const [roomSaving, setRoomSaving] = useState(false);
 	const [optimisticSetpoint, setOptimisticSetpoint] = useState(
 		device.setpointC,
@@ -79,8 +75,10 @@ function DeviceModalContent({
 			void utils.device.overview.invalidate();
 			toast.success(`Setpoint set to ${r.setpointC.toFixed(1)} °C`);
 		},
-		onError: (e) => toast.error(e.message),
-		onSettled: () => setSetpointSaving(false),
+		onError: (e) => {
+			setOptimisticSetpoint(device.setpointC);
+			toast.error(e.message);
+		},
 	});
 
 	const setDeviceRoom = api.room.setDeviceRoom.useMutation({
@@ -98,14 +96,9 @@ function DeviceModalContent({
 		rename.mutate({ id: device.id, siteId: device.siteId, name: name.trim() });
 	}
 
-	function handleSetpoint() {
-		const val = Number.parseFloat(setpointInput);
-		if (Number.isNaN(val) || val < 5 || val > 35) {
-			toast.error("Setpoint must be between 5 and 35 °C");
-			return;
-		}
-		setSetpointSaving(true);
-		setpoint.mutate({ deviceId: device.id, setpointC: val });
+	function handleSetpointChange(next: number) {
+		setOptimisticSetpoint(next);
+		setpoint.mutate({ deviceId: device.id, setpointC: next });
 	}
 
 	function handleRoomChange(roomId: string) {
@@ -187,34 +180,18 @@ function DeviceModalContent({
 						{/* Setpoint control — valves only */}
 						{device.deviceType === "valve" && (
 							<div>
-								<div className="mb-2 flex items-center justify-between">
-									<p className="font-medium text-[var(--s-text-muted)] text-sm">
-										Set temperature
-									</p>
-									<span className="font-medium text-foreground text-sm">
-										{setpointInput
-											? `${Number(setpointInput).toFixed(1)} °C`
-											: "—"}
-									</span>
-								</div>
-								<div className="flex gap-3">
-									<input
-										className="h-2 flex-1 cursor-pointer accent-primary disabled:opacity-40"
-										disabled={setpointSaving}
+								<p className="mb-2 font-medium text-[var(--s-text-muted)] text-sm">
+									Set temperature
+								</p>
+								<div className="flex justify-center">
+									<ThermostatDial
 										max={35}
 										min={5}
-										onChange={(e) => setSetpointInput(e.target.value)}
+										onChange={handleSetpointChange}
+										size="large"
 										step={0.5}
-										type="range"
-										value={setpointInput || "20"}
+										value={optimisticSetpoint}
 									/>
-									<Button
-										disabled={setpointSaving}
-										onClick={handleSetpoint}
-										type="button"
-									>
-										{setpointSaving ? "Sending…" : "Set"}
-									</Button>
 								</div>
 							</div>
 						)}

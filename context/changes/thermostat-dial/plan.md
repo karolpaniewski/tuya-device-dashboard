@@ -367,34 +367,34 @@ Not applicable — no data model or backend changes.
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes
-- [x] 1.2 `npm run lint` (Biome) passes
-- [x] 1.3 `angleToSetpoint` / `setpointToAngle` unit tests pass
-- [x] 1.4 `pointerToAngle` unit tests pass
-- [x] 1.5 `setpointToColor` unit tests pass
-- [x] 1.6 `npm run test` passes
+- [x] 1.1 `npm run typecheck` passes — 8ede452
+- [x] 1.2 `npm run lint` (Biome) passes — 8ede452
+- [x] 1.3 `angleToSetpoint` / `setpointToAngle` unit tests pass — 8ede452
+- [x] 1.4 `pointerToAngle` unit tests pass — 8ede452
+- [x] 1.5 `setpointToColor` unit tests pass — 8ede452
+- [x] 1.6 `npm run test` passes — 8ede452
 
 #### Manual
 
-- [ ] 1.7 `framer-motion` installs cleanly; app builds/runs with no new console errors
+- [x] 1.7 `framer-motion` installs cleanly; app builds/runs with no new console errors — 8ede452
 
 ### Phase 2: Thermostat dial component, wired into card and modal
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` passes
-- [ ] 2.2 `npm run lint` (Biome) passes
-- [ ] 2.3 `npm run test` passes
-- [ ] 2.4 `npm run build` succeeds
+- [x] 2.1 `npm run typecheck` passes
+- [x] 2.2 `npm run lint` (Biome) passes
+- [x] 2.3 `npm run test` passes
+- [x] 2.4 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 2.5 Card dial drag (touch + mouse) sets value correctly, clamp/step match, persists across reload
-- [ ] 2.6 Modal dial drag matches card behavior; Overview tab's Setpoint reading updates
-- [ ] 2.7 Dial background shifts blue→orange with value, on both sizes
-- [ ] 2.8 Failed setpoint update snaps dial back and shows existing error toast
-- [ ] 2.9 Sensor/plug cards and modals unchanged
-- [ ] 2.10 Reduced-motion: dial color changes apply instantly
+- [x] 2.5 Card dial drag (touch + mouse) sets value correctly, clamp/step match, persists across reload
+- [x] 2.6 Modal dial drag matches card behavior; Overview tab's Setpoint reading updates
+- [x] 2.7 Dial background shifts blue→orange with value, on both sizes
+- [x] 2.8 Failed setpoint update snaps dial back and shows existing error toast
+- [x] 2.9 Sensor/plug cards and modals unchanged
+- [x] 2.10 Reduced-motion: dial color changes apply instantly
 
 ### Phase 3: Shared-layout card→modal transition
 
