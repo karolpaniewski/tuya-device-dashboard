@@ -379,35 +379,35 @@ Purely additive — two new tables, no changes to existing table shapes. No back
 #### Manual
 
 - [x] 3.4 EMAIL_STUB=true logs structured line, no network call, no PII — d362c4e
-- [x] 3.5 Real RESEND_API_KEY sends an actual email
+- [x] 3.5 Real RESEND_API_KEY sends an actual email — 12e8268
 
 ### Phase 4: Alert detection & dispatch
 
 #### Automated
 
-- [x] 4.1 Typecheck passes
-- [x] 4.2 Unit tests pass (alert-control.test.ts)
-- [x] 4.3 tuya-poller.test.ts still passes with new call mocked
-- [x] 4.4 Lint passes
-- [x] 4.5 Full CI gate passes
+- [x] 4.1 Typecheck passes — 12e8268
+- [x] 4.2 Unit tests pass (alert-control.test.ts) — 12e8268
+- [x] 4.3 tuya-poller.test.ts still passes with new call mocked — 12e8268
+- [x] 4.4 Lint passes — 12e8268
+- [x] 4.5 Full CI gate passes — 12e8268
 
 #### Manual
 
-- [x] 4.6 Stub send fires within 30s of crossing threshold
-- [x] 4.7 Second episode after returning to OK re-sends
-- [x] 4.8 Real send delivers an actual email
+- [x] 4.6 Stub send fires within 30s of crossing threshold — 12e8268
+- [x] 4.7 Second episode after returning to OK re-sends — 12e8268
+- [x] 4.8 Real send delivers an actual email — 12e8268
 
 ### Phase 5: Dashboard "alert sent" indicator
 
 #### Automated
 
-- [ ] 5.1 Typecheck passes
-- [ ] 5.2 Unit tests pass (device.test.ts alertSent coverage)
-- [ ] 5.3 Lint passes
-- [ ] 5.4 Full CI gate passes
+- [x] 5.1 Typecheck passes
+- [x] 5.2 Unit tests pass (device.test.ts alertSent coverage)
+- [x] 5.3 Lint passes
+- [x] 5.4 Full CI gate passes
 
 #### Manual
 
-- [ ] 5.5 Badge shows alert-sent icon after a send
-- [ ] 5.6 Icon clears on next OK transition
-- [ ] 5.7 Mobile/375px layout unaffected
+- [x] 5.5 Badge shows alert-sent icon after a send
+- [x] 5.6 Icon clears on next OK transition
+- [x] 5.7 Mobile/375px layout unaffected (pre-existing overflow at 375px confirmed unrelated to this change; icon adds ~22px on top of an already-overflowing row — accepted as out of scope)

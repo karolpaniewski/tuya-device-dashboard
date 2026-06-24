@@ -2,7 +2,7 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
-import { Flame } from "lucide-react";
+import { Flame, Mail } from "lucide-react";
 import { useState } from "react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
 import { Badge } from "~/components/ui/badge";
@@ -120,6 +120,7 @@ function HeatToggle({ isPending, onToggleHeat, pinnedOff }: HeatToggleProps) {
 }
 
 interface RoomGroupProps {
+	alertSent?: boolean;
 	anomaly?: boolean;
 	badge?: "OK" | "Too Cold" | "Too Hot" | null;
 	devices: DeviceItem[];
@@ -136,6 +137,7 @@ interface RoomGroupProps {
 }
 
 export function RoomGroup({
+	alertSent,
 	anomaly,
 	badge,
 	devices,
@@ -188,7 +190,7 @@ export function RoomGroup({
 	);
 
 	return (
-		<section className="flex flex-col gap-4">
+		<section className="flex flex-col gap-4" id={`room-${roomId}`}>
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<h2
@@ -215,6 +217,13 @@ export function RoomGroup({
 						>
 							{badge}
 						</Badge>
+					)}
+					{alertSent && (
+						<Mail
+							aria-label="Alert email sent"
+							className="text-[var(--s-text-dim)]"
+							size={14}
+						/>
 					)}
 					{onToggleHeat && (
 						<HeatToggle

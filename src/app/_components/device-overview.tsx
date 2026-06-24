@@ -991,6 +991,7 @@ export function DeviceOverview() {
 														roomId={room.roomId}
 													>
 														<RoomGroup
+															alertSent={room.alertSent}
 															anomaly={room.anomaly}
 															badge={room.badge}
 															devices={room.devices}
@@ -1031,6 +1032,7 @@ export function DeviceOverview() {
 										{orderedRooms.map((room) => (
 											<SortableRoomGroup key={room.roomId} roomId={room.roomId}>
 												<RoomGroup
+													alertSent={room.alertSent}
 													anomaly={room.anomaly}
 													badge={room.badge}
 													devices={room.devices}

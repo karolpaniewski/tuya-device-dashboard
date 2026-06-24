@@ -9,6 +9,7 @@ import {
 	deviceRoomAssignments,
 	devices,
 	deviceTemperatureReadings,
+	roomAlertState,
 	roomHeatState,
 	rooms,
 	roomThresholds,
@@ -396,6 +397,12 @@ export const deviceRouter = createTRPCRouter({
 			);
 
 			// Separate query to avoid deepening the existing mock chain in tests
+			const alertStateRows = await ctx.db.select().from(roomAlertState);
+			const alertStateMap = new Map(
+				alertStateRows.map((a) => [a.roomId, { notifiedAt: a.notifiedAt }]),
+			);
+
+			// Separate query to avoid deepening the existing mock chain in tests
 			const thresholdRows = await ctx.db.select().from(roomThresholds);
 			const thresholdMap = new Map(
 				thresholdRows.map((t) => [
@@ -448,6 +455,7 @@ export const deviceRouter = createTRPCRouter({
 					siteName: siteMap.get(room.siteId) ?? "",
 					...score,
 					...heatState,
+					alertSent: alertStateMap.get(room.roomId)?.notifiedAt != null,
 				};
 			});
 

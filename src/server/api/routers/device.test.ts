@@ -59,15 +59,19 @@ describe("device.overview — stale detection", () => {
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([]),
 				})
-				// Third call: roomThresholds query — no rooms assigned, returns []
+				// Third call: roomAlertState query — no rows, returns []
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([]),
 				})
-				// Fourth call: sites query
+				// Fourth call: roomThresholds query — no rooms assigned, returns []
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([]),
 				})
-				// Fifth call: defaultThresholds query — no row, falls back to constant
+				// Fifth call: sites query
+				.mockReturnValueOnce({
+					from: vi.fn().mockResolvedValue([]),
+				})
+				// Sixth call: defaultThresholds query — no row, falls back to constant
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
 						where: vi.fn().mockResolvedValue([]),
@@ -160,6 +164,8 @@ describe("device.overview — room scoring", () => {
 				})
 				// roomHeatState query — no pins
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				// roomAlertState query — no rows
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
 				.mockReturnValueOnce({
 					from: vi
 						.fn()
@@ -189,6 +195,73 @@ describe("device.overview — room scoring", () => {
 		// Oracle: 15 < minTempC(18) → "Too Cold"; setpointC null → anomaly false
 		expect(result.rooms[0]?.badge).toBe("Too Cold");
 		expect(result.rooms[0]?.anomaly).toBe(false);
+		expect(result.rooms[0]?.alertSent).toBe(false);
+	});
+
+	it("alertSent is true when roomAlertState has a non-null notifiedAt for the room", async () => {
+		deviceStateStore.set("tuya-d1", {
+			isOnline: true,
+			temperatureC: 15,
+			setpointC: null,
+			humidityPct: null,
+			isOn: null,
+			lastPolledAt: new Date(),
+		});
+
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							leftJoin: vi.fn().mockReturnValue({
+								orderBy: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue([sensorRow]),
+								}),
+							}),
+						}),
+					}),
+				})
+				// roomHeatState query — no pins
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				// roomAlertState query — r1 already notified for its active episode
+				.mockReturnValueOnce({
+					from: vi.fn().mockResolvedValue([
+						{
+							roomId: "r1",
+							lastBadge: "Too Cold",
+							enteredAt: new Date(),
+							notifiedAt: new Date(),
+						},
+					]),
+				})
+				.mockReturnValueOnce({
+					from: vi
+						.fn()
+						.mockResolvedValue([
+							{ roomId: "r1", minTempC: 18, maxTempC: 24, anomalyGapC: 3 },
+						]),
+				})
+				// Sites query
+				.mockReturnValueOnce({
+					from: vi.fn().mockResolvedValue([{ id: "default", name: "Default" }]),
+				})
+				// defaultThresholds query — irrelevant here, room has its own override
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([]),
+					}),
+				}),
+		};
+
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+
+		const result = await caller.device.overview({ siteId: "all" });
+		expect(result.rooms[0]?.alertSent).toBe(true);
 	});
 
 	it("room with no override falls back to the DB-backed default threshold, not the hardcoded constant (PRD §FR-012)", async () => {
@@ -216,6 +289,8 @@ describe("device.overview — room scoring", () => {
 					}),
 				})
 				// roomHeatState query — no pins
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				// roomAlertState query — no rows
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
 				// roomThresholds — no per-room override for r1
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
@@ -354,13 +429,15 @@ describe("device.overview — scoping", () => {
 				})
 				// Second: roomHeatState
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
-				// Third: roomThresholds
+				// Third: roomAlertState
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
-				// Fourth: sites
+				// Fourth: roomThresholds
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				// Fifth: sites
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([{ id: "site-a", name: "Site A" }]),
 				})
-				// Fifth: defaultThresholds
+				// Sixth: defaultThresholds
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
 						where: vi.fn().mockResolvedValue([]),
@@ -420,16 +497,18 @@ describe("device.overview — scoping", () => {
 				})
 				// Second: roomHeatState
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
-				// Third: roomThresholds
+				// Third: roomAlertState
 				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
-				// Fourth: sites
+				// Fourth: roomThresholds
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				// Fifth: sites
 				.mockReturnValueOnce({
 					from: vi.fn().mockResolvedValue([
 						{ id: "site-a", name: "Site A" },
 						{ id: "site-b", name: "Site B" },
 					]),
 				})
-				// Fifth: defaultThresholds
+				// Sixth: defaultThresholds
 				.mockReturnValueOnce({
 					from: vi.fn().mockReturnValue({
 						where: vi.fn().mockResolvedValue([]),
