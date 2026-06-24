@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
@@ -24,11 +24,14 @@ export async function POST(request: NextRequest) {
 	const siteId = formData.get("siteId");
 	const file = formData.get("file");
 
-	if (typeof siteId !== "string" || siteId.length === 0) {
-		return NextResponse.json(
-			{ message: "siteId is required" },
-			{ status: 400 },
-		);
+	if (
+		typeof siteId !== "string" ||
+		siteId.length === 0 ||
+		siteId.includes("/") ||
+		siteId.includes("\\") ||
+		siteId.includes("..")
+	) {
+		return NextResponse.json({ message: "Invalid siteId" }, { status: 400 });
 	}
 
 	const validation = validateFloorPlanUpload(
@@ -38,6 +41,14 @@ export async function POST(request: NextRequest) {
 		return NextResponse.json({ message: validation.message }, { status: 400 });
 	}
 
+	const [site] = await db
+		.select({ id: sites.id })
+		.from(sites)
+		.where(eq(sites.id, siteId));
+	if (!site) {
+		return NextResponse.json({ message: "Site not found" }, { status: 404 });
+	}
+
 	const uploadedFile = file as File;
 	const extension = FLOOR_PLAN_MIME_EXTENSIONS[uploadedFile.type];
 	const filename = `${siteId}.${extension}`;
@@ -45,18 +56,24 @@ export async function POST(request: NextRequest) {
 
 	try {
 		await mkdir(UPLOAD_DIR, { recursive: true });
+
+		// Clean up a prior upload under a different extension (e.g. replacing
+		// a PNG with a JPEG) so it doesn't linger as an orphan on disk.
+		const existingFiles = await readdir(UPLOAD_DIR);
+		const stalePrefix = `${siteId}.`;
+		await Promise.all(
+			existingFiles
+				.filter((f) => f.startsWith(stalePrefix) && f !== filename)
+				.map((f) => unlink(path.join(UPLOAD_DIR, f))),
+		);
+
 		const buffer = Buffer.from(await uploadedFile.arrayBuffer());
 		await writeFile(path.join(UPLOAD_DIR, filename), buffer);
 
-		const [updated] = await db
+		await db
 			.update(sites)
 			.set({ floorPlanImagePath: imagePath, updatedAt: new Date() })
-			.where(eq(sites.id, siteId))
-			.returning({ id: sites.id });
-
-		if (!updated) {
-			return NextResponse.json({ message: "Site not found" }, { status: 404 });
-		}
+			.where(eq(sites.id, siteId));
 	} catch (err) {
 		getLogger().error({ err, siteId }, "floor-plan-upload.write-failed");
 		return NextResponse.json({ message: "Upload failed" }, { status: 500 });

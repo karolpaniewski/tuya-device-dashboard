@@ -33,7 +33,12 @@ describe("device.setMapPosition — auth gate", () => {
 			headers: new Headers(),
 		});
 		await expect(
-			caller.device.setMapPosition({ deviceId: "d1", xPct: 10, yPct: 20 }),
+			caller.device.setMapPosition({
+				deviceId: "d1",
+				siteId: "s1",
+				xPct: 10,
+				yPct: 20,
+			}),
 		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
 	});
 });
@@ -46,7 +51,7 @@ describe("device.clearMapPosition — auth gate", () => {
 			headers: new Headers(),
 		});
 		await expect(
-			caller.device.clearMapPosition({ deviceId: "d1" }),
+			caller.device.clearMapPosition({ deviceId: "d1", siteId: "s1" }),
 		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
 	});
 });
@@ -69,6 +74,7 @@ describe("device.setMapPosition", () => {
 		});
 		const result = await caller.device.setMapPosition({
 			deviceId: "d1",
+			siteId: "s1",
 			xPct: 42,
 			yPct: 58,
 		});
@@ -91,7 +97,12 @@ describe("device.setMapPosition", () => {
 			headers: new Headers(),
 		});
 		await expect(
-			caller.device.setMapPosition({ deviceId: "bad", xPct: 1, yPct: 1 }),
+			caller.device.setMapPosition({
+				deviceId: "bad",
+				siteId: "s1",
+				xPct: 1,
+				yPct: 1,
+			}),
 		).rejects.toMatchObject({ code: "NOT_FOUND" });
 	});
 });
@@ -112,7 +123,10 @@ describe("device.clearMapPosition", () => {
 			session: { user: { id: "u1", email: "test@test.com" } } as never,
 			headers: new Headers(),
 		});
-		const result = await caller.device.clearMapPosition({ deviceId: "d1" });
+		const result = await caller.device.clearMapPosition({
+			deviceId: "d1",
+			siteId: "s1",
+		});
 		expect(result).toEqual({ success: true });
 	});
 
@@ -132,7 +146,7 @@ describe("device.clearMapPosition", () => {
 			headers: new Headers(),
 		});
 		await expect(
-			caller.device.clearMapPosition({ deviceId: "bad" }),
+			caller.device.clearMapPosition({ deviceId: "bad", siteId: "s1" }),
 		).rejects.toMatchObject({ code: "NOT_FOUND" });
 	});
 });

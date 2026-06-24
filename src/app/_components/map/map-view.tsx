@@ -91,7 +91,7 @@ export function MapView() {
 		if (!deviceId || !imageContainerRef.current) return;
 		const rect = imageContainerRef.current.getBoundingClientRect();
 		const { xPct, yPct } = dropPositionToPercent(e.clientX, e.clientY, rect);
-		setMapPosition.mutate({ deviceId, xPct, yPct });
+		setMapPosition.mutate({ deviceId, siteId: activeSiteId, xPct, yPct });
 	}
 
 	return (
@@ -152,7 +152,7 @@ export function MapView() {
 							alt={`${activeSite.name} floor plan`}
 							className="block w-full"
 							onError={() => setImageFailed(true)}
-							src={activeSite.floorPlanImagePath}
+							src={`${activeSite.floorPlanImagePath}?v=${activeSite.updatedAt?.getTime() ?? 0}`}
 						/>
 						{placedDevices.map((device) => (
 							// biome-ignore lint/a11y/noStaticElementInteractions: drag handle only; the clickable surface below is a real <button>
@@ -180,7 +180,10 @@ export function MapView() {
 									aria-label={`Remove ${device.name} from map`}
 									className="absolute -top-1.5 -right-1.5 rounded-full bg-black/40 p-0.5 hover:bg-black/60"
 									onClick={() =>
-										clearMapPosition.mutate({ deviceId: device.id })
+										clearMapPosition.mutate({
+											deviceId: device.id,
+											siteId: activeSiteId,
+										})
 									}
 									type="button"
 								>

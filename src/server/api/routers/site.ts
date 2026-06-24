@@ -12,6 +12,7 @@ export const siteRouter = createTRPCRouter({
 				id: sites.id,
 				name: sites.name,
 				createdAt: sites.createdAt,
+				updatedAt: sites.updatedAt,
 				floorPlanImagePath: sites.floorPlanImagePath,
 			})
 			.from(sites)

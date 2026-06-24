@@ -257,6 +257,7 @@ export const deviceRouter = createTRPCRouter({
 		.input(
 			z.object({
 				deviceId: z.string(),
+				siteId: z.string(),
 				xPct: z.number().min(0).max(100),
 				yPct: z.number().min(0).max(100),
 			}),
@@ -269,7 +270,9 @@ export const deviceRouter = createTRPCRouter({
 					mapYPct: input.yPct,
 					updatedAt: new Date(),
 				})
-				.where(eq(devices.id, input.deviceId))
+				.where(
+					and(eq(devices.id, input.deviceId), eq(devices.siteId, input.siteId)),
+				)
 				.returning({ id: devices.id });
 			if (!updated) {
 				throw new TRPCError({ code: "NOT_FOUND", message: "Device not found" });
@@ -278,12 +281,14 @@ export const deviceRouter = createTRPCRouter({
 		}),
 
 	clearMapPosition: protectedProcedure
-		.input(z.object({ deviceId: z.string() }))
+		.input(z.object({ deviceId: z.string(), siteId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const [updated] = await ctx.db
 				.update(devices)
 				.set({ mapXPct: null, mapYPct: null, updatedAt: new Date() })
-				.where(eq(devices.id, input.deviceId))
+				.where(
+					and(eq(devices.id, input.deviceId), eq(devices.siteId, input.siteId)),
+				)
 				.returning({ id: devices.id });
 			if (!updated) {
 				throw new TRPCError({ code: "NOT_FOUND", message: "Device not found" });
