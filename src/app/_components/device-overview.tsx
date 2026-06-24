@@ -55,7 +55,7 @@ import { SortableWidget } from "./sortable-widget";
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
 
 const CC_KPI_BIG_NUM =
-	"font-bold text-[#f4f7fa] text-[38px] leading-none tracking-[-0.03em]";
+	"cc-kpi-value font-bold text-[#f4f7fa] text-[38px] leading-none tracking-[-0.03em]";
 type DeviceItem = RoomItem["devices"][number];
 
 function matchDevice(
@@ -814,7 +814,7 @@ export function DeviceOverview() {
 						onDragStart={handleWidgetDragStart}
 						sensors={widgetSensors}
 					>
-						<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+						<div className="cc-kpi-grid grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
 							<SortableContext
 								items={visibleWidgets.map((w) => w.id)}
 								strategy={rectSortingStrategy}
@@ -934,7 +934,7 @@ export function DeviceOverview() {
 					</aside>
 
 					{/* Main content */}
-					<div className="flex min-w-0 flex-1 flex-col gap-6">
+					<div className="cc-rooms-list flex min-w-0 flex-1 flex-col gap-6">
 						<FilterBar
 							activeFilterCount={activeFilterCount}
 							filters={{

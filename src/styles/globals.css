@@ -219,11 +219,35 @@
 }
 
 .command-center[data-density="compact"] .cc-device-card {
-	padding: 10px;
+	padding: 8px;
+}
+
+.command-center[data-density="compact"] .cc-device-value {
+	font-size: 20px;
 }
 
 .command-center[data-density="compact"] .cc-kpi-card {
-	padding: 12px;
+	padding: 10px;
+}
+
+.command-center[data-density="compact"] .cc-kpi-value {
+	font-size: 26px;
+}
+
+.command-center[data-density="compact"] .cc-kpi-grid {
+	gap: 8px;
+}
+
+.command-center[data-density="compact"] .cc-rooms-list {
+	gap: 16px;
+}
+
+.command-center[data-density="compact"] .cc-room-section {
+	gap: 8px;
+}
+
+.command-center[data-density="compact"] .cc-device-grid {
+	gap: 8px;
 }
 
 @layer base {
