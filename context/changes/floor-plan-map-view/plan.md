@@ -535,29 +535,29 @@ migration (device → unplaced roster, site → no floor plan).
 
 #### Automated
 
-- [x] 1.1 Migration generates without manual edits and matches schema intent
-- [x] 1.2 `npm run typecheck` passes
-- [x] 1.3 Existing schema-dependent tests still pass: `npm run test`
+- [x] 1.1 Migration generates without manual edits and matches schema intent — 0866924
+- [x] 1.2 `npm run typecheck` passes — 0866924
+- [x] 1.3 Existing schema-dependent tests still pass: `npm run test` — 0866924
 
 #### Manual
 
-- [x] 1.4 Migration applies cleanly against the dev SQLite database
-- [x] 1.5 Existing devices/sites rows are unaffected
+- [x] 1.4 Migration applies cleanly against the dev SQLite database — 0866924
+- [x] 1.5 Existing devices/sites rows are unaffected — 0866924
 
 ### Phase 2: Backend API
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` passes
-- [ ] 2.2 `dropPositionToPercent` unit tests pass
-- [ ] 2.3 `validateFloorPlanUpload` unit tests pass
-- [ ] 2.4 New/extended router tests pass
-- [ ] 2.5 `npm run lint` passes
+- [x] 2.1 `npm run typecheck` passes
+- [x] 2.2 `dropPositionToPercent` unit tests pass
+- [x] 2.3 `validateFloorPlanUpload` unit tests pass
+- [x] 2.4 New/extended router tests pass
+- [x] 2.5 `npm run lint` passes
 
 #### Manual
 
-- [ ] 2.6 Valid upload via manual fetch writes file and updates site row
-- [ ] 2.7 Invalid upload returns clear 400 and writes nothing
+- [x] 2.6 Valid upload via manual fetch writes file and updates site row
+- [x] 2.7 Invalid upload returns clear 400 and writes nothing
 
 ### Phase 3: Settings — Floor-Plan Upload UI
 

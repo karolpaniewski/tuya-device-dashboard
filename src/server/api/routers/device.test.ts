@@ -25,6 +25,118 @@ describe("device.overview — auth gate", () => {
 	});
 });
 
+describe("device.setMapPosition — auth gate", () => {
+	it("throws UNAUTHORIZED when session is null", async () => {
+		const caller = createCaller({
+			db: {} as never,
+			session: null,
+			headers: new Headers(),
+		});
+		await expect(
+			caller.device.setMapPosition({ deviceId: "d1", xPct: 10, yPct: 20 }),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+	});
+});
+
+describe("device.clearMapPosition — auth gate", () => {
+	it("throws UNAUTHORIZED when session is null", async () => {
+		const caller = createCaller({
+			db: {} as never,
+			session: null,
+			headers: new Headers(),
+		});
+		await expect(
+			caller.device.clearMapPosition({ deviceId: "d1" }),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+	});
+});
+
+describe("device.setMapPosition", () => {
+	it("happy path: persists xPct/yPct on the matching device", async () => {
+		const mockDb = {
+			update: vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([{ id: "d1" }]),
+					}),
+				}),
+			}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+		const result = await caller.device.setMapPosition({
+			deviceId: "d1",
+			xPct: 42,
+			yPct: 58,
+		});
+		expect(result).toEqual({ success: true });
+	});
+
+	it("throws NOT_FOUND when device does not exist", async () => {
+		const mockDb = {
+			update: vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([]),
+					}),
+				}),
+			}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+		await expect(
+			caller.device.setMapPosition({ deviceId: "bad", xPct: 1, yPct: 1 }),
+		).rejects.toMatchObject({ code: "NOT_FOUND" });
+	});
+});
+
+describe("device.clearMapPosition", () => {
+	it("happy path: nulls out the map position on the matching device", async () => {
+		const mockDb = {
+			update: vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([{ id: "d1" }]),
+					}),
+				}),
+			}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+		const result = await caller.device.clearMapPosition({ deviceId: "d1" });
+		expect(result).toEqual({ success: true });
+	});
+
+	it("throws NOT_FOUND when device does not exist", async () => {
+		const mockDb = {
+			update: vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						returning: vi.fn().mockResolvedValue([]),
+					}),
+				}),
+			}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+		await expect(
+			caller.device.clearMapPosition({ deviceId: "bad" }),
+		).rejects.toMatchObject({ code: "NOT_FOUND" });
+	});
+});
+
 describe("device.overview — stale detection", () => {
 	afterEach(() => deviceStateStore.clear());
 
@@ -325,6 +437,116 @@ describe("device.overview — room scoring", () => {
 		// Oracle: 20 < dbDefault.minTempC(21) → "Too Cold"; the hardcoded
 		// constant's minTempC(18) would have scored this "OK" instead.
 		expect(result.rooms[0]?.badge).toBe("Too Cold");
+	});
+});
+
+// ─── device.overview — map position fields ───────────────────────────────────
+
+describe("device.overview — map position fields", () => {
+	afterEach(() => deviceStateStore.clear());
+
+	it("surfaces mapXPct/mapYPct from the device row when placed", async () => {
+		const placedRow = {
+			device: {
+				id: "d1",
+				tuyaDeviceId: "tuya-d1",
+				name: "Placed",
+				deviceType: "sensor",
+				siteId: "default",
+				mapXPct: 42,
+				mapYPct: 58,
+			},
+			room: null,
+		};
+
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							leftJoin: vi.fn().mockReturnValue({
+								orderBy: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue([placedRow]),
+								}),
+							}),
+						}),
+					}),
+				})
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				.mockReturnValueOnce({
+					from: vi.fn().mockResolvedValue([{ id: "default", name: "Default" }]),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([]),
+					}),
+				}),
+		};
+
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+
+		const result = await caller.device.overview({ siteId: "all" });
+		expect(result.unassigned[0]?.mapXPct).toBe(42);
+		expect(result.unassigned[0]?.mapYPct).toBe(58);
+	});
+
+	it("defaults mapXPct/mapYPct to null when the device has not been placed", async () => {
+		const unplacedRow = {
+			device: {
+				id: "d1",
+				tuyaDeviceId: "tuya-d1",
+				name: "Unplaced",
+				deviceType: "sensor",
+				siteId: "default",
+				mapXPct: null,
+				mapYPct: null,
+			},
+			room: null,
+		};
+
+		const mockDb = {
+			select: vi
+				.fn()
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						leftJoin: vi.fn().mockReturnValue({
+							leftJoin: vi.fn().mockReturnValue({
+								orderBy: vi.fn().mockReturnValue({
+									where: vi.fn().mockResolvedValue([unplacedRow]),
+								}),
+							}),
+						}),
+					}),
+				})
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				.mockReturnValueOnce({ from: vi.fn().mockResolvedValue([]) })
+				.mockReturnValueOnce({
+					from: vi.fn().mockResolvedValue([{ id: "default", name: "Default" }]),
+				})
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([]),
+					}),
+				}),
+		};
+
+		const caller = createCaller({
+			db: mockDb as never,
+			session: { user: { id: "u1", email: "test@test.com" } } as never,
+			headers: new Headers(),
+		});
+
+		const result = await caller.device.overview({ siteId: "all" });
+		expect(result.unassigned[0]?.mapXPct).toBeNull();
+		expect(result.unassigned[0]?.mapYPct).toBeNull();
 	});
 });
 

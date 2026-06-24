@@ -8,7 +8,12 @@ import { gateways, rooms, sites } from "~/server/db/schema";
 export const siteRouter = createTRPCRouter({
 	list: protectedProcedure.query(async ({ ctx }) => {
 		return ctx.db
-			.select({ id: sites.id, name: sites.name, createdAt: sites.createdAt })
+			.select({
+				id: sites.id,
+				name: sites.name,
+				createdAt: sites.createdAt,
+				floorPlanImagePath: sites.floorPlanImagePath,
+			})
 			.from(sites)
 			.orderBy(asc(sites.name));
 	}),

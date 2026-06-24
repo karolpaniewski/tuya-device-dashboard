@@ -253,6 +253,44 @@ export const deviceRouter = createTRPCRouter({
 			return { success: true as const };
 		}),
 
+	setMapPosition: protectedProcedure
+		.input(
+			z.object({
+				deviceId: z.string(),
+				xPct: z.number().min(0).max(100),
+				yPct: z.number().min(0).max(100),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const [updated] = await ctx.db
+				.update(devices)
+				.set({
+					mapXPct: input.xPct,
+					mapYPct: input.yPct,
+					updatedAt: new Date(),
+				})
+				.where(eq(devices.id, input.deviceId))
+				.returning({ id: devices.id });
+			if (!updated) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Device not found" });
+			}
+			return { success: true as const };
+		}),
+
+	clearMapPosition: protectedProcedure
+		.input(z.object({ deviceId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const [updated] = await ctx.db
+				.update(devices)
+				.set({ mapXPct: null, mapYPct: null, updatedAt: new Date() })
+				.where(eq(devices.id, input.deviceId))
+				.returning({ id: devices.id });
+			if (!updated) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Device not found" });
+			}
+			return { success: true as const };
+		}),
+
 	temperatureHistory: protectedProcedure
 		.input(
 			z.object({
@@ -368,6 +406,8 @@ export const deviceRouter = createTRPCRouter({
 					isOn: state?.isOn ?? null,
 					lastPolledAt: state?.lastPolledAt ?? null,
 					isStale,
+					mapXPct: row.device.mapXPct ?? null,
+					mapYPct: row.device.mapYPct ?? null,
 				};
 
 				if (row.room) {
@@ -480,6 +520,8 @@ interface DeviceItem {
 	isOn: boolean | null;
 	lastPolledAt: Date | null;
 	isStale: boolean;
+	mapXPct: number | null;
+	mapYPct: number | null;
 }
 
 // Re-export so the return type of device.overview is fully typed on the client.

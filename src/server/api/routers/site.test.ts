@@ -53,8 +53,18 @@ describe("site.list", () => {
 			select: vi.fn().mockReturnValue({
 				from: vi.fn().mockReturnValue({
 					orderBy: vi.fn().mockResolvedValue([
-						{ id: "s1", name: "Alpha", createdAt: new Date() },
-						{ id: "s2", name: "Beta", createdAt: new Date() },
+						{
+							id: "s1",
+							name: "Alpha",
+							createdAt: new Date(),
+							floorPlanImagePath: null,
+						},
+						{
+							id: "s2",
+							name: "Beta",
+							createdAt: new Date(),
+							floorPlanImagePath: "/uploads/floor-plans/s2.png",
+						},
 					]),
 				}),
 			}),
@@ -67,6 +77,8 @@ describe("site.list", () => {
 		const result = await caller.site.list();
 		expect(result).toHaveLength(2);
 		expect(result[0]?.name).toBe("Alpha");
+		expect(result[0]?.floorPlanImagePath).toBeNull();
+		expect(result[1]?.floorPlanImagePath).toBe("/uploads/floor-plans/s2.png");
 	});
 });
 
