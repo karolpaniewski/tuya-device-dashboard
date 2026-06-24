@@ -4,11 +4,14 @@ import { Gauge, Plug, Thermometer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { downsampleAverage } from "~/lib/sparkline-data";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
+
+const SPARKLINE_POINTS = 24;
 
 const TYPE_ICON = {
 	sensor: Thermometer,
@@ -92,10 +95,11 @@ function DeviceSparkline({ deviceId }: { deviceId: string }) {
 		{ tuyaDeviceId: deviceId, range: "24h" },
 		{ staleTime: 60_000 },
 	);
-	const temps = (data ?? [])
+	const rawTemps = (data ?? [])
 		.map((r) => r.temperatureC)
 		.filter((t): t is number => t !== null);
-	if (temps.length < 2) return null;
+	if (rawTemps.length < 2) return null;
+	const temps = downsampleAverage(rawTemps, SPARKLINE_POINTS);
 
 	const min = Math.min(...temps);
 	const max = Math.max(...temps);
@@ -316,7 +320,7 @@ export function DeviceCard({
 				</div>
 			) : (
 				<div
-					className="relative mt-3.5 font-bold text-[28px] leading-none"
+					className="cc-device-value relative mt-3.5 font-bold text-[28px] leading-none"
 					style={{
 						color: device.isOnline
 							? "var(--cc-text-primary)"

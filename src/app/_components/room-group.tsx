@@ -4,7 +4,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import { Flame, Mail } from "lucide-react";
 import { useState } from "react";
-import { Line, LineChart, ResponsiveContainer } from "recharts";
+import { Line, LineChart, ResponsiveContainer, YAxis } from "recharts";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import {
 	PopoverTrigger,
 } from "~/components/ui/popover";
 import { ROOM_STATUS_BADGE_CLASSES } from "~/lib/room-status-colors";
+import { downsampleAverage } from "~/lib/sparkline-data";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { SortableDeviceCard } from "./sortable-device-card";
@@ -20,16 +21,19 @@ import { SortableDeviceCard } from "./sortable-device-card";
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
 
+const SPARKLINE_POINTS = 24;
+
 function RoomSparkline({ deviceId }: { deviceId: string }) {
 	const { data } = api.device.temperatureHistory.useQuery(
 		{ tuyaDeviceId: deviceId, range: "24h" },
 		{ staleTime: 60_000 },
 	);
-	if (!data?.length) return null;
-	const chartData = data.map((r) => ({
-		temperatureC: r.temperatureC,
-		ts: new Date(r.recordedAt).getTime(),
-	}));
+	const temps = (data ?? [])
+		.map((r) => r.temperatureC)
+		.filter((t): t is number => t !== null);
+	if (temps.length < 2) return null;
+	const smoothed = downsampleAverage(temps, SPARKLINE_POINTS);
+	const chartData = smoothed.map((temperatureC, i) => ({ i, temperatureC }));
 	return (
 		<div className="mb-3 rounded-lg border border-[var(--s-border-spark)] bg-[var(--s-bg-spark)] px-2">
 			<ResponsiveContainer height={56} width="100%">
@@ -37,6 +41,7 @@ function RoomSparkline({ deviceId }: { deviceId: string }) {
 					data={chartData}
 					margin={{ bottom: 4, left: 0, right: 0, top: 4 }}
 				>
+					<YAxis domain={["auto", "auto"]} hide />
 					<Line
 						connectNulls={false}
 						dataKey="temperatureC"
@@ -157,7 +162,7 @@ export function RoomGroup({
 	const grid = (
 		<div
 			className={cn(
-				"grid min-h-[64px] grid-cols-1 gap-3 rounded-xl p-1 transition-colors sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+				"cc-device-grid grid min-h-[64px] grid-cols-1 gap-3 rounded-xl p-1 transition-colors sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
 				isOver && dndEnabled
 					? "bg-[var(--s-bg-dnd)] ring-1 ring-[var(--s-border-dnd)]"
 					: "",
@@ -190,7 +195,10 @@ export function RoomGroup({
 	);
 
 	return (
-		<section className="flex flex-col gap-4" id={`room-${roomId}`}>
+		<section
+			className="cc-room-section flex flex-col gap-4"
+			id={`room-${roomId}`}
+		>
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<h2
