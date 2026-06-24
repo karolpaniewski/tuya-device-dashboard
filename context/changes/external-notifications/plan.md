@@ -401,13 +401,13 @@ Purely additive — two new tables, no changes to existing table shapes. No back
 
 #### Automated
 
-- [x] 5.1 Typecheck passes
-- [x] 5.2 Unit tests pass (device.test.ts alertSent coverage)
-- [x] 5.3 Lint passes
-- [x] 5.4 Full CI gate passes
+- [x] 5.1 Typecheck passes — 76ede6b
+- [x] 5.2 Unit tests pass (device.test.ts alertSent coverage) — 76ede6b
+- [x] 5.3 Lint passes — 76ede6b
+- [x] 5.4 Full CI gate passes — 76ede6b
 
 #### Manual
 
-- [x] 5.5 Badge shows alert-sent icon after a send
-- [x] 5.6 Icon clears on next OK transition
-- [x] 5.7 Mobile/375px layout unaffected (pre-existing overflow at 375px confirmed unrelated to this change; icon adds ~22px on top of an already-overflowing row — accepted as out of scope)
+- [x] 5.5 Badge shows alert-sent icon after a send — 76ede6b
+- [x] 5.6 Icon clears on next OK transition — 76ede6b
+- [x] 5.7 Mobile/375px layout unaffected (pre-existing overflow at 375px confirmed unrelated to this change; icon adds ~22px on top of an already-overflowing row — accepted as out of scope) — 76ede6b

@@ -1,7 +1,7 @@
 ---
 change_id: external-notifications
 title: Email alert when a room's comfort threshold is violated
-status: implementing
+status: implemented
 created: 2026-06-23
 updated: 2026-06-24
 archived_at: null
