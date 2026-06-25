@@ -153,12 +153,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** valve-setpoint-control
 - **PRD refs:** FR-010, FR-011, FR-012, US-02
 - **Prerequisites:** F-01, S-01
-- **Parallel with:** S-02, S-03 (after S-01 lands; unblocks independently once DP codes are documented)
+- **Parallel with:** S-02, S-03
 - **Blockers:** —
-- **Unknowns:**
-  - Supported Tuya DP code mappings for the specific heating valve models in use must be documented before control can be implemented — Owner: user. Block: yes.
-- **Risk:** FR-011 scopes control to "confirmed device models with known local protocol control codes." Sending control commands to unverified DP codes risks silently modifying a wrong device datapoint. DP code documentation is a hard prerequisite for implementation, not just testing.
-- **Status:** blocked
+- **Unknowns:** — (DP code mapping resolved: `src/server/lib/tuya/dp-codes.ts` documents the `ogx8u5z6` valve's `temp_set`/DP 4 and `valve_state`/DP 3, confirmed from live device events)
+- **Risk:** FR-011 scopes control to "confirmed device models with known local protocol control codes." Sending control commands to unverified DP codes risks silently modifying a wrong device datapoint — `DP_CODE_MAP` rejects setpoint commands for any unregistered `productKey` rather than guessing.
+- **Status:** done
 
 ### S-05: Room health status and threshold configuration
 
@@ -182,8 +181,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-07 (both are cross-cutting; independent)
 - **Blockers:** —
 - **Unknowns:** —
-- **Risk:** LAN-only deployment means no cloud runner can reach the target host. CI produces a build artifact; actual deploy remains a manual `git pull && npm run build && npm start` unless a self-hosted runner is available. Do not scope automated deploy in this slice.
-- **Status:** proposed
+- **Risk:** LAN-only deployment means no cloud runner can reach the target host. CI produces a build artifact; actual deploy remains a manual `git pull && npm run build && npm start` unless a self-hosted runner is available. Automated deploy was correctly kept out of scope — `.github/workflows/ci.yml` runs lint/typecheck/test/build only.
+- **Status:** done
 
 ### S-07: Observability infrastructure (done)
 
@@ -229,12 +228,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** F-02, S-01
 - **Parallel with:** S-08, S-10
 - **Blockers:** —
-- **Unknowns:**
-  - Storage strategy: append readings to SQLite (simple, bounded by retention policy) vs. a dedicated time-series store. Owner: user. Block: yes — shapes schema migration scope.
-  - Retention policy: how many days of readings to keep. Owner: user. Block: yes — determines storage sizing.
-  - Chart library choice. Owner: user. Block: no (can default to Recharts; confirm before implementation).
-- **Risk:** Writing every 30s poll reading to SQLite for 50 devices = 144 000 rows/day. Without a retention/purge job this will grow unbounded. Must ship with a purge strategy, not as a follow-up.
-- **Status:** needs-shaping
+- **Unknowns:** — (storage strategy resolved: appends to a `deviceTemperatureReadings` SQLite table, queried/bucketed per-range by `device.temperatureHistory`; chart library is Recharts)
+- **Risk:** Writing every 30s poll reading to SQLite for 50 devices = 144 000 rows/day. **Still unresolved as shipped** — no retention/purge job exists anywhere in `src/server/` for this table; it will grow unbounded. Worth a follow-up slice before this app runs unattended for months.
+- **Status:** done
 
 ### S-10: External notifications
 
@@ -279,14 +275,11 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Change ID:** multi-site
 - **PRD refs:** PRD §Non-Goals ("single office location; no multi-tenant architecture in v1")
 - **Prerequisites:** F-01, F-02
-- **Parallel with:** — (architectural; likely best tackled as a standalone effort)
+- **Parallel with:** — (architectural; tackled as a standalone effort)
 - **Blockers:** —
-- **Unknowns:**
-  - Tenant isolation model: row-level `site_id` on all tables vs. schema-per-site vs. separate database files. Owner: user. Block: yes.
-  - Auth scope: are users global with per-site roles, or is login per-site? Owner: user. Block: yes.
-  - Network topology: one LAN-connected server per site, or one central server reaching multiple LANs? Owner: user. Block: yes — fundamentally changes polling architecture.
-- **Risk:** Multi-site is the largest scope item in the roadmap. The network topology unknown alone can require a different product architecture (e.g. one agent process per site phoning home to a central server). Shaping must resolve this before any planning begins.
-- **Status:** needs-shaping
+- **Unknowns:** — (resolved: row-level `siteId` on `gateways`/`rooms`/`devices` etc., per `src/server/db/schema.ts`; single server polling all sites' LAN gateways, not one process per site)
+- **Risk:** Multi-site was the largest scope item in the roadmap; shipped incrementally — base `siteId` scoping first, then S-18 (room-site-reassignment) for moving rooms between sites once the base model was stable.
+- **Status:** done
 
 ### S-19: Dashboard personalization
 
@@ -386,20 +379,20 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-01       | live-device-overview   | Feature: live device overview grouped by room (Tuya LAN polling)  | done                  | —                                                                     |
 | S-02       | room-assignment-setup  | Feature: admin room assignment setup                              | done                  | —                                                                     |
 | S-03       | device-filter-search   | Feature: device list filter by room / type / status + name search | done                  | —                                                                     |
-| S-04       | valve-setpoint-control | Feature: heating valve setpoint control with confirmation         | no                    | Blocked — resolve DP code unknown first                               |
+| S-04       | valve-setpoint-control | Feature: heating valve setpoint control with confirmation         | done                  | —                                                                     |
 | S-05       | room-health-thresholds | Feature: per-room threshold config + OK/Too Cold/Too Hot status   | done                  | —                                                                     |
-| S-06       | cicd-pipeline          | Infra: lint + typecheck + Vitest on push; deployable artifact     | yes                   | Run `/10x-plan cicd-pipeline`                                         |
+| S-06       | cicd-pipeline          | Infra: lint + typecheck + Vitest on push; deployable artifact     | done                  | —                                                                     |
 | S-07       | observability          | Infra: structured logging with redaction; replaces console.log    | done                  | —                                                                     |
-| S-08       | mobile-responsive      | Feature: 375 px viewport support across all dashboard views       | yes                   | Run `/10x-plan mobile-responsive`; best after S-14 (shared components stabilised) |
-| S-14       | ux-polish              | Feature: skeleton states, empty states, toast feedback, error UX, visual polish | yes      | Run `/10x-plan ux-polish`                                             |
-| S-09       | temperature-history    | Feature: temperature chart per device/room over configurable range| no                    | Run `/10x-shape` first — storage strategy + retention policy needed   |
+| S-08       | mobile-responsive      | Feature: 375 px viewport support across all dashboard views       | done                  | —                                                                     |
+| S-14       | ux-polish              | Feature: skeleton states, empty states, toast feedback, error UX, visual polish | done     | —                                                                      |
+| S-09       | temperature-history    | Feature: temperature chart per device/room over configurable range| done                  | Retention/purge job still missing — see S-09's risk note              |
 | S-10       | external-notifications | Feature: email alert on room threshold violation                  | done                  | —                                                                     |
 | S-11       | automation-rules       | Feature: time-based valve setpoint rules                          | superseded            | Replaced by S-23 — schema and code deleted                            |
 | S-12       | automation-history     | Feature: log of automation rule executions                        | no                    | Obsolete — data source deleted by S-23; re-scope against modes if wanted |
-| S-13       | multi-site             | Feature: multiple office locations in one dashboard               | no                    | Run `/10x-shape` first — architecture decision needed                 |
+| S-13       | multi-site             | Feature: multiple office locations in one dashboard               | done                  | —                                                                     |
 | S-19       | dashboard-personalization | Feature: drag-and-drop widget reorder/hide + room reorder, persisted layout | done | —                                                                      |
 | S-20       | room-heat-toggle       | Feature: one-click room heat-off quick action (valve close, not setpoint)| no                    | Run `/10x-frame` first — toggle granularity, undo semantics            |
-| S-21       | dashboard-ux-redesign  | Feature: visual design-system pass (finish S-17, fix primitive consistency) | yes            | Run `/10x-plan dashboard-ux-redesign`; scope locked via `/10x-frame`   |
+| S-21       | dashboard-ux-redesign  | Feature: visual design-system pass (finish S-17, fix primitive consistency) | done           | —                                                                      |
 | S-22       | setup-to-settings      | Feature: Setup page content/IA reorganized to read as Settings       | no                    | Run `/10x-shape` or `/10x-frame` first — what belongs in Settings is still open |
 | S-23       | automation-rework      | Feature: room-targeted on/off modes replacing per-device automation rules | done             | —                                                                      |
 | S-24       | floor-plan-map-view    | Feature: upload floor plan, drag devices onto it, control from the map | done             | —                                                                      |
