@@ -445,30 +445,30 @@ Not applicable — no schema or data changes.
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes
-- [x] 1.2 `npm run check` (Biome) passes
-- [x] 1.3 `npm run test` passes, including the new `automation-flow-layout.test.ts` cases
-- [x] 1.4 `npm run build` succeeds
+- [x] 1.1 `npm run typecheck` passes — 70e9395
+- [x] 1.2 `npm run check` (Biome) passes — 70e9395
+- [x] 1.3 `npm run test` passes, including the new `automation-flow-layout.test.ts` cases — 70e9395
+- [x] 1.4 `npm run build` succeeds — 70e9395
 
 ### Phase 2: Real data wiring + room selector
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` passes
-- [ ] 2.2 `npm run check` (Biome) passes
-- [ ] 2.3 `npm run test` passes
-- [ ] 2.4 `npm run build` succeeds
+- [x] 2.1 `npm run typecheck` passes
+- [x] 2.2 `npm run check` (Biome) passes
+- [x] 2.3 `npm run test` passes
+- [x] 2.4 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 2.5 Room selector populated with the active site's rooms, defaults to first room (alphabetical) with no click required
-- [ ] 2.6 Switching rooms in the selector updates the diagram to that room's real devices and modes
-- [ ] 2.7 Switching the active site updates the selector's options and re-selects a valid default room
-- [ ] 2.8 Device nodes show correct icon, name, and online/offline dot
-- [ ] 2.9 Mode nodes show correct name, ON/OFF badge, and schedule text matching the Automations tab
-- [ ] 2.10 A room with zero modes targeting it shows just Room + Device nodes, no errors
-- [ ] 2.11 Dragging a node survives a 30-second live-data refresh without snapping back
-- [ ] 2.12 Mode→Room edges look visually animated/labeled; Room→Device edges look visually plain
+- [x] 2.5 Room selector populated with the active site's rooms, defaults to first room (alphabetical) with no click required
+- [x] 2.6 Switching rooms in the selector updates the diagram to that room's real devices and modes
+- [x] 2.7 Switching the active site updates the selector's options and re-selects a valid default room
+- [x] 2.8 Device nodes show correct icon, name, and online/offline dot
+- [x] 2.9 Mode nodes show correct name, ON/OFF badge, and schedule text matching the Automations tab
+- [x] 2.10 A room with zero modes targeting it shows just Room + Device nodes, no errors
+- [x] 2.11 Dragging a node survives a 30-second live-data refresh without snapping back
+- [x] 2.12 Mode→Room edges look visually animated/labeled; Room→Device edges look visually plain
 
 ### Phase 3: Node-click integration
 
