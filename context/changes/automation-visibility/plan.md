@@ -424,30 +424,30 @@ Not applicable — no schema or data changes.
 
 #### Automated
 
-- [x] 2.1 `npm run typecheck` passes
-- [x] 2.2 `npm run check` (Biome) passes
-- [x] 2.3 `npm run test` passes
-- [x] 2.4 `npm run build` succeeds
+- [x] 2.1 `npm run typecheck` passes — 1b69667
+- [x] 2.2 `npm run check` (Biome) passes — 1b69667
+- [x] 2.3 `npm run test` passes — 1b69667
+- [x] 2.4 `npm run build` succeeds — 1b69667
 
 #### Manual
 
-- [x] 2.5 Clicking a room's header opens the Room modal with correct devices/temperature/state
-- [x] 2.6 Room modal's mode section matches the Automations tab for a device in that room
-- [x] 2.7 Clicking the "Unassigned" group's header does nothing
-- [x] 2.8 Existing room drag-reorder (grip handle) still works
-- [x] 2.9 Existing device drag-reorder-within-room still works
-- [x] 2.10 Existing drag-to-rotate setpoint dial still works on the dashboard grid
+- [x] 2.5 Clicking a room's header opens the Room modal with correct devices/temperature/state — 1b69667
+- [x] 2.6 Room modal's mode section matches the Automations tab for a device in that room — 1b69667
+- [x] 2.7 Clicking the "Unassigned" group's header does nothing — 1b69667
+- [x] 2.8 Existing room drag-reorder (grip handle) still works — 1b69667
+- [x] 2.9 Existing device drag-reorder-within-room still works — 1b69667
+- [x] 2.10 Existing drag-to-rotate setpoint dial still works on the dashboard grid — 1b69667
 
 ### Phase 3: Flow-chart-style grouping (Secondary, scope-bounded)
 
 #### Automated
 
-- [ ] 3.1 `npm run typecheck` passes
-- [ ] 3.2 `npm run check` (Biome) passes
-- [ ] 3.3 `npm run test` passes
-- [ ] 3.4 `npm run build` succeeds
+- [x] 3.1 `npm run typecheck` passes
+- [x] 3.2 `npm run check` (Biome) passes
+- [x] 3.3 `npm run test` passes
+- [x] 3.4 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 3.5 Room modal visually distinguishes "modes acting on this room" from "devices in this room"
-- [ ] 3.6 A room with zero modes still renders a sensible, non-broken layout
+- [x] 3.5 Room modal visually distinguishes "modes acting on this room" from "devices in this room"
+- [x] 3.6 A room with zero modes still renders a sensible, non-broken layout

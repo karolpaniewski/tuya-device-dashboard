@@ -38,8 +38,8 @@ export function RoomModal({ roomName, devices, modesForRoom, onClose }: Props) {
 				</DialogHeader>
 				<DialogBody className="space-y-5">
 					<div>
-						<p className="mb-2 font-medium text-[var(--s-text-muted)] text-sm">
-							Modes targeting this room
+						<p className="mb-2 font-semibold text-[var(--s-text-secondary)] text-sm uppercase tracking-[0.04em]">
+							Targeted by
 						</p>
 						{modesForRoom.length > 0 ? (
 							<ul className="flex flex-col gap-2">
@@ -82,8 +82,8 @@ export function RoomModal({ roomName, devices, modesForRoom, onClose }: Props) {
 						</Link>
 					</div>
 
-					<div>
-						<p className="mb-2 font-medium text-[var(--s-text-muted)] text-sm">
+					<div className="border-[var(--s-border)] border-t pt-5">
+						<p className="mb-2 font-semibold text-[var(--s-text-secondary)] text-sm uppercase tracking-[0.04em]">
 							Devices in this room
 						</p>
 						<ul className="flex flex-col gap-2">
