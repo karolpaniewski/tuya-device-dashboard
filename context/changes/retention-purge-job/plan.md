@@ -234,12 +234,12 @@ Not applicable — no schema or data changes.
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes
-- [x] 1.2 `npm run check` (Biome) passes
-- [x] 1.3 `npm run test` passes, including the new `purgeOldReadings` tests
-- [x] 1.4 `npm run build` succeeds
+- [x] 1.1 `npm run typecheck` passes — 0301ad5
+- [x] 1.2 `npm run check` (Biome) passes — 0301ad5
+- [x] 1.3 `npm run test` passes, including the new `purgeOldReadings` tests — 0301ad5
+- [x] 1.4 `npm run build` succeeds — 0301ad5
 
 #### Manual
 
-- [x] 1.5 Dev server purge cycle produces a `tuya-poller.purge-complete` log line with a correct row count
-- [x] 1.6 History tab's 1h/24h/7d ranges unaffected before/after a manual purge trigger
+- [x] 1.5 Dev server purge cycle produces a `tuya-poller.purge-complete` log line with a correct row count — 0301ad5
+- [x] 1.6 History tab's 1h/24h/7d ranges unaffected before/after a manual purge trigger — 0301ad5
