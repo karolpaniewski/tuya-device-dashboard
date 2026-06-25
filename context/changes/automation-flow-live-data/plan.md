@@ -454,35 +454,35 @@ Not applicable — no schema or data changes.
 
 #### Automated
 
-- [x] 2.1 `npm run typecheck` passes
-- [x] 2.2 `npm run check` (Biome) passes
-- [x] 2.3 `npm run test` passes
-- [x] 2.4 `npm run build` succeeds
+- [x] 2.1 `npm run typecheck` passes — d4c736f
+- [x] 2.2 `npm run check` (Biome) passes — d4c736f
+- [x] 2.3 `npm run test` passes — d4c736f
+- [x] 2.4 `npm run build` succeeds — d4c736f
 
 #### Manual
 
-- [x] 2.5 Room selector populated with the active site's rooms, defaults to first room (alphabetical) with no click required
-- [x] 2.6 Switching rooms in the selector updates the diagram to that room's real devices and modes
-- [x] 2.7 Switching the active site updates the selector's options and re-selects a valid default room
-- [x] 2.8 Device nodes show correct icon, name, and online/offline dot
-- [x] 2.9 Mode nodes show correct name, ON/OFF badge, and schedule text matching the Automations tab
-- [x] 2.10 A room with zero modes targeting it shows just Room + Device nodes, no errors
-- [x] 2.11 Dragging a node survives a 30-second live-data refresh without snapping back
-- [x] 2.12 Mode→Room edges look visually animated/labeled; Room→Device edges look visually plain
+- [x] 2.5 Room selector populated with the active site's rooms, defaults to first room (alphabetical) with no click required — d4c736f
+- [x] 2.6 Switching rooms in the selector updates the diagram to that room's real devices and modes — d4c736f
+- [x] 2.7 Switching the active site updates the selector's options and re-selects a valid default room — d4c736f
+- [x] 2.8 Device nodes show correct icon, name, and online/offline dot — d4c736f
+- [x] 2.9 Mode nodes show correct name, ON/OFF badge, and schedule text matching the Automations tab — d4c736f
+- [x] 2.10 A room with zero modes targeting it shows just Room + Device nodes, no errors — d4c736f
+- [x] 2.11 Dragging a node survives a 30-second live-data refresh without snapping back — d4c736f
+- [x] 2.12 Mode→Room edges look visually animated/labeled; Room→Device edges look visually plain — d4c736f
 
 ### Phase 3: Node-click integration
 
 #### Automated
 
-- [ ] 3.1 `npm run typecheck` passes
-- [ ] 3.2 `npm run check` (Biome) passes
-- [ ] 3.3 `npm run test` passes
-- [ ] 3.4 `npm run build` succeeds
+- [x] 3.1 `npm run typecheck` passes
+- [x] 3.2 `npm run check` (Biome) passes
+- [x] 3.3 `npm run test` passes
+- [x] 3.4 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 3.5 Clicking a device node opens `DeviceModal` with that device's correct data
-- [ ] 3.6 Clicking the room node opens `RoomModal` with that room's correct devices and modes
-- [ ] 3.7 Clicking a mode node navigates to `/setup`
-- [ ] 3.8 Closing any modal returns to the diagram in its previous (not reset) drag layout
-- [ ] 3.9 Dragging and pan/zoom still work after a modal has been opened and closed
+- [x] 3.5 Clicking a device node opens `DeviceModal` with that device's correct data
+- [x] 3.6 Clicking the room node opens `RoomModal` with that room's correct devices and modes
+- [x] 3.7 Clicking a mode node navigates to `/setup`
+- [x] 3.8 Closing any modal returns to the diagram in its previous (not reset) drag layout
+- [x] 3.9 Dragging and pan/zoom still work after a modal has been opened and closed

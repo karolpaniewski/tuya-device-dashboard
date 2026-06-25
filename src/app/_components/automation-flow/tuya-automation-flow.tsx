@@ -14,6 +14,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Layers } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSiteContext } from "~/components/site-context";
 import { ErrorMessage } from "~/components/ui/error-message";
@@ -27,12 +28,16 @@ import {
 import { Skeleton } from "~/components/ui/skeleton";
 import { computeAutomationFlowLayout } from "~/lib/automation-flow-layout";
 import { getModesForRoom } from "~/lib/mode-targeting";
-import { api } from "~/trpc/react";
+import { api, type RouterOutputs } from "~/trpc/react";
+import { DeviceModal } from "../device-modal";
+import { RoomModal } from "../room-modal";
 import { type DeviceFlowNode, DeviceNode } from "./device-node";
 import { type ModeFlowNode, ModeNode } from "./mode-node";
 import { type RoomFlowNode, RoomNode } from "./room-node";
 
 type AutomationFlowNode = ModeFlowNode | RoomFlowNode | DeviceFlowNode;
+type DeviceItem =
+	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
 
 const nodeTypes: NodeTypes = {
 	device: DeviceNode,
@@ -57,11 +62,16 @@ const CONTAINMENT_EDGE_STYLE = { stroke: "#d4d4d4", strokeWidth: 1 };
 
 function TuyaAutomationFlowCanvas() {
 	const { activeSiteId } = useSiteContext();
+	const router = useRouter();
+	const utils = api.useUtils();
 	const overviewQuery = api.device.overview.useQuery(
 		{ siteId: activeSiteId },
 		{ refetchInterval: 30_000, refetchIntervalInBackground: false },
 	);
 	const modeListQuery = api.mode.list.useQuery({ siteId: activeSiteId });
+	const roomsListQuery = api.room.list.useQuery({ siteId: activeSiteId });
+	const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
+	const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
 
 	const sortedRooms = useMemo(
 		() =>
@@ -184,13 +194,19 @@ function TuyaAutomationFlowCanvas() {
 
 	const onNodeClick = useCallback<NodeMouseHandler<AutomationFlowNode>>(
 		(_event, node) => {
-			console.info("[TuyaAutomationFlow] node selected:", {
-				id: node.id,
-				type: node.type,
-				...node.data,
-			});
+			if (node.type === "device") {
+				setSelectedDevice(node.data.device);
+				return;
+			}
+			if (node.type === "room") {
+				setIsRoomModalOpen(true);
+				return;
+			}
+			if (node.type === "mode") {
+				router.push("/setup");
+			}
 		},
-		[],
+		[router],
 	);
 
 	const siteIsAll = activeSiteId === "all";
@@ -262,6 +278,28 @@ function TuyaAutomationFlowCanvas() {
 					<Controls showInteractive={false} />
 				</ReactFlow>
 			</div>
+
+			{selectedDevice && (
+				<DeviceModal
+					device={selectedDevice}
+					modesForRoom={getModesForRoom(
+						selectedDevice.roomId ?? "",
+						modeListQuery.data ?? [],
+					)}
+					onClose={() => setSelectedDevice(null)}
+					rooms={roomsListQuery.data ?? []}
+					utils={utils}
+				/>
+			)}
+			{isRoomModalOpen && viewedRoom && (
+				<RoomModal
+					devices={viewedRoom.devices}
+					modesForRoom={modesForRoom}
+					onClose={() => setIsRoomModalOpen(false)}
+					roomId={viewedRoom.roomId}
+					roomName={viewedRoom.roomName}
+				/>
+			)}
 		</div>
 	);
 }
