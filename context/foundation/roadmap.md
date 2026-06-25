@@ -3,7 +3,7 @@ project: Tuya Device Dashboard
 version: 1
 status: draft
 created: 2026-06-08
-updated: 2026-06-23
+updated: 2026-06-25
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -41,7 +41,7 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-08  | mobile-responsive      | dashboard usable on 375 px viewport (iOS Safari, Android Chrome) without horizontal scroll      | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-14  | ux-polish              | every page has loading skeletons, empty states, toast feedback on mutations, and friendly errors; visual consistency lifted (icons, backgrounds, color)  | S-01, S-02, S-03, S-05   | PRD §Non-Goals (deferred v1)      | done     |
 | S-09  | temperature-history    | view temperature readings for a device or room over a configurable time range (charts)          | F-02, S-01               | PRD §Non-Goals (deferred v2)      | done     |
-| S-10  | external-notifications | receive email/SMS/push alert when a room threshold is violated                                  | S-05                     | PRD §Non-Goals (deferred v2)      | needs-shaping |
+| S-10  | external-notifications | receive email alert when a room's comfort threshold is violated                                 | S-05                     | PRD §Non-Goals (deferred v2)      | done     |
 | S-11  | automation-rules       | create temperature+time rules linking sensor to valve; system maintains comfort temp in office hours, economy mode outside | S-01, S-04 | PRD §Non-Goals (deferred v2) | superseded by S-23 |
 | S-12  | automation-history     | view log of automation rule executions (what fired, when, result)                              | S-11                     | PRD §Non-Goals (deferred v2)      | obsolete |
 | S-13  | multi-site             | dashboard supports multiple office locations, each with their own device/room tree              | F-01, F-02               | PRD §Non-Goals (deferred v2)      | done     |
@@ -54,6 +54,8 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-21  | dashboard-ux-redesign  | visual design-system pass finishing what S-17 started — palette/density tightened within existing layout, primitive consistency restored (e.g. `temperature-history-modal.tsx`, `device-modal.tsx` one-off styling), desktop-only | S-15, S-16, S-17, S-19   | user-requested v2                 | done |
 | S-22  | setup-to-settings      | Setup page reorganized to read as an actual Settings experience (app-wide config / browser-local display preferences), instead of relocating its existing Rooms/Devices/Automations/Sites CRUD screens | S-15, S-19                | user-requested v2                 | done |
 | S-23  | automation-rework      | replace per-device temperature+time automation rules (S-11) with room-targeted on/off "modes" (schedule-driven or manually triggered), opening/closing valves directly instead of writing setpoints | S-11, S-20 | user-requested v2 | done |
+| S-24  | floor-plan-map-view    | upload a floor-plan image, drag-and-drop devices onto it, and control any placed device from the map — a spatial alternative to the existing list/table view | S-01, S-02, S-05, S-16 | PRD (v7): FR-001–FR-013, US-01 | done |
+| S-25  | thermostat-dial        | adjust a valve's setpoint via a drag-to-rotate circular dial (replacing +/− buttons and the linear slider) that also expands the card into the detail modal via a shared-layout transition | S-04, S-16 | PRD: US-01 | done |
 
 ## Streams
 
@@ -242,12 +244,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Prerequisites:** S-05
 - **Parallel with:** S-09, S-11
 - **Blockers:** —
-- **Unknowns:**
-  - Which channel(s) to support first (email / SMS / push). Owner: user. Block: yes.
-  - Provider choice (Resend, Twilio, web push, self-hosted SMTP). Owner: user. Block: yes.
-  - Throttling rule: minimum gap between alerts for the same room. Owner: user. Block: yes.
-- **Risk:** Notification delivery touches an external network dependency — contradicts the LAN-only NFR unless the notification provider is reachable from within the LAN or alerts are queued for when connectivity is available. This must be resolved in shaping before planning.
-- **Status:** needs-shaping
+- **Unknowns:** — (channel, provider, and throttling rule were all resolved during shaping; see `context/changes/external-notifications/plan.md`)
+- **Risk:** Notification delivery touches an external network dependency — contradicts the LAN-only NFR unless the cloud call is acceptable for this one outbound path. Resolved during shaping: email only, via Resend (real/stub-swappable client mirroring the Tuya client factory); throttling is episode-based, not a time window — a room re-alerts only after its badge returns to OK and violates again, batched once per 30s poll tick.
+- **Status:** done
 
 ### S-11: Automation rules
 
@@ -354,6 +353,30 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** The conflict tie-break (two modes targeting the same room at the same tick) is implemented purely via sequential, ordered iteration — parallelizing the tick loop would silently break it. The schema-drop phase is irreversible and was explicitly gated on confirming zero legacy rows first. A second UI surface the original plan missed — the dashboard's "Active Automations" KPI card/widget — also read the deleted router and had to be caught and replaced (now "Active Modes" / `CcModesWidget`) after the drop.
 - **Status:** done
 
+### S-24: Floor-plan Map View
+
+- **Outcome:** admin can upload a static floor-plan image (PNG/JPG) in Settings, drag any unplaced device from a roster onto the image to position it, re-drag a placed device to a new position, or remove it back to the roster; a new "Map View" sidebar entry renders the floor plan with every placed device at its saved position, and clicking one opens the same device modal used everywhere else (S-16). Purely additive — the existing list/table view, mobile layout, and bulk operations are all explicitly preserved (FR-008–FR-011), and the floor plan is scoped per-site.
+- **Change ID:** floor-plan-map-view
+- **PRD refs:** `context/foundation/prd-v7.md` — FR-001 through FR-013, US-01
+- **Prerequisites:** S-01 (device data), S-02 (room/device assignment), S-05 (existing threshold badge this sits alongside), S-16 (the device modal this reuses)
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** — (resolved during shaping/implementation; user named this primarily a portfolio/skill-demonstration feature — absolute positioning, drag-and-drop, canvas/SVG manipulation — rather than a response to existing user pain, recorded as such in the PRD's Problem Statement)
+- **Risk:** Implementation review (`context/archive/2026-06-24-floor-plan-map-view/reviews/impl-review.md`) caught a critical path-traversal / arbitrary-file-write finding via an unsanitized `siteId` on the upload endpoint before this shipped — fixed prior to archiving, along with two related findings (img cache-busting on replace, map-position mutations not scoped by `siteId`). Pure visualization layer otherwise — no domain-logic or data-migration risk.
+- **Status:** done
+
+### S-25: Thermostat dial + shared-layout transition
+
+- **Outcome:** user can adjust a heating valve's setpoint by dragging a circular thermostat dial — on the device card (compact) and in the device modal (larger) — replacing the card's +/− buttons and the modal's linear slider; the dial's background shifts blue→orange across the 5–35°C range, respects the existing clamp/step, and snaps back with the existing error toast on a failed mutation. Clicking any device card now visually morphs it into the detail modal (Framer Motion shared-layout `layoutId`) instead of an instant centered dialog, reversing on close; this respects `prefers-reduced-motion` (falls back to the original centered fade) and debounces rapid clicks during an in-flight transition. Every other dialog in the app (Settings, room-move confirmation) is unaffected — the morph is opt-in per `DialogContent`.
+- **Change ID:** thermostat-dial
+- **PRD refs:** `context/foundation/prd.md` — US-01, §Scope of Change
+- **Prerequisites:** S-04 (the setpoint control being replaced), S-16 (the device card/modal this revises)
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** dnd-kit's `PointerSensor` (card drag-reorder) and the dial's own pointer-drag gesture both listen on the same card element — resolved via a `data-no-dnd` escape hatch on the dial that a custom `CardPointerSensor` checks before activating drag-to-reorder. The dial also commits once on drag-end rather than per-step, to avoid flooding the setpoint mutation with out-of-order requests during a fast drag.
+- **Status:** done
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID              | Suggested issue title                                             | Ready for `/10x-plan` | Notes                                                                 |
@@ -370,7 +393,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-08       | mobile-responsive      | Feature: 375 px viewport support across all dashboard views       | yes                   | Run `/10x-plan mobile-responsive`; best after S-14 (shared components stabilised) |
 | S-14       | ux-polish              | Feature: skeleton states, empty states, toast feedback, error UX, visual polish | yes      | Run `/10x-plan ux-polish`                                             |
 | S-09       | temperature-history    | Feature: temperature chart per device/room over configurable range| no                    | Run `/10x-shape` first — storage strategy + retention policy needed   |
-| S-10       | external-notifications | Feature: email/SMS/push on threshold violation                    | no                    | Run `/10x-shape` first — channel, provider, throttle rule needed      |
+| S-10       | external-notifications | Feature: email alert on room threshold violation                  | done                  | —                                                                     |
 | S-11       | automation-rules       | Feature: time-based valve setpoint rules                          | superseded            | Replaced by S-23 — schema and code deleted                            |
 | S-12       | automation-history     | Feature: log of automation rule executions                        | no                    | Obsolete — data source deleted by S-23; re-scope against modes if wanted |
 | S-13       | multi-site             | Feature: multiple office locations in one dashboard               | no                    | Run `/10x-shape` first — architecture decision needed                 |
@@ -379,6 +402,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-21       | dashboard-ux-redesign  | Feature: visual design-system pass (finish S-17, fix primitive consistency) | yes            | Run `/10x-plan dashboard-ux-redesign`; scope locked via `/10x-frame`   |
 | S-22       | setup-to-settings      | Feature: Setup page content/IA reorganized to read as Settings       | no                    | Run `/10x-shape` or `/10x-frame` first — what belongs in Settings is still open |
 | S-23       | automation-rework      | Feature: room-targeted on/off modes replacing per-device automation rules | done             | —                                                                      |
+| S-24       | floor-plan-map-view    | Feature: upload floor plan, drag devices onto it, control from the map | done             | —                                                                      |
+| S-25       | thermostat-dial        | Feature: drag-to-rotate setpoint dial + card↔modal shared-layout transition | done       | —                                                                      |
 
 ## Open Roadmap Questions
 
@@ -414,3 +439,6 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-19       | dashboard-personalization | 2026-06-17 |
 | S-20       | room-heat-toggle       | 2026-06-22  |
 | S-23       | automation-rework      | 2026-06-23  |
+| S-10       | external-notifications | 2026-06-24  |
+| S-24       | floor-plan-map-view    | 2026-06-24  |
+| S-25       | thermostat-dial        | 2026-06-25  |
