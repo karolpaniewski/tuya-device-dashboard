@@ -1,17 +1,32 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mocks are hoisted by Vitest before import resolution.
-vi.mock("~/server/db", () => ({ db: { select: vi.fn() } }));
+vi.mock("~/server/db", () => ({ db: { select: vi.fn(), delete: vi.fn() } }));
 vi.mock("~/server/lib/tuya", () => ({ getTuyaClient: vi.fn() }));
 vi.mock("~/server/lib/alert-control", () => ({
 	detectAndDispatchAlerts: vi.fn(),
 }));
+vi.mock("~/server/lib/log-context", async (importOriginal) => {
+	const actual =
+		await importOriginal<typeof import("~/server/lib/log-context")>();
+	return {
+		...actual,
+		getLogger: vi.fn(() => ({
+			info: vi.fn(),
+			error: vi.fn(),
+			debug: vi.fn(),
+		})),
+	};
+});
 
+import { lt } from "drizzle-orm";
 import { db } from "~/server/db";
+import { deviceTemperatureReadings } from "~/server/db/schema";
 import { detectAndDispatchAlerts } from "~/server/lib/alert-control";
 import { deviceStateStore } from "~/server/lib/device-state-store";
+import { getLogger } from "~/server/lib/log-context";
 import { getTuyaClient } from "~/server/lib/tuya";
-import { pollOnce } from "~/server/workers/tuya-poller";
+import { pollOnce, purgeOldReadings } from "~/server/workers/tuya-poller";
 
 const GATEWAY = {
 	id: "gw-db-1",
@@ -25,6 +40,14 @@ const DEVICE = { tuyaDeviceId: "d1", nodeId: null };
 beforeEach(() => {
 	deviceStateStore.clear();
 	vi.resetAllMocks();
+	// vi.resetAllMocks() wipes the vi.mock() factory's default getLogger
+	// implementation too, so re-arm it; individual tests can still override
+	// the return value to assert on specific log calls.
+	vi.mocked(getLogger).mockReturnValue({
+		info: vi.fn(),
+		error: vi.fn(),
+		debug: vi.fn(),
+	} as never);
 	// Suppress console output during tests
 	vi.spyOn(console, "log").mockImplementation(() => undefined);
 });
@@ -215,5 +238,80 @@ describe("pollOnce › alert dispatch", () => {
 		// the alert-control failure is caught and doesn't unwind the tick.
 		expect(mockInsert).toHaveBeenCalledOnce();
 		expect(deviceStateStore.has("d1")).toBe(true);
+	});
+});
+
+describe("purgeOldReadings", () => {
+	const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+	const NOW = new Date("2026-06-25T00:00:00.000Z").getTime();
+
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	function stubDelete(outcome: { rowsAffected: number } | Error) {
+		const mockWhere =
+			outcome instanceof Error
+				? vi.fn().mockRejectedValue(outcome)
+				: vi.fn().mockResolvedValue(outcome);
+		vi.mocked(db).delete = vi
+			.fn()
+			.mockReturnValue({ where: mockWhere }) as never;
+		return mockWhere;
+	}
+
+	it("deletes with a strict less-than cutoff exactly 30 days before now", async () => {
+		const mockWhere = stubDelete({ rowsAffected: 0 });
+
+		await purgeOldReadings();
+
+		const cutoff = new Date(NOW - RETENTION_MS);
+		const actualCondition = mockWhere.mock.calls[0]?.[0];
+		// Deep-equals a real lt() call (not lte/gt) — proves the strict
+		// less-than semantics this plan documents are still wired up.
+		expect(actualCondition).toEqual(
+			lt(deviceTemperatureReadings.recordedAt, cutoff),
+		);
+
+		// A reading older than the window is < cutoff → deleted.
+		expect(new Date(cutoff.getTime() - 1).getTime() < cutoff.getTime()).toBe(
+			true,
+		);
+		// A reading within the window is not < cutoff → kept.
+		expect(new Date(cutoff.getTime() + 1).getTime() < cutoff.getTime()).toBe(
+			false,
+		);
+		// A reading exactly at the boundary is not < cutoff → kept (strict, not <=).
+		const boundaryReading = new Date(cutoff.getTime());
+		expect(boundaryReading.getTime() < cutoff.getTime()).toBe(false);
+	});
+
+	it("logs the purge outcome with the deleted row count on success", async () => {
+		stubDelete({ rowsAffected: 42 });
+		const mockLogger = { info: vi.fn(), error: vi.fn(), debug: vi.fn() };
+		vi.mocked(getLogger).mockReturnValue(mockLogger as never);
+
+		await purgeOldReadings();
+
+		expect(mockLogger.info).toHaveBeenCalledWith(
+			{ rowsDeleted: 42 },
+			"tuya-poller.purge-complete",
+		);
+	});
+
+	it("catches a thrown error from db.delete and does not propagate", async () => {
+		stubDelete(new Error("SQLITE_ERROR"));
+		const mockLogger = { info: vi.fn(), error: vi.fn(), debug: vi.fn() };
+		vi.mocked(getLogger).mockReturnValue(mockLogger as never);
+
+		await expect(purgeOldReadings()).resolves.toBeUndefined();
+
+		expect(mockLogger.info).not.toHaveBeenCalled();
+		expect(mockLogger.error).toHaveBeenCalledOnce();
 	});
 });

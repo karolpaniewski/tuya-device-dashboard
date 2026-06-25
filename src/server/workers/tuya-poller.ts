@@ -17,6 +17,21 @@ const PURGE_EVERY_N_POLLS = 60; // ~30 min at 30 s cadence
 
 let pollCounter = 0;
 
+export async function purgeOldReadings(): Promise<void> {
+	const cutoff = new Date(Date.now() - RETENTION_MS);
+	try {
+		const result = await db
+			.delete(deviceTemperatureReadings)
+			.where(lt(deviceTemperatureReadings.recordedAt, cutoff));
+		getLogger().info(
+			{ rowsDeleted: result.rowsAffected },
+			"tuya-poller.purge-complete",
+		);
+	} catch (err) {
+		getLogger().error({ err }, "Error purging old readings");
+	}
+}
+
 export async function pollOnce(): Promise<void> {
 	let allGateways: (typeof gateways.$inferSelect)[];
 	try {
@@ -101,14 +116,7 @@ export async function pollOnce(): Promise<void> {
 
 	pollCounter++;
 	if (pollCounter % PURGE_EVERY_N_POLLS === 0) {
-		const cutoff = new Date(Date.now() - RETENTION_MS);
-		try {
-			await db
-				.delete(deviceTemperatureReadings)
-				.where(lt(deviceTemperatureReadings.recordedAt, cutoff));
-		} catch (err) {
-			getLogger().error({ err }, "Error purging old readings");
-		}
+		await purgeOldReadings();
 	}
 
 	getLogger().info(
