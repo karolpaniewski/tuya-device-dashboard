@@ -400,17 +400,17 @@ Not applicable — no data model or backend changes.
 
 #### Automated
 
-- [x] 3.1 `npm run typecheck` passes
-- [x] 3.2 `npm run lint` (Biome) passes
-- [x] 3.3 `npm run test` passes
-- [x] 3.4 `npm run build` succeeds
+- [x] 3.1 `npm run typecheck` passes — 08aec5e
+- [x] 3.2 `npm run lint` (Biome) passes — 08aec5e
+- [x] 3.3 `npm run test` passes — 08aec5e
+- [x] 3.4 `npm run build` succeeds — 08aec5e
 
 #### Manual
 
-- [x] 3.5 Card visually expands into modal at card's position/size, all device types
-- [x] 3.6 Closing reverses the animation; card fully visible afterward
-- [x] 3.7 Modal's other content (History tab, chart, room assignment) works after transition
-- [x] 3.8 Rapid clicks on different cards don't produce a broken visual state
-- [x] 3.9 Reduced-motion: modal opens/closes instantly at centered position
-- [x] 3.10 Other dialogs (Settings card, room-move confirmation) unaffected
-- [x] 3.11 Drag-and-drop card reordering still works
+- [x] 3.5 Card visually expands into modal at card's position/size, all device types — 08aec5e
+- [x] 3.6 Closing reverses the animation; card fully visible afterward — 08aec5e
+- [x] 3.7 Modal's other content (History tab, chart, room assignment) works after transition — 08aec5e
+- [x] 3.8 Rapid clicks on different cards don't produce a broken visual state — 08aec5e
+- [x] 3.9 Reduced-motion: modal opens/closes instantly at centered position — 08aec5e
+- [x] 3.10 Other dialogs (Settings card, room-move confirmation) unaffected — 08aec5e
+- [x] 3.11 Drag-and-drop card reordering still works — 08aec5e
