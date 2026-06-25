@@ -1,9 +1,9 @@
 ---
 change_id: thermostat-dial
 title: Thermostat dial + shared-layout card→modal transition
-status: implementing
+status: implemented
 created: 2026-06-24
-updated: 2026-06-24
+updated: 2026-06-25
 archived_at: null
 ---
 
