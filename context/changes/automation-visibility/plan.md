@@ -442,12 +442,12 @@ Not applicable — no schema or data changes.
 
 #### Automated
 
-- [x] 3.1 `npm run typecheck` passes
-- [x] 3.2 `npm run check` (Biome) passes
-- [x] 3.3 `npm run test` passes
-- [x] 3.4 `npm run build` succeeds
+- [x] 3.1 `npm run typecheck` passes — c2ed57a
+- [x] 3.2 `npm run check` (Biome) passes — c2ed57a
+- [x] 3.3 `npm run test` passes — c2ed57a
+- [x] 3.4 `npm run build` succeeds — c2ed57a
 
 #### Manual
 
-- [x] 3.5 Room modal visually distinguishes "modes acting on this room" from "devices in this room"
-- [x] 3.6 A room with zero modes still renders a sensible, non-broken layout
+- [x] 3.5 Room modal visually distinguishes "modes acting on this room" from "devices in this room" — c2ed57a
+- [x] 3.6 A room with zero modes still renders a sensible, non-broken layout — c2ed57a
