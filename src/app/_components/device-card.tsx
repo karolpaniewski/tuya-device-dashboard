@@ -1,9 +1,11 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Gauge, Plug, Thermometer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { downsampleAverage } from "~/lib/sparkline-data";
+import { useReducedMotion } from "~/lib/use-reduced-motion";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { ThermostatDial } from "./thermostat-dial";
@@ -182,11 +184,14 @@ function PlugToggle({
 
 export function DeviceCard({
 	device,
+	isExpanded,
 	onClick,
 }: {
 	device: DeviceItem;
+	isExpanded?: boolean;
 	onClick?: () => void;
 }) {
+	const reducedMotion = useReducedMotion();
 	const secsAgo =
 		device.lastPolledAt !== null
 			? Math.round(
@@ -200,12 +205,13 @@ export function DeviceCard({
 	const isOn = isPlug ? device.isOn : null;
 
 	const BgIcon = TYPE_ICON[deviceType] ?? null;
+	const baseOpacity = device.isOnline ? 1 : 0.7;
 
 	return (
-		// biome-ignore lint/a11y/useSemanticElements: card contains nested interactive controls (SetpointControl), preventing use of a <button> wrapper
-		// biome-ignore lint/a11y/useKeyWithClickEvents: supplementary action; primary keyboard interaction is via drag handle
-		<div
+		<motion.div
+			animate={{ opacity: isExpanded ? 0 : baseOpacity }}
 			className="cc-device-card fade-in slide-in-from-bottom-2 relative flex animate-in cursor-pointer flex-col overflow-hidden rounded-[18px] p-[17px] transition-colors duration-300"
+			layoutId={`device-card-${device.id}`}
 			onClick={onClick}
 			role="button"
 			style={{
@@ -213,9 +219,10 @@ export function DeviceCard({
 					? "linear-gradient(155deg, rgba(255,255,255,0.05), rgba(255,255,255,0.012))"
 					: "linear-gradient(155deg, rgba(255,255,255,0.025), rgba(255,255,255,0.005))",
 				border: `1px solid ${device.isOnline ? "rgba(255, 255, 255, 0.08)" : "rgba(255, 255, 255, 0.06)"}`,
-				opacity: device.isOnline ? 1 : 0.7,
+				pointerEvents: isExpanded ? "none" : undefined,
 			}}
 			tabIndex={0}
+			transition={{ duration: reducedMotion ? 0 : 0.18 }}
 		>
 			{BgIcon && (
 				<BgIcon
@@ -365,6 +372,6 @@ export function DeviceCard({
 					</span>
 				</div>
 			</div>
-		</div>
+		</motion.div>
 	);
 }

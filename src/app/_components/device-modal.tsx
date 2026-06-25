@@ -1,7 +1,7 @@
 "use client";
 
 import { Droplets, Thermometer, Wifi, WifiOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	CartesianGrid,
 	Line,
@@ -21,6 +21,7 @@ import {
 	DialogTitle,
 } from "~/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { useReducedMotion } from "~/lib/use-reduced-motion";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { ThermostatDial } from "./thermostat-dial";
@@ -36,10 +37,61 @@ interface Props {
 	onClose: () => void;
 }
 
+// Matches device-overview.tsx's CARD_TRANSITION_MS — the shared-layout morph's duration.
+const TRANSITION_DURATION_MS = 280;
+
 export function DeviceModal({ device, rooms, utils, onClose }: Props) {
+	const reducedMotion = useReducedMotion();
+	const actionsRef = useRef<{ unmount: () => void; close: () => void } | null>(
+		null,
+	);
+	const [layoutOpen, setLayoutOpen] = useState(true);
+	const closingRef = useRef(false);
+	const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	useEffect(() => {
+		return () => {
+			if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+		};
+	}, []);
+
+	if (reducedMotion) {
+		return (
+			<Dialog defaultOpen onOpenChange={(isOpen) => !isOpen && onClose()}>
+				<DeviceModalContent device={device} rooms={rooms} utils={utils} />
+			</Dialog>
+		);
+	}
+
+	// Drives the morph's exit animation immediately. `preventUnmountOnClose`
+	// is a best-effort hint that keeps Base UI's popup mounted so the morph
+	// has time to play, but the actual close (unmount + onClose) always
+	// fires from an unconditional timer — never gated on an animation-
+	// completion callback — so the modal is guaranteed to close even if the
+	// visual morph doesn't run to completion.
+	function handleOpenChange(
+		isOpen: boolean,
+		eventDetails: { preventUnmountOnClose: () => void },
+	) {
+		if (isOpen || closingRef.current) return;
+		closingRef.current = true;
+		eventDetails.preventUnmountOnClose();
+		setLayoutOpen(false);
+		closeTimeoutRef.current = setTimeout(() => {
+			actionsRef.current?.unmount();
+			onClose();
+		}, TRANSITION_DURATION_MS);
+	}
+
 	return (
-		<Dialog defaultOpen onOpenChange={(isOpen) => !isOpen && onClose()}>
-			<DeviceModalContent device={device} rooms={rooms} utils={utils} />
+		<Dialog actionsRef={actionsRef} defaultOpen onOpenChange={handleOpenChange}>
+			<DeviceModalContent
+				device={device}
+				layoutId={`device-card-${device.id}`}
+				layoutOpen={layoutOpen}
+				rooms={rooms}
+				utils={utils}
+			/>
 		</Dialog>
 	);
 }
@@ -48,10 +100,14 @@ function DeviceModalContent({
 	device,
 	rooms,
 	utils,
+	layoutId,
+	layoutOpen,
 }: {
 	device: DeviceItem;
 	rooms: Pick<RoomItem, "id" | "name">[];
 	utils: ReturnType<typeof api.useUtils>;
+	layoutId?: string;
+	layoutOpen?: boolean;
 }) {
 	const [name, setName] = useState(device.name);
 	const [nameSaving, setNameSaving] = useState(false);
@@ -110,7 +166,7 @@ function DeviceModalContent({
 	}
 
 	return (
-		<DialogContent>
+		<DialogContent layoutId={layoutId} layoutOpen={layoutOpen}>
 			<DialogHeader>
 				<div className="flex items-center gap-2">
 					{device.isOnline ? (

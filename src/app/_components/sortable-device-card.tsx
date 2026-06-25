@@ -10,9 +10,11 @@ type DeviceItem =
 
 export function SortableDeviceCard({
 	device,
+	isExpanded,
 	onClick,
 }: {
 	device: DeviceItem;
+	isExpanded?: boolean;
 	onClick?: () => void;
 }) {
 	const {
@@ -35,7 +37,11 @@ export function SortableDeviceCard({
 			{...attributes}
 			{...listeners}
 		>
-			<DeviceCard device={device} onClick={isDragging ? undefined : onClick} />
+			<DeviceCard
+				device={device}
+				isExpanded={isExpanded}
+				onClick={isDragging ? undefined : onClick}
+			/>
 		</div>
 	);
 }

@@ -25,7 +25,7 @@ import {
 	Timer,
 	Wifi,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ReactNode, PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSiteContext } from "~/components/site-context";
@@ -54,9 +54,32 @@ import { SortableWidget } from "./sortable-widget";
 
 type RoomItem = RouterOutputs["device"]["overview"]["rooms"][number];
 
+// dnd-kit's PointerSensor treats any >=8px pointer movement on a sortable
+// card as a drag-to-reorder gesture — which collides with the thermostat
+// dial's own drag-to-rotate gesture nested inside it. Elements marked
+// data-no-dnd opt out of that recognition (see thermostat-dial.tsx).
+class CardPointerSensor extends PointerSensor {
+	static activators = [
+		{
+			eventName: "onPointerDown" as const,
+			handler: ({ nativeEvent }: ReactPointerEvent) => {
+				let target = nativeEvent.target as HTMLElement | null;
+				while (target) {
+					if (target.dataset.noDnd) return false;
+					target = target.parentElement;
+				}
+				return true;
+			},
+		},
+	];
+}
+
 const CC_KPI_BIG_NUM =
 	"cc-kpi-value font-bold text-[#f4f7fa] text-[38px] leading-none tracking-[-0.03em]";
 type DeviceItem = RoomItem["devices"][number];
+
+// Matches the shared-layout card↔modal morph's transition duration.
+const CARD_TRANSITION_MS = 280;
 
 function matchDevice(
 	device: { deviceType: string; isOnline: boolean; name: string },
@@ -122,6 +145,29 @@ export function DeviceOverview() {
 	const [statusFilter, setStatusFilter] = useState<FilterState["status"]>("");
 	const [nameSearch, setNameSearch] = useState("");
 
+	// Debounces card clicks while the open-transition is in flight, so a
+	// rapid second click during the morph can't interrupt it.
+	const [isCardTransitioning, setIsCardTransitioning] = useState(false);
+	const cardTransitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null,
+	);
+	useEffect(() => {
+		return () => {
+			if (cardTransitionTimeoutRef.current) {
+				clearTimeout(cardTransitionTimeoutRef.current);
+			}
+		};
+	}, []);
+	function handleDeviceClick(device: DeviceItem) {
+		if (isCardTransitioning) return;
+		setIsCardTransitioning(true);
+		setSelectedDevice(device);
+		cardTransitionTimeoutRef.current = setTimeout(
+			() => setIsCardTransitioning(false),
+			CARD_TRANSITION_MS,
+		);
+	}
+
 	// DnD local state — mirrors server data, updated optimistically on drag
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [localRooms, setLocalRooms] = useState<RoomItem[]>([]);
@@ -156,7 +202,7 @@ export function DeviceOverview() {
 	}, [layoutQuery.data, activeWidgetId, activeId]);
 
 	const sensors = useSensors(
-		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+		useSensor(CardPointerSensor, { activationConstraint: { distance: 8 } }),
 	);
 	const widgetSensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -996,8 +1042,9 @@ export function DeviceOverview() {
 															badge={room.badge}
 															devices={room.devices}
 															dndEnabled={dndEnabled}
+															expandedDeviceId={selectedDevice?.id ?? null}
 															isToggleHeatPending={toggleHeatMutation.isPending}
-															onDeviceClick={setSelectedDevice}
+															onDeviceClick={handleDeviceClick}
 															onToggleHeat={(pinnedOff) =>
 																toggleHeatMutation.mutate({
 																	roomId: room.roomId,
@@ -1037,8 +1084,9 @@ export function DeviceOverview() {
 													badge={room.badge}
 													devices={room.devices}
 													dndEnabled={dndEnabled}
+													expandedDeviceId={selectedDevice?.id ?? null}
 													isToggleHeatPending={toggleHeatMutation.isPending}
-													onDeviceClick={setSelectedDevice}
+													onDeviceClick={handleDeviceClick}
 													onToggleHeat={(pinnedOff) =>
 														toggleHeatMutation.mutate({
 															roomId: room.roomId,
@@ -1066,8 +1114,9 @@ export function DeviceOverview() {
 									<RoomGroup
 										devices={filteredUnassigned}
 										dndEnabled={dndEnabled}
+										expandedDeviceId={selectedDevice?.id ?? null}
 										isUnassigned
-										onDeviceClick={setSelectedDevice}
+										onDeviceClick={handleDeviceClick}
 										roomId="unassigned"
 										roomName="Unassigned"
 									/>

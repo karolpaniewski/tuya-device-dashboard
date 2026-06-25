@@ -130,6 +130,7 @@ interface RoomGroupProps {
 	badge?: "OK" | "Too Cold" | "Too Hot" | null;
 	devices: DeviceItem[];
 	dndEnabled?: boolean;
+	expandedDeviceId?: string | null;
 	isToggleHeatPending?: boolean;
 	isUnassigned?: boolean;
 	onDeviceClick?: (device: DeviceItem) => void;
@@ -147,6 +148,7 @@ export function RoomGroup({
 	badge,
 	devices,
 	dndEnabled,
+	expandedDeviceId,
 	isToggleHeatPending,
 	isUnassigned,
 	onDeviceClick,
@@ -177,6 +179,7 @@ export function RoomGroup({
 					{devices.map((device) => (
 						<SortableDeviceCard
 							device={device}
+							isExpanded={device.id === expandedDeviceId}
 							key={device.id}
 							onClick={() => onDeviceClick?.(device)}
 						/>
@@ -186,6 +189,7 @@ export function RoomGroup({
 				devices.map((device) => (
 					<SortableDeviceCard
 						device={device}
+						isExpanded={device.id === expandedDeviceId}
 						key={device.id}
 						onClick={() => onDeviceClick?.(device)}
 					/>

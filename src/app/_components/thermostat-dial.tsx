@@ -115,14 +115,18 @@ export function ThermostatDial({
 		setDragValue(next);
 		if (next !== lastCommittedRef.current) {
 			lastCommittedRef.current = next;
-			onChange(next);
 			if (typeof navigator !== "undefined" && "vibrate" in navigator) {
 				navigator.vibrate(8);
 			}
 		}
 	}
 
+	// Commits once, with the final dragged value, instead of once per step —
+	// firing a mutation on every 0.5° step crossed during a fast drag floods
+	// the network with overlapping requests whose responses can resolve out
+	// of order, letting a stale one clobber the final value.
 	function handlePanEnd() {
+		onChange(lastCommittedRef.current);
 		setDragValue(null);
 	}
 
@@ -135,6 +139,7 @@ export function ThermostatDial({
 			aria-valuemax={max}
 			aria-valuemin={min}
 			aria-valuenow={value ?? undefined}
+			data-no-dnd="true"
 			onPan={disabled ? undefined : handlePan}
 			onPanEnd={disabled ? undefined : handlePanEnd}
 			onPanStart={disabled ? undefined : handlePanStart}

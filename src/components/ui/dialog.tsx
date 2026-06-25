@@ -1,6 +1,7 @@
 "use client";
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 
 import { cn } from "~/lib/utils";
@@ -32,10 +33,50 @@ function DialogContent({
 	className,
 	children,
 	size = "default",
+	layoutId,
+	layoutOpen = true,
 	...props
 }: React.ComponentProps<typeof DialogPrimitive.Popup> & {
 	size?: "default" | "wide";
+	/**
+	 * Opt-in shared-layout morph: when set, the popup grows from (and shrinks
+	 * back into) the element carrying the same Framer Motion `layoutId`,
+	 * instead of the default centered fade. Every other dialog in the app
+	 * omits this prop and keeps today's behavior unchanged.
+	 */
+	layoutId?: string;
+	/** Drives the morph's exit phase; only meaningful when `layoutId` is set. */
+	layoutOpen?: boolean;
 }) {
+	if (layoutId) {
+		return (
+			<DialogPortal>
+				<DialogBackdrop />
+				<DialogPrimitive.Popup
+					className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+					{...props}
+				>
+					<AnimatePresence>
+						{layoutOpen && (
+							<motion.div
+								className={cn(
+									"relative w-full overflow-hidden",
+									size === "wide" ? "max-w-4xl" : "max-w-lg",
+									"rounded-2xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] shadow-2xl",
+									className,
+								)}
+								key={layoutId}
+								layoutId={layoutId}
+							>
+								{children}
+							</motion.div>
+						)}
+					</AnimatePresence>
+				</DialogPrimitive.Popup>
+			</DialogPortal>
+		);
+	}
+
 	return (
 		<DialogPortal>
 			<DialogBackdrop />

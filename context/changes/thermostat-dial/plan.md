@@ -382,35 +382,35 @@ Not applicable — no data model or backend changes.
 
 #### Automated
 
-- [x] 2.1 `npm run typecheck` passes
-- [x] 2.2 `npm run lint` (Biome) passes
-- [x] 2.3 `npm run test` passes
-- [x] 2.4 `npm run build` succeeds
+- [x] 2.1 `npm run typecheck` passes — eee264d
+- [x] 2.2 `npm run lint` (Biome) passes — eee264d
+- [x] 2.3 `npm run test` passes — eee264d
+- [x] 2.4 `npm run build` succeeds — eee264d
 
 #### Manual
 
-- [x] 2.5 Card dial drag (touch + mouse) sets value correctly, clamp/step match, persists across reload
-- [x] 2.6 Modal dial drag matches card behavior; Overview tab's Setpoint reading updates
-- [x] 2.7 Dial background shifts blue→orange with value, on both sizes
-- [x] 2.8 Failed setpoint update snaps dial back and shows existing error toast
-- [x] 2.9 Sensor/plug cards and modals unchanged
-- [x] 2.10 Reduced-motion: dial color changes apply instantly
+- [x] 2.5 Card dial drag (touch + mouse) sets value correctly, clamp/step match, persists across reload — eee264d
+- [x] 2.6 Modal dial drag matches card behavior; Overview tab's Setpoint reading updates — eee264d
+- [x] 2.7 Dial background shifts blue→orange with value, on both sizes — eee264d
+- [x] 2.8 Failed setpoint update snaps dial back and shows existing error toast — eee264d
+- [x] 2.9 Sensor/plug cards and modals unchanged — eee264d
+- [x] 2.10 Reduced-motion: dial color changes apply instantly — eee264d
 
 ### Phase 3: Shared-layout card→modal transition
 
 #### Automated
 
-- [ ] 3.1 `npm run typecheck` passes
-- [ ] 3.2 `npm run lint` (Biome) passes
-- [ ] 3.3 `npm run test` passes
-- [ ] 3.4 `npm run build` succeeds
+- [x] 3.1 `npm run typecheck` passes
+- [x] 3.2 `npm run lint` (Biome) passes
+- [x] 3.3 `npm run test` passes
+- [x] 3.4 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 3.5 Card visually expands into modal at card's position/size, all device types
-- [ ] 3.6 Closing reverses the animation; card fully visible afterward
-- [ ] 3.7 Modal's other content (History tab, chart, room assignment) works after transition
-- [ ] 3.8 Rapid clicks on different cards don't produce a broken visual state
-- [ ] 3.9 Reduced-motion: modal opens/closes instantly at centered position
-- [ ] 3.10 Other dialogs (Settings card, room-move confirmation) unaffected
-- [ ] 3.11 Drag-and-drop card reordering still works
+- [x] 3.5 Card visually expands into modal at card's position/size, all device types
+- [x] 3.6 Closing reverses the animation; card fully visible afterward
+- [x] 3.7 Modal's other content (History tab, chart, room assignment) works after transition
+- [x] 3.8 Rapid clicks on different cards don't produce a broken visual state
+- [x] 3.9 Reduced-motion: modal opens/closes instantly at centered position
+- [x] 3.10 Other dialogs (Settings card, room-move confirmation) unaffected
+- [x] 3.11 Drag-and-drop card reordering still works
