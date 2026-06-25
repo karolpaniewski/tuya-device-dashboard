@@ -474,15 +474,15 @@ Not applicable — no schema or data changes.
 
 #### Automated
 
-- [x] 3.1 `npm run typecheck` passes
-- [x] 3.2 `npm run check` (Biome) passes
-- [x] 3.3 `npm run test` passes
-- [x] 3.4 `npm run build` succeeds
+- [x] 3.1 `npm run typecheck` passes — 8b1f776
+- [x] 3.2 `npm run check` (Biome) passes — 8b1f776
+- [x] 3.3 `npm run test` passes — 8b1f776
+- [x] 3.4 `npm run build` succeeds — 8b1f776
 
 #### Manual
 
-- [x] 3.5 Clicking a device node opens `DeviceModal` with that device's correct data
-- [x] 3.6 Clicking the room node opens `RoomModal` with that room's correct devices and modes
-- [x] 3.7 Clicking a mode node navigates to `/setup`
-- [x] 3.8 Closing any modal returns to the diagram in its previous (not reset) drag layout
-- [x] 3.9 Dragging and pan/zoom still work after a modal has been opened and closed
+- [x] 3.5 Clicking a device node opens `DeviceModal` with that device's correct data — 8b1f776
+- [x] 3.6 Clicking the room node opens `RoomModal` with that room's correct devices and modes — 8b1f776
+- [x] 3.7 Clicking a mode node navigates to `/setup` — 8b1f776
+- [x] 3.8 Closing any modal returns to the diagram in its previous (not reset) drag layout — 8b1f776
+- [x] 3.9 Dragging and pan/zoom still work after a modal has been opened and closed — 8b1f776

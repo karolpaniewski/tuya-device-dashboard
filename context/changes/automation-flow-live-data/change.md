@@ -1,7 +1,7 @@
 ---
 change_id: automation-flow-live-data
 title: Wire the automation-flow diagram to real rooms, devices, and modes
-status: implementing
+status: implemented
 created: 2026-06-25
 updated: 2026-06-25
 archived_at: null
