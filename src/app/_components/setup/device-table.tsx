@@ -12,7 +12,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "~/components/ui/select";
-import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 type DeviceItem =
@@ -21,10 +20,16 @@ type RoomItem = RouterOutputs["room"]["list"][number];
 
 type SortCol = "name" | "type" | "room" | "status";
 
-const TYPE_BADGE: Record<string, string> = {
-	sensor: "bg-blue-600 text-blue-100",
-	valve: "bg-orange-600 text-orange-100",
-	plug: "bg-gray-600 text-gray-100",
+const TYPE_ACCENT: Record<string, string> = {
+	sensor: "var(--cc-cyan)",
+	valve: "var(--cc-amber)",
+	plug: "var(--cc-emerald)",
+};
+
+const TYPE_ACCENT_BG: Record<string, string> = {
+	sensor: "rgba(34, 211, 238, 0.12)",
+	valve: "rgba(251, 191, 36, 0.12)",
+	plug: "rgba(52, 211, 153, 0.12)",
 };
 
 const TYPE_ICON = {
@@ -98,9 +103,16 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 	if (devices.length === 0) {
 		return (
 			<div className="flex flex-col items-center justify-center py-16 text-center">
-				<Wifi className="mb-4 text-gray-600" size={48} />
+				<Wifi
+					className="mb-4"
+					size={48}
+					style={{ color: "var(--cc-text-faint)" }}
+				/>
 				<p className="font-semibold text-foreground">No devices discovered</p>
-				<p className="mt-1 max-w-xs text-gray-400 text-sm">
+				<p
+					className="mt-1 max-w-xs text-sm"
+					style={{ color: "var(--cc-text-muted)" }}
+				>
 					Devices will appear here once the polling worker finds them on the
 					LAN.
 				</p>
@@ -160,11 +172,15 @@ export function DeviceTable({ devices, rooms, utils }: Props) {
 								<td className="px-4 py-3 text-foreground">{device.name}</td>
 								<td className="px-4 py-3">
 									<Badge
-										className={cn(
-											"font-medium",
-											TYPE_BADGE[device.deviceType] ??
-												"bg-gray-600 text-gray-100",
-										)}
+										className="font-medium"
+										style={{
+											backgroundColor:
+												TYPE_ACCENT_BG[device.deviceType] ??
+												"rgba(141, 152, 163, 0.12)",
+											color:
+												TYPE_ACCENT[device.deviceType] ??
+												"var(--cc-text-muted)",
+										}}
 									>
 										{(() => {
 											const Icon =

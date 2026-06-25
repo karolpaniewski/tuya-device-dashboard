@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet"><style>*{box-sizing:border-box}body{margin:0}.scene{min-height:100vh;background:radial-gradient(120% 120% at 50% 0%,#1b1e21 0%,#121416 60%,#0e1011 100%);color:#e8eaec;font-family:'Manrope',system-ui,sans-serif;padding:48px 24px}.kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:rgba(255,255,255,.38);font-weight:600}.room{font-size:15px;color:rgba(255,255,255,.9);font-weight:600;letter-spacing:.01em}.dialwrap{width:460px;height:460px}.glow{position:absolute;inset:-30px;border-radius:50%;filter:blur(46px);pointer-events:none;z-index:0;transition:background .3s ease}.dial{position:relative;z-index:1;width:460px;height:460px;display:block;touch-action:none;cursor:grab}.dial:active{cursor:grabbing}.track{stroke:rgba(255,255,255,.07);stroke-width:11;fill:none;stroke-linecap:round}.active{stroke-width:11;fill:none;stroke-linecap:round;transition:stroke .25s ease}.tick{transition:stroke .2s ease}.center{position:absolute;inset:0;z-index:2;pointer-events:none}.numrow{display:flex;align-items:flex-start}.num{font-family:'Space Grotesk',sans-serif;font-weight:300;font-size:88px;line-height:.9;letter-spacing:-.02em;font-variant-numeric:tabular-nums;transition:color .25s ease}.deg{font-family:'Space Grotesk',sans-serif;font-weight:300;font-size:40px;margin-top:6px;opacity:.85}.unit{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.42);font-weight:600;margin-top:14px}.status{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:600;margin-top:8px}.pill{appearance:none;border:none;background:rgba(255,255,255,.05);color:rgba(255,255,255,.55);font-family:inherit;font-size:13px;font-weight:600;letter-spacing:.02em;padding:10px 22px;border-radius:999px;cursor:pointer;transition:all .2s ease}.pill:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.8)}.pill.active{background:rgba(255,255,255,.95);color:#16181a}.hint{font-size:11px;letter-spacing:.06em;color:rgba(255,255,255,.28);font-weight:500}</style></helmet><div class="scene fx col ac jc gap24"><div class="fx col ac gap8"><div class="kicker">Set temperature</div><div class="room">{{ roomName }}</div></div><div class="dialwrap posrel fx ac jc"><div class="glow" style="{{ glowStyle }}"></div><svg class="dial" viewBox="0 0 360 360" onPointerDown="{{ onPointerDown }}" onWheel="{{ onWheel }}"><path class="track" d="{{ trackPath }}"></path><sc-for list="{{ ticks }}" as="t" hint-placeholder-count="0"><line class="tick" x1="{{ t.x1 }}" y1="{{ t.y1 }}" x2="{{ t.x2 }}" y2="{{ t.y2 }}" stroke="{{ t.stroke }}" stroke-width="2" stroke-linecap="round"></line></sc-for><path class="active" d="{{ activePath }}" stroke="{{ color }}" style="{{ activeStyle }}"></path><circle cx="{{ handleX }}" cy="{{ handleY }}" r="19" fill="none" stroke="{{ color }}" stroke-width="2" opacity="0.28"></circle><circle cx="{{ handleX }}" cy="{{ handleY }}" r="11" fill="#ffffff" style="{{ handleStyle }}"></circle></svg><div class="center fx col ac jc"><div class="numrow"><span class="num" style="{{ numStyle }}">{{ tempStr }}</span><span class="deg">°</span></div><div class="unit">{{ unitLabel }}</div><div class="status">{{ statusText }}</div></div></div><div class="modes fx ac gap8"><sc-for list="{{ modes }}" as="m" hint-placeholder-count="3"><button class="{{ m.cls }}" onClick="{{ m.onClick }}">{{ m.label }}</button></sc-for></div><div class="hint">Drag the dial or scroll to adjust</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:720},&quot;roomName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Living Room&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;unit&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Celsius&quot;,&quot;Fahrenheit&quot;],&quot;default&quot;:&quot;Celsius&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;minTemp&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:15,&quot;min&quot;:5,&quot;max&quot;:20,&quot;tsType&quot;:&quot;number&quot;},&quot;maxTemp&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:30,&quot;min&quot;:25,&quot;max&quot;:40,&quot;tsType&quot;:&quot;number&quot;},&quot;showTicks&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = { temp: 20, mode: 'auto' };
+
+  bounds() {
+    const min = this.props.minTemp ?? 15;
+    const max = this.props.maxTemp ?? 30;
+    return { min, max, range: Math.max(1, max - min) };
+  }
+
+  setTemp(v) {
+    const { min, max } = this.bounds();
+    let t = Math.max(min, Math.min(max, v));
+    t = Math.round(t * 2) / 2;
+    this.setState({ temp: t });
+  }
+
+  onPointerDown = (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    this.cx = r.left + r.width / 2;
+    this.cy = r.top + r.height / 2;
+    this.updateFromEvent(e);
+    window.addEventListener('pointermove', this.onMove);
+    window.addEventListener('pointerup', this.onUp);
+  };
+  onMove = (e) => this.updateFromEvent(e);
+  onUp = () => {
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+  };
+
+  updateFromEvent(e) {
+    const dx = e.clientX - this.cx;
+    const dy = e.clientY - this.cy;
+    let ang = Math.atan2(dx, -dy) * 180 / Math.PI;
+    if (ang < 0) ang += 360;
+    let f;
+    if (ang > 150 && ang < 210) {
+      f = ang < 180 ? 1 : 0;
+    } else {
+      const pos = ang >= 210 ? ang - 210 : ang + 150;
+      f = pos / 300;
+    }
+    const { min, range } = this.bounds();
+    this.setTemp(min + f * range);
+  }
+
+  onWheel = (e) => {
+    e.preventDefault();
+    this.setTemp(this.state.temp + (e.deltaY < 0 ? 0.5 : -0.5));
+  };
+
+  polar(a, rr) {
+    const rad = (a - 90) * Math.PI / 180;
+    return { x: 180 + rr * Math.cos(rad), y: 180 + rr * Math.sin(rad) };
+  }
+  arc(a0, a1, rr) {
+    const p0 = this.polar(a0, rr), p1 = this.polar(a1, rr);
+    const large = (a1 - a0) > 180 ? 1 : 0;
+    return `M${p0.x.toFixed(2)} ${p0.y.toFixed(2)}A${rr} ${rr} 0 ${large} 1 ${p1.x.toFixed(2)} ${p1.y.toFixed(2)}`;
+  }
+
+  renderVals() {
+    const { min, max, range } = this.bounds();
+    const t = this.state.temp;
+    const f = Math.max(0, Math.min(1, (t - min) / range));
+    const R = 138;
+
+    const hue = 230 - f * 205;
+    const color = `oklch(0.75 0.13 ${hue.toFixed(1)})`;
+    const glow = `oklch(0.72 0.17 ${hue.toFixed(1)})`;
+
+    const a1 = 210 + f * 300;
+    const activePath = f <= 0 ? '' : this.arc(210, a1, R);
+    const handle = this.polar(a1, R);
+
+    const showTicks = this.props.showTicks !== false;
+    const ticks = [];
+    if (showTicks) {
+      const N = 32;
+      for (let i = 0; i <= N; i++) {
+        const frac = i / N;
+        const ang = 210 + frac * 300;
+        const inner = this.polar(ang, 150);
+        const outer = this.polar(ang, 161);
+        const on = frac <= f + 0.001;
+        ticks.push({
+          x1: inner.x.toFixed(2), y1: inner.y.toFixed(2),
+          x2: outer.x.toFixed(2), y2: outer.y.toFixed(2),
+          stroke: on ? color : 'rgba(255,255,255,0.10)'
+        });
+      }
+    }
+
+    const fahrenheit = this.props.unit === 'Fahrenheit';
+    const tempStr = fahrenheit ? (t * 9 / 5 + 32).toFixed(1) : t.toFixed(1);
+    const unitLabel = fahrenheit ? 'Fahrenheit' : 'Celsius';
+
+    const statusMap = {
+      heat: `Heating to ${tempStr}°`,
+      cool: `Cooling to ${tempStr}°`,
+      auto: `Auto · ${tempStr}°`
+    };
+    const modes = [
+      { id: 'cool', label: 'Cool' },
+      { id: 'auto', label: 'Auto' },
+      { id: 'heat', label: 'Heat' }
+    ].map(m => ({
+      label: m.label,
+      cls: 'pill' + (this.state.mode === m.id ? ' active' : ''),
+      onClick: () => this.setState({ mode: m.id })
+    }));
+
+    return {
+      roomName: this.props.roomName ?? 'Living Room',
+      trackPath: this.arc(210, 510, R),
+      activePath, ticks,
+      color,
+      handleX: handle.x.toFixed(2), handleY: handle.y.toFixed(2),
+      tempStr, unitLabel,
+      statusText: statusMap[this.state.mode],
+      modes,
+      onPointerDown: this.onPointerDown,
+      onWheel: this.onWheel,
+      glowStyle: { background: `radial-gradient(circle, ${glow} 0%, transparent 68%)`, opacity: 0.32 },
+      activeStyle: { filter: `drop-shadow(0 0 9px ${glow})` },
+      handleStyle: { filter: `drop-shadow(0 0 7px ${glow})` },
+      numStyle: { color: '#fff' }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -8,6 +8,7 @@ import { useSiteContext } from "~/components/site-context";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
 import { dropPositionToPercent } from "~/lib/map-coordinates";
+import { getModesForRoom } from "~/lib/mode-targeting";
 import { ROOM_STATUS_BADGE_CLASSES } from "~/lib/room-status-colors";
 import { cn } from "~/lib/utils";
 import type { RoomBadge } from "~/server/api/routers/device";
@@ -29,6 +30,7 @@ export function MapView() {
 	const sitesQuery = api.site.list.useQuery();
 	const devicesQuery = api.device.overview.useQuery({ siteId: activeSiteId });
 	const roomsQuery = api.room.list.useQuery({ siteId: activeSiteId });
+	const modeListQuery = api.mode.list.useQuery({ siteId: activeSiteId });
 
 	const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
 	const [imageFailed, setImageFailed] = useState(false);
@@ -232,6 +234,10 @@ export function MapView() {
 			{selectedDevice && (
 				<DeviceModal
 					device={selectedDevice}
+					modesForRoom={getModesForRoom(
+						selectedDevice.roomId ?? "",
+						modeListQuery.data ?? [],
+					)}
 					onClose={() => setSelectedDevice(null)}
 					rooms={rooms}
 					utils={utils}

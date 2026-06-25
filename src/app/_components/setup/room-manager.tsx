@@ -187,9 +187,6 @@ export function RoomManager({ activeSiteId, rooms, sites, utils }: Props) {
 								</Select>
 							)}
 							<Button
-								className={
-									thresholdRoomId === room.id ? "text-blue-400" : undefined
-								}
 								onClick={() => {
 									if (thresholdRoomId === room.id) {
 										setThresholdRoomId(null);
@@ -199,6 +196,11 @@ export function RoomManager({ activeSiteId, rooms, sites, utils }: Props) {
 									}
 								}}
 								size="icon"
+								style={
+									thresholdRoomId === room.id
+										? { color: "var(--cc-cyan)" }
+										: undefined
+								}
 								title="Thresholds"
 								type="button"
 								variant="ghost"
@@ -243,9 +245,16 @@ export function RoomManager({ activeSiteId, rooms, sites, utils }: Props) {
 				))}
 				{rooms.length === 0 && (
 					<li className="flex flex-col items-center justify-center py-16 text-center">
-						<Building2 className="mb-4 text-gray-600" size={48} />
+						<Building2
+							className="mb-4"
+							size={48}
+							style={{ color: "var(--cc-text-faint)" }}
+						/>
 						<p className="font-semibold text-foreground">No rooms yet</p>
-						<p className="mt-1 max-w-xs text-gray-400 text-sm">
+						<p
+							className="mt-1 max-w-xs text-sm"
+							style={{ color: "var(--cc-text-muted)" }}
+						>
 							Add a room below to start organizing your devices.
 						</p>
 					</li>
@@ -253,7 +262,7 @@ export function RoomManager({ activeSiteId, rooms, sites, utils }: Props) {
 			</ul>
 
 			{activeSiteId === "all" ? (
-				<p className="mt-4 text-gray-400 text-sm">
+				<p className="mt-4 text-sm" style={{ color: "var(--cc-text-muted)" }}>
 					Select a specific site to add a room.
 				</p>
 			) : (

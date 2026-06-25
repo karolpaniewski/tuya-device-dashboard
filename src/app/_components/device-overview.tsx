@@ -37,6 +37,7 @@ import {
 	mergeMissingDefaultIds,
 } from "~/lib/dashboard-widgets";
 import { applySavedOrder, spliceSectionOrder } from "~/lib/layout-order";
+import { getModesForRoom } from "~/lib/mode-targeting";
 import { DEFAULT_THRESHOLDS } from "~/server/lib/scoring";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { CcAlertToast } from "./cc-alert-toast";
@@ -1140,6 +1141,10 @@ export function DeviceOverview() {
 			{selectedDevice && (
 				<DeviceModal
 					device={selectedDevice}
+					modesForRoom={getModesForRoom(
+						selectedDevice.roomId ?? "",
+						modeListQuery.data ?? [],
+					)}
 					onClose={() => setSelectedDevice(null)}
 					rooms={roomsListQuery.data ?? []}
 					utils={utils}

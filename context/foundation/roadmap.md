@@ -229,7 +229,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** S-08, S-10
 - **Blockers:** —
 - **Unknowns:** — (storage strategy resolved: appends to a `deviceTemperatureReadings` SQLite table, queried/bucketed per-range by `device.temperatureHistory`; chart library is Recharts)
-- **Risk:** Writing every 30s poll reading to SQLite for 50 devices = 144 000 rows/day. **Still unresolved as shipped** — no retention/purge job exists anywhere in `src/server/` for this table; it will grow unbounded. Worth a follow-up slice before this app runs unattended for months.
+- **Risk:** Writing every 30s poll reading to SQLite for 50 devices = 144 000 rows/day. **Resolved as shipped** — corrected 2026-06-25: a 30-day retention purge (`tuya-poller.ts`, gated to ~every 30 min) and indexes on `recordedAt` shipped in the same commit as this feature; an earlier note here claiming no purge job existed was based on a case-sensitive grep that missed `PURGE_EVERY_N_POLLS`/"purging". Remaining gap: the purge has no dedicated success/outcome log line or test coverage — see `retention-purge-job` change.
 - **Status:** done
 
 ### S-10: External notifications

@@ -2,155 +2,126 @@
 project: Tuya Device Dashboard
 version: 1
 status: draft
-created: 2026-05-28
-context_type: greenfield
+created: 2026-06-24
+context_type: brownfield
 product_type: web-app
 target_scale:
   users: small
-  qps: low
-  data_volume: small
 timeline_budget:
-  mvp_weeks: 3
+  delivery_weeks: 3
   hard_deadline: null
   after_hours_only: true
 ---
 
-## Vision & Problem Statement
+## Current System Overview
 
-A small facility management team (2–5 people) cannot monitor or control their company's Tuya smart devices — temperature sensors and heating valves — from a single view. Today they manage devices one by one through the Tuya mobile app. There is no fleet view, no cross-room temperature comparison, and no way to act quickly across multiple devices.
+**System purpose:** A dashboard for monitoring and controlling networked heating/climate devices (sensors, valves, plugs) grouped by room, with threshold-based comfort status and alerting.
 
-The gap is architectural, not cosmetic. Tuya's own web portal requires an internet connection, which the company does not use for this system. A LAN-only dashboard does not exist in Tuya's product line; it must be built. The product replaces a cloud dependency that is categorically unavailable in this network model — it does not improve on an existing tool, it substitutes for one that cannot run here.
+**Key architecture:** A server-rendered web app with a typed API layer between client and server, a relational database for device/room/site state, and a background polling process that talks to devices over the local network.
+
+**Tech stack:** Next.js, React, a typed RPC layer, a SQL database via an ORM, Tailwind for styling, a component primitives library for dialogs/popovers, and a charting library for temperature history.
+
+**Current user base:** Facility manager / office administrator — a single flat role, full access, 2–5 person org. No multi-role or multi-tenant model exists today.
+
+**Core functionality today:** Devices are shown grouped by room as cards in a list/grid view. Each card shows live temperature, online status, and (for valve devices) a setpoint control — currently a compact pair of +/− buttons, in 0.5°C steps. Clicking a card opens a detail view (a standard dialog overlay, mounted instantly with no transition) containing the same setpoint control as a linear slider, plus temperature history and other device management. There is no animation/interaction library in the current stack — no shared-element transitions, no gesture-driven controls.
+
+## Problem Statement & Motivation
+
+**The gap:** The current setpoint controls (card buttons, modal slider) and the instant dialog-open behavior are functionally adequate but visually and interactionally unremarkable — they read as a generic admin tool rather than a polished, premium product. There is no functional defect being fixed; this is a deliberate craft/quality-of-interaction gap.
+
+**Why now:** This is the first dedicated pass at visual/interaction polish in the app's history — prior work has focused on functional features (device control, threshold alerting, room/site management). The team has identified two specific moments where the gap is most visible: adjusting a device's setpoint, and opening a device's detail view.
+
+**Current workaround:** None — the existing controls work correctly; there is no broken behavior being routed around. The cost is purely perceptual ("doesn't feel like a premium product"), not functional.
 
 ## User & Persona
 
-**Primary persona: Facility Manager**
+**Role:** Facility manager / office administrator — the existing, sole persona in this app. No new persona is introduced by this change.
 
-Role: Facility manager (or small admin team member, 2–5 people).  
-Context: Manages building climate control across multiple office rooms, each monitored by one or more Tuya Zigbee gateway hubs with attached sensors and heating valves. Works on the company LAN; no remote or internet access expected for this tool.  
-Moment: Needs to check that all rooms are within acceptable temperature ranges and act on a problem — an offline device, a valve not meeting setpoint — without picking up a phone or opening the Tuya mobile app device-by-device.
+**What changes for them:** The same person, performing the same task (checking and adjusting a device's temperature setpoint), experiences it through a more tactile, visually responsive interaction instead of clicking small buttons or dragging a thin slider, and the transition into the device's detail view feels continuous rather than an abrupt pop-up.
+
+**Pain moment (unchanged from today):** Adjusting a device's setpoint or opening its detail view and experiencing it as functionally fine but visually unremarkable.
 
 ## Success Criteria
 
 ### Primary
+The smallest end-to-end slice, proving the whole change works together:
+1. User opens the dashboard.
+2. User clicks a device card.
+3. The card visually expands into the detail view at its full size and position — not an instant pop-up.
+4. For valve-type devices, the setpoint control is now an interactive circular dial that responds to a drag gesture (touch or mouse), with a background color that shifts smoothly from cool blue to warm orange as it's turned.
+5. The dial produces the exact same setpoint result as today's controls, with the same 5–35°C clamp and 0.5°C step.
+6. Closing the detail view reverses the expansion back into the card.
 
-The facility manager can open the dashboard on the company LAN, log in, see all devices (temperature sensors, heating valves, smart plugs) grouped by room with their current temperature and online/offline status, and adjust a heating valve's temperature setpoint — with a confirmation or explicit error shown immediately after the command.
-
-MVP flow:
-1. Manager opens browser on the company LAN
-2. Logs in with credentials
-3. Sees all devices grouped by room: name, current temperature, online/offline status
-4. Drills into one device, adjusts temperature setpoint
-5. Change is confirmed immediately, or a specific error is shown — no silent failure
+Sensor/plug device cards (no setpoint) still use the same expand/collapse transition on open/close; their existing detail-view content is otherwise unchanged.
 
 ### Secondary
-
-Devices are grouped by room/floor in the dashboard UI, matching the physical layout of the office.
+A subtle haptic tick (where the device/browser supports it) while dragging the dial, firing at each 0.5°C increment crossed. Nice-to-have; not required for this change to count as working.
 
 ### Guardrails
+- The dial must produce the exact same setpoint result as the current controls, with the same 5–35°C clamp and 0.5°C step — visual polish must not introduce input lag or an incorrect value reaching the device.
+- Sensor/plug device cards (no setpoint) are unaffected by the dial work and continue to open via the same expand/collapse transition, with their existing detail-view content (history, other management controls) unchanged.
+- The detail view's existing content (history view, other management tabs, temperature chart) continues to render and function exactly as today — the transition wraps entrance/exit only, it does not alter what's inside.
+- The expand/collapse transition and the dial's color transitions respect the user's system-level reduced-motion preference — when set, the detail view opens/closes instantly and color changes apply immediately rather than animating.
 
-- **Command feedback**: a failed control command always surfaces a specific error — the user never sees silence after submitting an action, and the device is never left in an unknown state.
-- **LAN isolation**: the product makes zero outbound network calls. No data reaches any service outside the company network.
-- **Auth gate**: the dashboard is inaccessible without valid login credentials, even from within the LAN.
+**Timeline:** roughly three weeks of after-hours work or less — a circular dial control with drag-gesture handling, an entrance/exit transition wrapping the existing card-to-detail-view open/close, and wiring the dial to the existing setpoint behavior.
 
 ## User Stories
 
-### US-01: Live device overview
+### US-01: Admin adjusts a valve's setpoint via the new thermostat dial, with an expanding detail view
 
-**Given** I am logged into the dashboard on the company LAN,  
-**When** I open the main view,  
-**Then** I see all discovered devices grouped by room, each showing current temperature and online/offline status — with no internet connection required.
+- **Given** an admin is viewing the dashboard with at least one valve device card
+- **When** they click the device card, watch it expand into the full detail view, then drag the circular dial to a new setpoint
+- **Then** the background shifts color smoothly as they drag, the same setpoint result is produced as today (same 5–35°C clamp, 0.5°C step), and closing the detail view reverses the expansion back into the card
 
-#### Acceptance Criteria
-- All rooms appear as named groups; each device shows its current temperature reading (where applicable) and online/offline state
-- The view reflects device state no older than 30 seconds
-- No internet connection is required at any point during the session
-
-### US-02: Adjust heating valve
-
-**Given** I am on the device list and I identify a heating valve,  
-**When** I open its detail view and submit a new temperature setpoint,  
-**Then** the command is sent to the device locally, and I see either a success confirmation or a specific error — the device is never left in an ambiguous state.
+Previously: clicking the card opened an instant pop-up with no transition, and the setpoint was set via small +/− buttons (on the card) or a linear slider (in the detail view).
 
 #### Acceptance Criteria
-- The submitted setpoint is visible in the device detail immediately after confirmation
-- If the command fails, a specific error is shown — not silence
-- Devices with unrecognised local protocol control codes are flagged as "unsupported" — no silent send
+- The dial-set value matches exactly what the old +/− buttons / slider would have sent for the same gesture endpoint
+- Sensor/plug device cards and their detail views are visually and functionally unaffected except for gaining the expand/collapse transition
+- The detail view's other content (history, management controls, temperature chart) still works unchanged after the transition completes
+- A failed setpoint update surfaces the same error feedback as today, not a silently stuck dial
+- With reduced-motion enabled, the same flow works with instant (non-animated) transitions
 
-## Functional Requirements
+## Scope of Change
 
-### Authentication
-- FR-001: User can log in with credentials (email + password). Priority: must-have
-  > Socrates: No counter-argument; login is the access gate for a shared internal tool.
+- [new] An interactive circular thermostat dial that responds to a drag gesture (touch or mouse) to adjust a valve device's setpoint, shown at a compact size on the dashboard device card and at a larger, primary-control size in the device detail view. The card-sized dial remains fully interactive (not just a display) and is sized with a generous drag tolerance so it stays usable despite being compact; the detail-view dial is the primary, most precise control. (must-have)
+  > Socrates: Counter-argument considered: a drag-to-rotate gesture on a small card-sized dial is error-prone/fiddly, undermining the "premium feel" goal. Resolution: keep the card dial interactive, but require a generous touch target / drag tolerance in its design; the detail-view dial remains the primary precise control.
+- [new] The dial's background fill shifts smoothly from cool blue to warm orange as the setpoint value increases, contained to the dial's own shape and visually distinct from the separate room-status indicator shown elsewhere on the card. (must-have)
+  > Socrates: Counter-argument considered: blue→orange could clash with the existing cold/hot status-color language used elsewhere in the app. Resolution: accepted the risk — the gradient lives inside the dial's own contained shape, distinct in context/shape from the status indicator, so confusion in practice is unlikely.
+- [modified] The setpoint control changes from a small button pair (on the card) and a linear slider (in the detail view) to the dial described above, while producing the exact same setpoint result, with the same 5–35°C clamp and 0.5°C step. (must-have)
+  > Socrates: Counter-argument considered: this might be trivially obvious and not worth a dedicated scope item, since it's just "don't break the existing contract." Resolution: kept explicit anyway — this project's convention is to state preserved contracts as defensive guardrails even when "obviously" true, so it's testable in planning rather than assumed.
+- [modified] Clicking a device card expands it into the detail view's size and position, instead of an instant pop-up. The transition animates the card's outer position/size consistently across all card types; each card's internal content (dial vs. no dial, different readouts) fades in/out rather than attempting to literally reshape mismatched internal layouts between card types. (must-have)
+  > Socrates: Counter-argument considered: sensor, valve, and plug cards have different internal content/heights — a shared expand transition could look smooth for one card type and visually broken for another. Resolution: scope the transition to the card's outer position/size only; internal content fades rather than reflows.
+- [modified] Closing the detail view reverses the transition back into the originating card, with its duration explicitly capped (e.g. well under a third of a second) so it never feels sluggish to a user who wants to close quickly. The detail view's existing content continues to render and function exactly as today — the transition wraps entrance/exit only and does not alter what's inside. (must-have)
+  > Socrates: Counter-argument considered: (1) if the reverse-transition duration is too long, users who just want to dismiss the detail view quickly will feel friction instead of polish. Resolution: cap the animation duration explicitly. (2) A separate scope item stating detail-view internals are preserved was judged redundant once "wraps entrance/exit only" is stated here — merged rather than kept as a near-duplicate item.
+- [preserved] Sensor and plug device types (no setpoint) are unaffected — no dial appears on their cards or detail view. (must-have)
+  > Socrates: Counter-argument considered: since the dial is only ever built for valve devices, this might be redundant/trivially true by construction. Resolution: kept as an explicit preservation item anyway, matching this project's established convention for preserved behavior.
+- [new] While dragging the dial, a subtle haptic tick fires at each 0.5°C increment crossed, where the device/browser supports it. No audio — feedback is private to the person touching the device and never disturbs others nearby. (nice-to-have)
+  > Socrates: Counter-argument considered: sound effects in a shared office environment could be seen as unprofessional or annoying. Resolution: dropped the audio option entirely; kept haptic-only feedback, which doesn't have the shared-office downside.
 
-### Device Discovery
-- FR-002: System automatically discovers all Tuya Zigbee gateway hubs (centralki) on the LAN. Priority: must-have
-  > Socrates: Counter-argument considered: "auto-discovery requires knowing each device's local encryption key — this can't be fully automated." Resolution: acceptable. Admin inputs local keys once during initial setup (standard tinytuya workflow); discovery is automatic after that. One-time manual key setup is an accepted cost.
-- FR-003: System enumerates all devices attached to each discovered hub (temperature sensors, heating valves, smart plugs). Priority: must-have
-  > Socrates: No counter-argument; enumerating hub devices is prerequisite to any other feature.
+## Constraints & Compatibility
 
-### Device Overview
-- FR-004: User can see all devices in one view showing name, assigned room, current temperature (where applicable), and online/offline status. Priority: must-have
-  > Socrates: No counter-argument; this is the primary success criterion.
-- FR-005: User can browse devices grouped by room/floor. Priority: must-have
-  > Socrates: Counter-argument considered: "filtering alone covers the same navigation need; grouping adds complexity." Resolution: kept as must-have. Spatial grouping is the core UX — a flat filtered list doesn't replace the at-a-glance room overview.
-- FR-006: User can filter the device list by room/zone. Priority: must-have
-  > Socrates: No counter-argument; complements grouping for quick isolation.
-- FR-007: User can filter the device list by device type (sensor / valve / plug). Priority: must-have
-  > Socrates: Counter-argument considered: "room grouping covers navigation; type filter is redundant." Resolution: kept. "Show only valves" is a distinct diagnostic use case from room browsing.
-- FR-008: User can filter the device list by status (online / offline). Priority: must-have
-  > Socrates: Kept; offline/online filter is the primary diagnostic tool for infrastructure problems.
-- FR-009: User can search devices by name. Priority: must-have
-  > Socrates: Counter-argument considered: "50 devices + room filter is enough; search may never be used." Resolution: kept. Searching by name is faster when the device name is known; small implementation cost.
+- **No data migration:** this change touches no backend or data model — no new fields, no new endpoints, no persisted user preference.
+- **No new external contract:** the dial produces the exact same setpoint result that the existing controls already produce, with the same input shape, clamp, and step — the existing control path is reused, not replaced underneath.
+- **No backward-compatibility risk:** there are no existing external consumers, exports, or integrations touching the setpoint control path, so nothing downstream can break from this change.
+- The device detail view's existing content — history view, other management controls, temperature chart — all continue working exactly as today; only the view's open/close presentation and its setpoint control (for valve devices) change.
+- No special deployment window or release-process change — this change goes through the same quality gate as every other change in this project.
 
-### Device Detail & Control
-- FR-010: User can view the current state of a single device (temperature reading, setpoint, online/offline status). Priority: must-have
-  > Socrates: No counter-argument; prerequisite to control.
-- FR-011: User can adjust the temperature setpoint of a heating valve from the device detail view. Priority: must-have. **Caveat:** control is implemented for confirmed device models with known local protocol control codes; devices with unrecognised codes display status but are flagged as "unsupported" for control.
-  > Socrates: Counter-argument considered: "Tuya local protocol DP codes vary by manufacturer — control may silently fail on some valves." Resolution: added unsupported-device caveat. Control works for known models; unknown devices surface status only and are explicitly flagged.
-- FR-012: User sees immediate confirmation or a clear error message after every control command — no silent failures. Priority: must-have
-  > Socrates: No counter-argument; this is a named guardrail.
+## Business Logic Changes
 
-### Setup & Configuration
-- FR-013: Admin can assign each discovered device to a named room individually (one-time setup after initial discovery; persisted). Priority: must-have
-  > Socrates: Counter-argument considered: "bulk per-hub assignment would save time." Resolution: per-device assignment kept because one hub can span multiple rooms — bulk hub-to-room mapping doesn't hold.
+**No domain logic change.** This is a pure visualization/interaction change: the setpoint update behavior, device control behavior, and the existing threshold-based status logic are all unchanged. Nothing new is decided for the user — the dial and the expand/collapse transition only change how an existing decision (the setpoint value) is captured and how an existing view (the device detail view) is presented.
 
-## Non-Functional Requirements
+## Access Control Changes
 
-- Device readings shown in the dashboard are current within 30 seconds of the device's actual state.
-- The dashboard loads within 3 seconds on the company LAN with up to 50 devices present.
-- Configuration data (room assignments, per-room thresholds, user credentials) is retained across server restarts.
-- The product makes zero outbound network calls; no data crosses the company network boundary under any condition.
-- The product is fully functional without an internet connection.
-- The product works in current versions of Chrome, Firefox, and Edge on desktop. No mobile browser requirement.
-
-## Business Logic
-
-The app evaluates each room's current temperature against configurable per-room thresholds, scores the room as OK / Too Cold / Too Hot, flags threshold violations, detects when a room's temperature is significantly below its heating valve's current setpoint, and suggests specific valve adjustments.
-
-The rule consumes three user-visible inputs: the current temperature reading from sensors in each room; the current setpoint configured on each heating valve; and the per-room comfort thresholds (minimum and maximum acceptable temperature) set by an admin through the dashboard.
-
-The rule produces: a status badge per room (OK / Too Cold / Too Hot); alert flags on devices whose temperature violates their room's threshold; a suggested action when a room falls below its setpoint (e.g. "Room 3 is 2°C below setpoint — consider raising valve to 22°C"); and an anomaly flag when the current temperature is more than a configured gap below the valve's setpoint. In v1, anomaly detection is live-state only — if current temp < (setpoint − configured gap threshold), the room is flagged. No time-based drift tracking.
-
-All thresholds — comfort band minimum, comfort band maximum, and anomaly gap — are configurable per room by an admin through the dashboard UI. A global default applies to rooms with no per-room override.
-
-## Access Control
-
-Authentication is required. All users log in with email and password. No unauthenticated access is permitted, even from within the company LAN.
-
-Role model: flat. All authenticated users have identical access — they can view all devices and issue control commands. No role separation in MVP.
-
-The dashboard is served on the company LAN only and is not reachable from the internet. Admin functions (room assignment, threshold configuration) are accessible to any authenticated user.
+No access control changes — current model preserved: single flat role, full access for the one effective user type. This is a pure UI/interaction feature; auth and roles are untouched.
 
 ## Non-Goals
 
-- **No historical temperature data** — no charts, graphs, or time-series views in v1. Temperature history deferred to v2.
-- **No automation creation or scheduling** — users cannot create time-based rules (e.g. "heat room at 7am") in v1. Automation features deferred to v2.
-- **No automation execution history** — no log of past automation runs. Deferred to v2.
-- **No external notifications** — threshold alerts and anomaly flags appear in the dashboard UI only. No email, SMS, or push notifications in v1.
-- **No multi-site support** — single office location only. No multi-tenant or multi-building architecture.
+- No change to product type (web app) or user base/scale (small, 2–5 person org) — this feature doesn't alter either.
+- No hard deadline; after-hours-only work.
+- Avoid: extending the dial or the expand/collapse transition to other controls — no dial-ification of other inputs (e.g. other threshold settings, schedule times) and no expand/collapse transition for other UI surfaces (e.g. room cards, settings cards). Scoped strictly to the device card/detail-view setpoint control and its open/close transition.
+- Avoid: a full design-system animation overhaul — other existing transitions (notifications, dropdowns, dialogs elsewhere in the app) are untouched by this change.
 
 ## Open Questions
 
-1. **Timeline:** MVP estimated at 3 weeks after-hours; soft target 2026-06-10 (confirmed not a hard gate — scope is fixed, deadline is flexible). Owner: user. No blocking dependency.
-2. **Device model list:** Control (FR-011) is scoped to confirmed device models with known local protocol control codes. The specific models in use must be documented before implementation of FR-011 begins. Owner: user. Block: yes for FR-011.
-3. **Local key provisioning:** Device local encryption keys must be obtained from the Tuya IoT Platform or via local key extraction before discovery (FR-002/FR-003) can be built. This is an operational prerequisite, not a development task, but it gates implementation start. Owner: user. Block: yes for FR-002/FR-003.
+No open questions — shaping captured all required elements (Access Control, Business Logic, Timeline-cost, Non-Goals, Constraints & Preserved Behavior) with no gaps.

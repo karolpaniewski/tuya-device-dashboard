@@ -1,7 +1,7 @@
 ---
 project: tuya-device-dashboard
-checked_at: 2026-06-20T13:20:00Z
-health_status: needs-attention
+checked_at: 2026-06-25T10:29:08Z
+health_status: healthy
 context_type: brownfield
 language_family: js
 stack_assessment_available: true
@@ -14,7 +14,7 @@ checks_run:
   - configuration
 audit_findings:
   critical: 0
-  high: 1
+  high: 0
   moderate: 6
   low: 0
 test_runner_detected: true
@@ -35,44 +35,47 @@ Package manager: npm
 
 ```
 Tool: npm audit --json
-Summary: 0 CRITICAL, 1 HIGH, 6 MODERATE, 0 LOW
-Direct vs transitive: 2 direct (drizzle-kit, next), 1 direct+high (drizzle-orm); remaining 4 are transitive (@esbuild-kit/core-utils, @esbuild-kit/esm-loader, esbuild, postcss)
+Summary: 0 CRITICAL, 0 HIGH, 6 MODERATE, 0 LOW
+Direct vs transitive: 2 direct (drizzle-kit, next), 4 transitive (@esbuild-kit/core-utils, @esbuild-kit/esm-loader, esbuild, postcss)
 ```
 
-#### HIGH findings
+All 6 findings are MODERATE — none reach the CRITICAL/HIGH threshold that would block agent-assisted work. Two independent clusters:
 
-- **drizzle-orm** 0.41.0 (installed, direct) — GHSA-gpj5-g38j-94v9: SQL injection via improperly escaped SQL identifiers, affects versions `<0.45.2`. Fix: `npm install drizzle-orm@^0.45.2` (flagged by npm as a semver-major bump even though it's a 0.x→0.x change — review Drizzle's 0.42–0.45 changelogs before upgrading, then re-run the test suite).
+- **drizzle-kit → esbuild (dev-only).** `drizzle-kit@0.30.5` pulls in `@esbuild-kit/core-utils` / `@esbuild-kit/esm-loader` → `esbuild@<=0.24.2` (GHSA-67mh-4wv8-2f99 — a vulnerable esbuild dev server can be made to respond to requests from any origin). This only affects local development tooling (drizzle-kit's CLI, not the shipped app), so production exposure is none. `npm audit`'s suggested fix: `drizzle-kit@0.31.10` (semver-major).
+- **next → postcss (bundled, nested).** `next@15.5.19` bundles its own internal `postcss@8.4.31` (GHSA-qx2v-qp2m-jg93 — XSS via unescaped `</style>` in PostCSS's stringify output, range `<8.5.10`). This is **not** the project's own top-level `postcss` (already `8.5.15`, safe) — it's Next's internal copy. `npm audit`'s suggested fix (downgrade `next` to `9.3.3`) is a known npm-audit false economy for nested transitive deps — do not follow it; it would be a massive regression. The real fix is either an npm `overrides` entry forcing `postcss >= 8.5.10` everywhere, or waiting for a Next.js patch release that bumps its internal copy.
 
 #### MODERATE findings
-
-- **drizzle-kit** 0.30.5 (direct, dev dependency) and its transitive deps **@esbuild-kit/core-utils**, **@esbuild-kit/esm-loader**, **esbuild** — GHSA-67mh-4wv8-2f99: esbuild's dev server can be made to respond to arbitrary requests from any website. Only affects local `drizzle-kit` workflows (`db:generate`, `db:push`, `db:studio`), not the deployed app. Fix: `npm install -D drizzle-kit@^0.31.10`.
-- **next** 15.5.19 (direct) and its bundled, transitive **postcss** copy — GHSA-qx2v-qp2m-jg93: PostCSS XSS via unescaped `</style>` in stringified CSS output, affects postcss `<8.5.10`. npm's `fixAvailable` field suggests downgrading `next` to `9.3.3` — that is not a real fix, it's npm audit's heuristic picking the oldest version outside the vulnerable range. The practical remediation is to track a Next.js patch release that bumps its internal postcss copy; no safe action is available today without a much larger Next.js version change.
+- `@esbuild-kit/core-utils`, `@esbuild-kit/esm-loader`, `esbuild` — transitive via `drizzle-kit`; dev-only exposure.
+- `drizzle-kit` (direct) — same cluster; fix available at `0.31.10` (major bump).
+- `next` (direct) — flagged via its own bundled `postcss`; `next` itself is current (15.5.19).
+- `postcss` (transitive, nested under `next`, not the top-level dependency) — XSS advisory; see above.
 
 ### Outdated Dependencies
 
 ```
-Packages with major version gaps: 4 (2+ majors behind), plus several 1-major-behind direct deps worth tracking
+Packages with major version gaps (2+): 0
 ```
 
-- **@types/node**: 20.19.43 → 26.0.0 (6 major versions behind). Types-only package — low runtime risk, but worth a deliberate bump since it can mask Node API drift.
-- **typescript**: 5.9.3 → 6.0.3 (1 major behind).
-- **next**: 15.5.19 → 16.2.9 (1 major behind).
-- **zod**: 3.25.76 → 4.4.3 (1 major behind) — zod v4 changed several validation/error APIs; this is a deliberate migration, not a drop-in bump.
-- **drizzle-orm** / **drizzle-kit**: already covered above — their "latest" bump also resolves the HIGH/MODERATE audit findings.
-- Note: `npm outdated` reports `next-auth`'s "latest" as `4.24.14`, lower than the installed `5.0.0-beta.31`. This is an npm dist-tag artifact, not a real downgrade signal — `next-auth`'s `latest` tag still points at the v4 line while v5 ships under a `beta` tag; the project is deliberately on the v5 beta channel (also flagged in `stack-assessment.md`).
+No package is 2+ major versions behind. Notes worth flagging anyway:
+
+- **`next-auth`**: `npm outdated` reports `current: 5.0.0-beta.31`, `latest: 4.24.14` — this looks like the project is "ahead of latest," which is correct and intentional: npm's `latest` dist-tag still points at the stable v4 line, while this project deliberately runs the v5 beta channel (already named and compensated for in `AGENTS.md`). **Do not** "fix" this by downgrading to v4 — that would break auth entirely.
+- **`next`**: `15.5.19` → `16.2.9` available (1 major version). Not at the 2+ threshold, but worth knowing about for future planning.
+- **`zod`**: `3.25.76` → `4.4.3` available (1 major version, and zod v4 is a substantial breaking redesign). Not urgent, but plan for a deliberate migration rather than an incidental bump.
 
 ## Test Suite
 
 ```
 Test runner: Vitest
-Tests found: 114 tests across 53 suites
-Test execution: passing (114/114)
+Tests found: 198 tests across 22 test files
+Test execution: passing (198/198)
 ```
 
 ```
-Configuration: vitest.config.ts
-Framework: Vitest 4.1.8
+Configuration: package.json scripts (test, test:watch); no separate vitest.config.* needed for this setup
+Framework: Vitest 4.1.8 — note: npm outdated shows 4.1.9 available (patch bump)
 ```
+
+Verified via the project's actual `npm run test` command. A generic dry-run probe (`vitest run --reporter=basic`) failed on an unrelated reporter-loading quirk in this Vitest version — not a project issue, since the real, project-defined test script runs cleanly.
 
 ## CI/CD
 
@@ -83,25 +86,25 @@ Configuration: .github/workflows/ci.yml
 
 | Stage      | Status | Notes                                      |
 |------------|--------|---------------------------------------------|
-| Lint       | ✓      | Biome (`biome check .`)                     |
-| Test       | ✓      | Vitest (`vitest run`)                       |
-| Build      | ✓      | `next build`                                |
-| Type check | ✓      | `tsc --noEmit`                              |
-| Security   | ✗      | not configured — no `npm audit` step, no Dependabot config |
+| Lint       | ✓      | Biome (`biome check .`, part of `npm run ci`) |
+| Test       | ✓      | Vitest (`vitest run`, part of `npm run ci`)   |
+| Build      | ✓      | `next build`, part of `npm run ci`            |
+| Type check | ✓      | `tsc --noEmit`, part of `npm run ci`          |
+| Security   | ✗      | not configured — no `npm audit` step, no Dependabot, no CodeQL |
+
+Four of five stages are covered, and CI runs the exact same `npm run ci` gate used locally — no drift between local and CI verification. The one gap is automated security scanning.
 
 ## Configuration
 
-### High severity
-
-All expected high-severity configuration is present — no gaps. (`.gitignore` correctly excludes `.env`/`.env*.local`; `tsconfig.json` has `strict: true`.)
-
 ### Medium severity
 
-All expected medium-severity configuration is present — no gaps. (`biome.jsonc` covers both linting and formatting.)
+- **No security-scan step in CI** — the 6 moderate `npm audit` findings above are currently only visible by running the command locally; nothing flags new advisories automatically on push. Fix: add a Dependabot config (`.github/dependabot.yml`, `npm` ecosystem) for automated update PRs, and/or add a non-blocking `npm audit --audit-level=high` CI step so HIGH/CRITICAL findings surface in PR checks without failing builds on every moderate advisory.
 
 ### Low severity
 
-- **`.editorconfig`** — missing. Minor: cross-editor formatting consistency is already covered by Biome for this codebase, so the practical impact is small. Fix: add a basic `.editorconfig` if contributors use editors that don't read `biome.jsonc`.
+- **`.editorconfig`** — missing. Low impact: Biome (`biome.jsonc`) already enforces formatting/lint consistency for JS/TS; this would mainly help non-JS files (`.md`, `.yml`) in editors without Biome integration. Fix: add a minimal `.editorconfig` with `charset`, `end_of_line`, `indent_style`, and `trim_trailing_whitespace` defaults.
+
+All other expected configuration is present: `.gitignore`, `.env.example`, `tsconfig.json` (`strict: true`, `noUncheckedIndexedAccess: true`, `checkJs: true`), Biome as the sole linter/formatter, `package-lock.json`.
 
 ## Stack Assessment Cross-Reference
 
@@ -110,66 +113,88 @@ Stack assessment: context/foundation/stack-assessment.md
 Agent readiness (from stack-assess): ready
 ```
 
-The stack assessment found no quality-gate failures (typed, convention-based, popular-in-training, well-documented all pass) — so there are no compensation strategies to verify here. This health-check's findings are independent of stack choice: they're operational (a real dependency vulnerability, a CI gap, some version drift), not architecture-shaped. The two reports agree on the one item they share: stack-assessment flagged the NextAuth beta dependency and the absent deployment config as minor watch-items, not gates; this health-check reinforces the same two observations from the operational side (outdated-deps note above, and the Category B item below).
+| Quality Gate Gap | Health-Check Finding | Status |
+|-------------------|------------------------|--------|
+| None (12/12 gates passed) | CI enforces type-check, lint, test, and build on every push — reinforces the "typed" and "convention-based" passes with an automated gate, not just a tsconfig declaration | Reinforced |
+| NextAuth v5 beta — partial training-data/docs gate (pass-with-note) | `AGENTS.md`'s `## Auth (NextAuth v5 beta)` compensation entry confirmed present and current | Mitigated |
+
+No new gaps surfaced by this health check beyond what the stack assessment already covered. The findings here (dependency audit moderates, missing CI security stage) are operational/maintenance items, not quality-gate failures.
 
 ## Recommended Fixes
 
 ### Fix before agent work (Category A)
 
-### 1. Patch the Drizzle ORM SQL-injection advisory
+#### 1. Add an npm `overrides` entry (or wait for upstream) for Next's bundled postcss
 
-**Impact**: Drizzle ORM is the project's only database access layer, fronting an auth-gated admin app. A SQL-injection-class flaw in the ORM itself is the most consequential finding in this report — any agent-assisted change that touches query-building code should not be layered on top of a known-vulnerable ORM version.
-**Severity**: high
-**Effort**: moderate (15–30 min: review changelog, bump, re-run `npm run ci`)
+**Impact**: a moderate XSS advisory (GHSA-qx2v-qp2m-jg93) sits in Next's internal dependency tree; low real-world risk for this LAN-only internal tool, but worth closing cleanly rather than leaving an open advisory.
+**Severity**: medium
+**Effort**: quick (< 5 min)
+**Fix**:
+
+```json
+// package.json
+"overrides": {
+  "postcss": "^8.5.15"
+}
+```
+Then `npm install` and confirm `npm run build` still succeeds (it should — the top-level `postcss` is already on this safe version).
+
+#### 2. Upgrade `drizzle-kit` to clear the esbuild dev-server advisory
+
+**Impact**: dev-only exposure (CLI tooling, not the shipped app) via a known esbuild dev-server CORS issue (GHSA-67mh-4wv8-2f99).
+**Severity**: medium
+**Effort**: moderate (15–30 min — semver-major bump, worth a quick changelog check)
 **Fix**:
 
 ```bash
-npm install drizzle-orm@^0.45.2
-npm run ci
+npm install -D drizzle-kit@0.31.10
+npm run db:generate  # sanity-check the CLI still works against existing migrations
 ```
 
-### 2. Add a security-scan stage to CI
+#### 3. Add automated security scanning to CI
 
-**Impact**: The CI pipeline already gates lint, types, tests, and build — but nothing currently catches a newly-disclosed advisory (like the one in fix #1) before it lands on `main`. Without this, the next vulnerable dependency ships silently.
+**Impact**: right now, new dependency advisories are only visible by running `npm audit` manually — nothing surfaces them on a PR.
 **Severity**: medium
 **Effort**: quick (< 5 min)
-**Fix**: add a step to `.github/workflows/ci.yml` (or fold into `npm run ci`):
+**Fix**: add `.github/dependabot.yml`:
 
 ```yaml
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
 ```
 
-### 3. Bump `drizzle-kit` to clear the esbuild dev-server advisory
+#### 4. Add `.editorconfig`
 
-**Impact**: Lower urgency than #1 — `drizzle-kit` only runs locally (`db:generate`, `db:push`, `db:studio`), never in the deployed app — but it's a one-line fix that clears 4 of the 6 MODERATE findings at once.
-**Severity**: medium
+**Impact**: low — Biome already covers JS/TS formatting; this only smooths over non-JS file editing (`.md`, `.yml`) in editors without Biome integration.
+**Severity**: low
 **Effort**: quick (< 5 min)
 **Fix**:
 
-```bash
-npm install -D drizzle-kit@^0.31.10
-npm run db:generate
+```ini
+# .editorconfig
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+insert_final_newline = true
 ```
-
-### 4. Schedule the zod v3→v4 migration deliberately
-
-**Impact**: zod is used at tRPC's input-validation boundary throughout the API layer; v4 changed several validation and error-shape APIs. Not urgent, but it's the one outdated dependency here with real breaking-change surface — worth a dedicated pass rather than a drive-by bump during unrelated work.
-**Severity**: low
-**Effort**: significant (> 1 hour — touches every tRPC router's input schemas)
-**Fix**: review the [zod v4 migration guide], then bump and fix call sites incrementally, router by router, with `npm run test` after each.
 
 ### Addressed in upcoming lessons (Category B)
 
-### No deployment configuration in-repo
-
-**Lesson**: infrastructure and deployment
-**What you'll do there**: set up a deployment target (platform config, `Dockerfile`, or equivalent) — this is also flagged in `stack-assessment.md` as a non-blocking observation. No action needed before agent-assisted feature work.
+Not applicable — this project already has CI/CD (GitHub Actions) and agent instruction files (`CLAUDE.md`, `AGENTS.md`), both actively maintained with real content rather than stubs. There's nothing deferred to a later setup stage; the project has already passed that point. (No deployment-target config exists either, but that's a deliberate choice already documented in this project's roadmap — a LAN-only tool with manual `git pull && build && start` deploy — not a gap.)
 
 ## Summary
 
-Health status: needs-attention
+Health status: healthy
 
-The project's day-to-day agent-collaboration tooling is solid: a working Vitest suite (114/114 passing), a CI pipeline that already gates lint/types/tests/build, strict TypeScript, and clean `.gitignore`/config hygiene. The one real gap is a HIGH-severity SQL-injection advisory in the installed Drizzle ORM version, compounded by the fact that CI has no security-scan stage to have caught it automatically — that's the pairing that earns "needs-attention" rather than "healthy." Everything else (moderate esbuild/postcss advisories, a few outdated direct dependencies) is routine maintenance, not urgent.
+The project's core agent-readiness signals are all clean: a working, fast test suite (198/198 passing across 22 files), strict TypeScript end-to-end, a CI pipeline that mirrors the local dev-check script exactly, and actively-maintained instruction files with real compensation entries already in place. The only findings are routine maintenance items — six moderate (zero critical/high) dependency advisories, no automated security-scan stage in CI, and a missing `.editorconfig` — none of which block or meaningfully complicate agent-assisted work on the current change.
 
-Next step: patch the Drizzle ORM advisory and add the CI audit step (fixes #1–#2 above), then proceed to agent onboarding — the remaining items (drizzle-kit bump, zod migration) can be scheduled alongside normal feature work.
+Next step: the four fixes above are optional polish, not blockers — address them whenever convenient (the postcss override and Dependabot config take under 10 minutes combined). The project is ready to proceed straight to implementing the device-card/room-card automation-visibility change (`prd-v9.md`).

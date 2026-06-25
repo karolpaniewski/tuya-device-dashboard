@@ -39,6 +39,31 @@ Tuya Device Dashboard — a Next.js 15 (App Router) + tRPC v11 + Drizzle ORM (li
 - Observed convention: `type(scope): description (pN)` — e.g. `feat(dashboard-command-center-redesign): KPI row (p2)`. `scope` matches a `context/changes/<scope>/` folder; `pN` is that plan's phase number. `chore(scope): close out plan (epilogue)` closes a change.
 - CI must pass (`npm run ci`) before merge.
 
+## Device control (tuyapi)
+
+Tuya device control goes through `tuyapi`, talking to devices over the LAN
+via Tuya's DP (data point) protocol — not a cloud API. DP codes are
+device-model-specific; don't assume a DP code from one device type applies
+to another. When touching device-control or automation/scheduling code
+(setpoint, valve state, the mode engine), check the existing DP mappings in
+the codebase before introducing new ones.
+
+## Auth (NextAuth v5 beta)
+
+This project pins `next-auth@5.0.0-beta.31`. Do not "upgrade" auth patterns
+to match NextAuth v4 or stable-v5 examples seen elsewhere — this beta's API
+differs from both. Check the installed version's actual exports before
+assuming a NextAuth pattern from training data applies here.
+
+## File uploads
+
+There is no existing upload/storage pattern in this codebase as of the
+floor-plan (digital-twin) feature — it's the first to need one. Before
+adding a new dependency for this, check whether a simple local-filesystem
+or existing-infra approach covers the MVP's basic file-type/size validation
+need; don't reach for a hosted storage service unless the requirement
+genuinely needs it.
+
 ## Security & Configuration Tips
 
 - Copy `@.env.example` to `.env`; never commit `.env` (already gitignored).

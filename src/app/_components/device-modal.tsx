@@ -1,6 +1,7 @@
 "use client";
 
-import { Droplets, Thermometer, Wifi, WifiOff } from "lucide-react";
+import { Droplets, Thermometer, Timer, Wifi, WifiOff } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import {
 	CartesianGrid,
@@ -12,6 +13,7 @@ import {
 	YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import { Badge } from "~/components/ui/badge";
 import {
 	Dialog,
 	DialogBody,
@@ -21,6 +23,10 @@ import {
 	DialogTitle,
 } from "~/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+	formatModeSchedule,
+	type ModeTargetingRoom,
+} from "~/lib/mode-targeting";
 import { useReducedMotion } from "~/lib/use-reduced-motion";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -32,6 +38,7 @@ type RoomItem = RouterOutputs["room"]["list"][number];
 
 interface Props {
 	device: DeviceItem;
+	modesForRoom: ModeTargetingRoom[];
 	rooms: Pick<RoomItem, "id" | "name">[];
 	utils: ReturnType<typeof api.useUtils>;
 	onClose: () => void;
@@ -40,7 +47,13 @@ interface Props {
 // Matches device-overview.tsx's CARD_TRANSITION_MS — the shared-layout morph's duration.
 const TRANSITION_DURATION_MS = 280;
 
-export function DeviceModal({ device, rooms, utils, onClose }: Props) {
+export function DeviceModal({
+	device,
+	modesForRoom,
+	rooms,
+	utils,
+	onClose,
+}: Props) {
 	const reducedMotion = useReducedMotion();
 	const actionsRef = useRef<{ unmount: () => void; close: () => void } | null>(
 		null,
@@ -58,7 +71,12 @@ export function DeviceModal({ device, rooms, utils, onClose }: Props) {
 	if (reducedMotion) {
 		return (
 			<Dialog defaultOpen onOpenChange={(isOpen) => !isOpen && onClose()}>
-				<DeviceModalContent device={device} rooms={rooms} utils={utils} />
+				<DeviceModalContent
+					device={device}
+					modesForRoom={modesForRoom}
+					rooms={rooms}
+					utils={utils}
+				/>
 			</Dialog>
 		);
 	}
@@ -89,6 +107,7 @@ export function DeviceModal({ device, rooms, utils, onClose }: Props) {
 				device={device}
 				layoutId={`device-card-${device.id}`}
 				layoutOpen={layoutOpen}
+				modesForRoom={modesForRoom}
 				rooms={rooms}
 				utils={utils}
 			/>
@@ -98,12 +117,14 @@ export function DeviceModal({ device, rooms, utils, onClose }: Props) {
 
 function DeviceModalContent({
 	device,
+	modesForRoom,
 	rooms,
 	utils,
 	layoutId,
 	layoutOpen,
 }: {
 	device: DeviceItem;
+	modesForRoom: ModeTargetingRoom[];
 	rooms: Pick<RoomItem, "id" | "name">[];
 	utils: ReturnType<typeof api.useUtils>;
 	layoutId?: string;
@@ -190,9 +211,7 @@ function DeviceModalContent({
 					<TabsList>
 						<TabsTrigger value="overview">Overview</TabsTrigger>
 						<TabsTrigger value="history">History</TabsTrigger>
-						<TabsTrigger disabled value="automations">
-							Automations
-						</TabsTrigger>
+						<TabsTrigger value="automations">Automations</TabsTrigger>
 					</TabsList>
 				</div>
 
@@ -305,10 +324,48 @@ function DeviceModalContent({
 				</TabsContent>
 
 				<TabsContent value="automations">
-					<DialogBody>
-						<p className="text-center text-[var(--s-text-dim)] text-sm">
-							Automation rules are coming in a future update.
-						</p>
+					<DialogBody className="space-y-4">
+						{modesForRoom.length > 0 ? (
+							<ul className="flex flex-col gap-2">
+								{modesForRoom.map((mode) => (
+									<li
+										className="flex flex-col gap-1 rounded-xl border border-[var(--s-border)] bg-[var(--s-bg)] px-4 py-3"
+										key={mode.id}
+									>
+										<div className="flex items-center justify-between gap-2">
+											<span className="font-medium text-foreground text-sm">
+												{mode.name}
+											</span>
+											<Badge variant={mode.targetOn ? "default" : "outline"}>
+												{mode.targetOn ? "ON" : "OFF"}
+											</Badge>
+										</div>
+										<p className="text-[var(--s-text-muted)] text-xs">
+											{formatModeSchedule(mode)}
+										</p>
+									</li>
+								))}
+							</ul>
+						) : (
+							<div className="flex flex-col items-center justify-center py-8 text-center">
+								<Timer
+									className="mb-2"
+									size={28}
+									style={{ color: "var(--s-text-dim)" }}
+								/>
+								<p className="text-[var(--s-text-dim)] text-sm">
+									{device.roomId === null
+										? "Assign this device to a room to see its automation modes."
+										: "No modes target this room yet."}
+								</p>
+							</div>
+						)}
+						<Link
+							className="inline-block text-[var(--s-text-secondary)] text-sm underline hover:text-[var(--s-text-secondary-hov)]"
+							href="/setup"
+						>
+							Manage modes in Settings →
+						</Link>
 					</DialogBody>
 				</TabsContent>
 			</Tabs>
