@@ -134,6 +134,7 @@ interface RoomGroupProps {
 	isToggleHeatPending?: boolean;
 	isUnassigned?: boolean;
 	onDeviceClick?: (device: DeviceItem) => void;
+	onHeaderClick?: () => void;
 	onToggleHeat?: (pinnedOff: boolean) => void;
 	pinnedOff?: boolean;
 	primarySensorId?: string | null;
@@ -152,6 +153,7 @@ export function RoomGroup({
 	isToggleHeatPending,
 	isUnassigned,
 	onDeviceClick,
+	onHeaderClick,
 	onToggleHeat,
 	pinnedOff,
 	primarySensorId,
@@ -206,7 +208,22 @@ export function RoomGroup({
 			<div className="flex items-center justify-between">
 				<div className="flex items-center gap-2">
 					<h2
-						className={`font-semibold text-xl ${isUnassigned ? "text-[var(--s-text-dim)]" : "text-foreground"}`}
+						className={cn(
+							"font-semibold text-xl",
+							isUnassigned ? "text-[var(--s-text-dim)]" : "text-foreground",
+							onHeaderClick &&
+								"cursor-pointer transition-colors hover:text-[var(--cc-cyan)]",
+						)}
+						onClick={onHeaderClick}
+						onKeyDown={(e) => {
+							if (!onHeaderClick) return;
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								onHeaderClick();
+							}
+						}}
+						role={onHeaderClick ? "button" : undefined}
+						tabIndex={onHeaderClick ? 0 : undefined}
 					>
 						{roomName}
 						<span className="ml-2 font-normal text-[var(--s-text-dim)] text-sm">

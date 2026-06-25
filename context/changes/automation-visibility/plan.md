@@ -406,37 +406,37 @@ Not applicable — no schema or data changes.
 
 #### Automated
 
-- [x] 1.1 `npm run typecheck` passes
-- [x] 1.2 `npm run check` (Biome) passes
-- [x] 1.3 `npm run test` passes, including the new `mode-targeting.test.ts` cases
-- [x] 1.4 `npm run build` succeeds
+- [x] 1.1 `npm run typecheck` passes — 51d85c3
+- [x] 1.2 `npm run check` (Biome) passes — 51d85c3
+- [x] 1.3 `npm run test` passes, including the new `mode-targeting.test.ts` cases — 51d85c3
+- [x] 1.4 `npm run build` succeeds — 51d85c3
 
 #### Manual
 
-- [x] 1.5 Device in a room targeted by one mode shows that mode's name, on/off, and schedule in the Automations tab
-- [x] 1.6 Device in a room targeted by two modes shows both, each with its own on/off state
-- [x] 1.7 Device in a room targeted by zero modes shows the empty state
-- [x] 1.8 Device with no room assigned shows the unassigned-specific empty state
-- [x] 1.9 Automations tab link navigates to `/setup`
-- [x] 1.10 Existing Overview and History tabs unaffected
+- [x] 1.5 Device in a room targeted by one mode shows that mode's name, on/off, and schedule in the Automations tab — 51d85c3
+- [x] 1.6 Device in a room targeted by two modes shows both, each with its own on/off state — 51d85c3
+- [x] 1.7 Device in a room targeted by zero modes shows the empty state — 51d85c3
+- [x] 1.8 Device with no room assigned shows the unassigned-specific empty state — 51d85c3
+- [x] 1.9 Automations tab link navigates to `/setup` — 51d85c3
+- [x] 1.10 Existing Overview and History tabs unaffected — 51d85c3
 
 ### Phase 2: Room modal
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` passes
-- [ ] 2.2 `npm run check` (Biome) passes
-- [ ] 2.3 `npm run test` passes
-- [ ] 2.4 `npm run build` succeeds
+- [x] 2.1 `npm run typecheck` passes
+- [x] 2.2 `npm run check` (Biome) passes
+- [x] 2.3 `npm run test` passes
+- [x] 2.4 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 2.5 Clicking a room's header opens the Room modal with correct devices/temperature/state
-- [ ] 2.6 Room modal's mode section matches the Automations tab for a device in that room
-- [ ] 2.7 Clicking the "Unassigned" group's header does nothing
-- [ ] 2.8 Existing room drag-reorder (grip handle) still works
-- [ ] 2.9 Existing device drag-reorder-within-room still works
-- [ ] 2.10 Existing drag-to-rotate setpoint dial still works on the dashboard grid
+- [x] 2.5 Clicking a room's header opens the Room modal with correct devices/temperature/state
+- [x] 2.6 Room modal's mode section matches the Automations tab for a device in that room
+- [x] 2.7 Clicking the "Unassigned" group's header does nothing
+- [x] 2.8 Existing room drag-reorder (grip handle) still works
+- [x] 2.9 Existing device drag-reorder-within-room still works
+- [x] 2.10 Existing drag-to-rotate setpoint dial still works on the dashboard grid
 
 ### Phase 3: Flow-chart-style grouping (Secondary, scope-bounded)
 

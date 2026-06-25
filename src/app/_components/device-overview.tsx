@@ -49,6 +49,7 @@ import { DeviceCard } from "./device-card";
 import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
 import { RoomGroup } from "./room-group";
+import { RoomModal } from "./room-modal";
 import { RoomSidebar } from "./room-sidebar";
 import { SortableRoomGroup } from "./sortable-room-group";
 import { SortableWidget } from "./sortable-widget";
@@ -142,6 +143,7 @@ export function DeviceOverview() {
 
 	const [roomFilter, setRoomFilter] = useState("");
 	const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
+	const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 	const [typeFilter, setTypeFilter] = useState<FilterState["type"]>("");
 	const [statusFilter, setStatusFilter] = useState<FilterState["status"]>("");
 	const [nameSearch, setNameSearch] = useState("");
@@ -1046,6 +1048,9 @@ export function DeviceOverview() {
 															expandedDeviceId={selectedDevice?.id ?? null}
 															isToggleHeatPending={toggleHeatMutation.isPending}
 															onDeviceClick={handleDeviceClick}
+															onHeaderClick={() =>
+																setSelectedRoomId(room.roomId)
+															}
 															onToggleHeat={(pinnedOff) =>
 																toggleHeatMutation.mutate({
 																	roomId: room.roomId,
@@ -1088,6 +1093,7 @@ export function DeviceOverview() {
 													expandedDeviceId={selectedDevice?.id ?? null}
 													isToggleHeatPending={toggleHeatMutation.isPending}
 													onDeviceClick={handleDeviceClick}
+													onHeaderClick={() => setSelectedRoomId(room.roomId)}
 													onToggleHeat={(pinnedOff) =>
 														toggleHeatMutation.mutate({
 															roomId: room.roomId,
@@ -1150,6 +1156,23 @@ export function DeviceOverview() {
 					utils={utils}
 				/>
 			)}
+			{selectedRoomId &&
+				(() => {
+					const room = data?.rooms.find((r) => r.roomId === selectedRoomId);
+					if (!room) return null;
+					return (
+						<RoomModal
+							devices={room.devices}
+							modesForRoom={getModesForRoom(
+								room.roomId,
+								modeListQuery.data ?? [],
+							)}
+							onClose={() => setSelectedRoomId(null)}
+							roomId={room.roomId}
+							roomName={room.roomName}
+						/>
+					);
+				})()}
 		</div>
 	);
 }
