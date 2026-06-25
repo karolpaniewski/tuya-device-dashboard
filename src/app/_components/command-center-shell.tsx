@@ -7,6 +7,7 @@ import {
 	Moon,
 	Settings,
 	User,
+	Workflow,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -155,6 +156,12 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 					href="/setup"
 					icon={<Settings size={20} />}
 					label="Setup"
+				/>
+				<RailLink
+					active={pathname === "/automation-flow"}
+					href="/automation-flow"
+					icon={<Workflow size={20} />}
+					label="Automation Flow"
 				/>
 
 				<Popover>
