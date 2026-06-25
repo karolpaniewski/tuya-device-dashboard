@@ -1,10 +1,10 @@
 ---
 change_id: retention-purge-job
 title: Retention purge job — observability + tests for the existing purge
-status: implemented
+status: archived
 created: 2026-06-25
 updated: 2026-06-25
-archived_at: null
+archived_at: 2026-06-25T09:56:59Z
 ---
 
 ## Notes
