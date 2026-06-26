@@ -72,6 +72,57 @@ describe("sendValveStateCommand", () => {
 		);
 	});
 
+	it("throws DEVICE_NOT_PAIRED when device has no gatewayId", async () => {
+		const device = {
+			...MOCK_DEVICE_BASE,
+			productKey: "test-product-key",
+			gatewayId: null,
+		};
+		mockDbSelect([device]);
+		await expect(sendValveStateCommand("dev-1", false)).rejects.toThrow(
+			"DEVICE_NOT_PAIRED",
+		);
+	});
+
+	it("throws GATEWAY_NOT_FOUND when no gateway row exists for the device", async () => {
+		const device = { ...MOCK_DEVICE_BASE, productKey: "test-product-key" };
+		mockDbSelect([device], []);
+		await expect(sendValveStateCommand("dev-1", false)).rejects.toThrow(
+			"GATEWAY_NOT_FOUND",
+		);
+	});
+
+	it("throws GATEWAY_KEY_NOT_SET when gateway has no localKey", async () => {
+		const device = { ...MOCK_DEVICE_BASE, productKey: "test-product-key" };
+		mockDbSelect([device], [{ ...MOCK_GATEWAY, localKey: null }]);
+		await expect(sendValveStateCommand("dev-1", false)).rejects.toThrow(
+			"GATEWAY_KEY_NOT_SET",
+		);
+	});
+
+	it("throws KEY_DECRYPT_FAILED when decryptLocalKey throws", async () => {
+		const device = { ...MOCK_DEVICE_BASE, productKey: "test-product-key" };
+		mockDbSelect([device]);
+		vi.mocked(decryptLocalKey).mockImplementation(() => {
+			throw new Error("bad key");
+		});
+		await expect(sendValveStateCommand("dev-1", false)).rejects.toThrow(
+			"KEY_DECRYPT_FAILED",
+		);
+	});
+
+	it("throws COMMAND_FAILED when sendSwitch rejects", async () => {
+		const device = { ...MOCK_DEVICE_BASE, productKey: "test-product-key" };
+		mockDbSelect([device]);
+		vi.mocked(decryptLocalKey).mockReturnValue("plaintext-key");
+		vi.mocked(getTuyaClient).mockReturnValue({
+			sendSwitch: vi.fn().mockRejectedValue(new Error("network error")),
+		} as never);
+		await expect(sendValveStateCommand("dev-1", false)).rejects.toThrow(
+			"COMMAND_FAILED",
+		);
+	});
+
 	it("happy path: calls sendSwitch with the DP-3 dps value and the correct boolean set", async () => {
 		vi.mocked(decryptLocalKey).mockReturnValue("plaintext-key");
 		const sendSwitchMock = vi.fn().mockResolvedValue(undefined);

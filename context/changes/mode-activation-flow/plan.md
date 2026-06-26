@@ -263,24 +263,24 @@ Verify that all existing usages of `ModeSummary` in `mode-manager.tsx` type-chec
 
 #### Automated
 
-- [x] 2.1 `npx vitest run mode.integration` passes (1 test, green)
-- [x] 2.2 `npm test` passes with no regressions
+- [x] 2.1 `npx vitest run mode.integration` passes (1 test, green) — 0da4e62
+- [x] 2.2 `npm test` passes with no regressions — 0da4e62
 
 #### Manual
 
-- [x] 2.3 Verbose run confirms test name and assertion detail visible
-- [x] 2.4 Argument-swap probe: swap `sendValveStateCommand` args in `mode-control.ts:57`, confirm test fails, revert
+- [x] 2.3 Verbose run confirms test name and assertion detail visible — 0da4e62
+- [x] 2.4 Argument-swap probe: swap `sendValveStateCommand` args in `mode-control.ts:57`, confirm test fails, revert — 0da4e62
 
 ### Phase 3: Branch Coverage — sendValveStateCommand Error Paths
 
 #### Automated
 
-- [ ] 3.1 `npx vitest run valve-control` shows 8 passing tests
-- [ ] 3.2 `npm test` passes
+- [x] 3.1 `npx vitest run valve-control` shows 8 passing tests
+- [x] 3.2 `npm test` passes
 
 #### Manual
 
-- [ ] 3.3 Confirm each new test name matches its asserted error string
+- [x] 3.3 Confirm each new test name matches its asserted error string
 
 ### Phase 4: ModeSummary Type Derivation Fix
 
