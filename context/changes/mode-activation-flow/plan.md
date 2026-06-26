@@ -286,11 +286,11 @@ Verify that all existing usages of `ModeSummary` in `mode-manager.tsx` type-chec
 
 #### Automated
 
-- [x] 4.1 `npm run typecheck` passes
-- [x] 4.2 `npm test` passes
-- [x] 4.3 `npm run lint` passes
+- [x] 4.1 `npm run typecheck` passes — b01491e
+- [x] 4.2 `npm test` passes — b01491e
+- [x] 4.3 `npm run lint` passes — b01491e
 
 #### Manual
 
-- [x] 4.4 `mode-form.tsx` compiles without errors (imports `ModeSummary` from `mode-manager.tsx`)
-- [x] 4.5 `git grep "export interface ModeSummary"` returns no results
+- [x] 4.4 `mode-form.tsx` compiles without errors (imports `ModeSummary` from `mode-manager.tsx`) — b01491e
+- [x] 4.5 `git grep "export interface ModeSummary"` returns no results — b01491e

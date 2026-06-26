@@ -1,7 +1,7 @@
 ---
 change_id: mode-activation-flow
 title: Analiza przepływu aktywacji trybu (mode) — od UI po klienta Tuya
-status: implementing
+status: implemented
 created: 2026-06-23
 updated: 2026-06-26
 archived_at: null
