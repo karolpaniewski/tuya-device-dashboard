@@ -275,22 +275,22 @@ Verify that all existing usages of `ModeSummary` in `mode-manager.tsx` type-chec
 
 #### Automated
 
-- [x] 3.1 `npx vitest run valve-control` shows 8 passing tests
-- [x] 3.2 `npm test` passes
+- [x] 3.1 `npx vitest run valve-control` shows 8 passing tests — f134fa2
+- [x] 3.2 `npm test` passes — f134fa2
 
 #### Manual
 
-- [x] 3.3 Confirm each new test name matches its asserted error string
+- [x] 3.3 Confirm each new test name matches its asserted error string — f134fa2
 
 ### Phase 4: ModeSummary Type Derivation Fix
 
 #### Automated
 
-- [ ] 4.1 `npm run typecheck` passes
-- [ ] 4.2 `npm test` passes
-- [ ] 4.3 `npm run lint` passes
+- [x] 4.1 `npm run typecheck` passes
+- [x] 4.2 `npm test` passes
+- [x] 4.3 `npm run lint` passes
 
 #### Manual
 
-- [ ] 4.4 `mode-form.tsx` compiles without errors (imports `ModeSummary` from `mode-manager.tsx`)
-- [ ] 4.5 `git grep "export interface ModeSummary"` returns no results
+- [x] 4.4 `mode-form.tsx` compiles without errors (imports `ModeSummary` from `mode-manager.tsx`)
+- [x] 4.5 `git grep "export interface ModeSummary"` returns no results

@@ -6,18 +6,18 @@ vi.mock("~/server/auth", () => ({ auth: vi.fn() }));
 
 import { eq } from "drizzle-orm";
 import { createCaller } from "~/server/api/root";
-import { encryptLocalKey } from "~/server/lib/crypto";
 import { db } from "~/server/db";
 import {
 	automationModeActivationLogs,
-	automationModeTargets,
 	automationModes,
+	automationModeTargets,
 	deviceRoomAssignments,
 	devices,
 	gateways,
 	rooms,
 	sites,
 } from "~/server/db/schema";
+import { encryptLocalKey } from "~/server/lib/crypto";
 
 const SESSION = { user: { id: "u1", email: "test@test.com" } } as never;
 
@@ -76,7 +76,11 @@ describe("mode.trigger integration", () => {
 	});
 
 	it("applies mode to room valves and writes activation log", async () => {
-		const caller = createCaller({ db, session: SESSION, headers: new Headers() });
+		const caller = createCaller({
+			db,
+			session: SESSION,
+			headers: new Headers(),
+		});
 
 		const result = await caller.mode.trigger({ id: modeId });
 

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { api } from "~/trpc/react";
+import { api, type RouterOutputs } from "~/trpc/react";
 import { ModeForm } from "./mode-form";
 
 export interface ModeRoomOption {
@@ -13,14 +13,7 @@ export interface ModeRoomOption {
 	name: string;
 }
 
-export interface ModeSummary {
-	id: string;
-	name: string;
-	daysOfWeek: number[] | null;
-	fireHour: number | null;
-	fireMinute: number | null;
-	targets: { roomId: string; roomName: string; targetOn: boolean }[];
-}
+export type ModeSummary = RouterOutputs["mode"]["list"][number];
 
 interface Props {
 	activeSiteId: string;
