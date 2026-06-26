@@ -428,24 +428,24 @@ The existing `mode.integration.test.ts` covers the trigger path which is unchang
 
 #### Automated
 
-- [x] 1.1 Type check passes: `npx tsc --noEmit`
-- [x] 1.2 Lint passes on mode.ts and mode.test.ts
-- [x] 1.3 New test cases pass: `npm run test -- mode.test`
-- [x] 1.4 Full test suite still passes: `npm run test`
+- [x] 1.1 Type check passes: `npx tsc --noEmit` — cd904e5
+- [x] 1.2 Lint passes on mode.ts and mode.test.ts — cd904e5
+- [x] 1.3 New test cases pass: `npm run test -- mode.test` — cd904e5
+- [x] 1.4 Full test suite still passes: `npm run test` — cd904e5
 
 ### Phase 2: Canvas Scope — Show All Modes
 
 #### Automated
 
-- [ ] 2.1 Type check passes: `npx tsc --noEmit`
-- [ ] 2.2 Lint passes on automation-flow components and mode-targeting.ts
-- [ ] 2.3 Existing tests still pass: `npm run test`
+- [x] 2.1 Type check passes: `npx tsc --noEmit`
+- [x] 2.2 Lint passes on automation-flow components and mode-targeting.ts
+- [x] 2.3 Existing tests still pass: `npm run test`
 
 #### Manual
 
-- [ ] 2.4 All site modes appear in left column (connected + unconnected visual states)
-- [ ] 2.5 Room selector updates connected/unconnected state correctly
-- [ ] 2.6 Existing interactions (device modal, room modal, Setup navigation) unaffected
+- [x] 2.4 All site modes appear in left column (connected + unconnected visual states)
+- [x] 2.5 Room selector updates connected/unconnected state correctly
+- [x] 2.6 Existing interactions (device modal, room modal, Setup navigation) unaffected
 
 ### Phase 3: Edge Interactions — Connect + Detach
 

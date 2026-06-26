@@ -27,7 +27,7 @@ import {
 } from "~/components/ui/select";
 import { Skeleton } from "~/components/ui/skeleton";
 import { computeAutomationFlowLayout } from "~/lib/automation-flow-layout";
-import { getModesForRoom } from "~/lib/mode-targeting";
+import { getAllModesForCanvas, getModesForRoom } from "~/lib/mode-targeting";
 import { api, type RouterOutputs } from "~/trpc/react";
 import { DeviceModal } from "../device-modal";
 import { RoomModal } from "../room-modal";
@@ -101,18 +101,23 @@ function TuyaAutomationFlowCanvas() {
 		[viewedRoom, modeListQuery.data],
 	);
 
+	const allModesForCanvas = useMemo(
+		() => getAllModesForCanvas(viewedRoomId ?? "", modeListQuery.data ?? []),
+		[viewedRoomId, modeListQuery.data],
+	);
+
 	const layout = useMemo(
 		() =>
 			computeAutomationFlowLayout(
-				modesForRoom.length,
+				allModesForCanvas.length,
 				viewedRoom?.devices.length ?? 0,
 			),
-		[modesForRoom.length, viewedRoom?.devices.length],
+		[allModesForCanvas.length, viewedRoom?.devices.length],
 	);
 
 	const computedNodes = useMemo<AutomationFlowNode[]>(() => {
 		if (!viewedRoom) return [];
-		const modeNodes: ModeFlowNode[] = modesForRoom.map((mode, i) => ({
+		const modeNodes: ModeFlowNode[] = allModesForCanvas.map((mode, i) => ({
 			data: { mode },
 			id: `mode-${mode.id}`,
 			position: layout.modes[i] ?? { x: 0, y: 0 },
@@ -136,7 +141,7 @@ function TuyaAutomationFlowCanvas() {
 			}),
 		);
 		return [...modeNodes, roomNode, ...deviceNodes];
-	}, [viewedRoom, modesForRoom, layout]);
+	}, [viewedRoom, allModesForCanvas, layout]);
 
 	const computedEdges = useMemo<Edge[]>(() => {
 		if (!viewedRoom) return [];

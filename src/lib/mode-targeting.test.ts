@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { formatModeSchedule, getModesForRoom } from "./mode-targeting";
+import {
+	formatModeSchedule,
+	getAllModesForCanvas,
+	getModesForRoom,
+} from "./mode-targeting";
 
 function mode(
 	overrides: Partial<Parameters<typeof getModesForRoom>[1][number]>,
@@ -95,13 +99,85 @@ describe("getModesForRoom", () => {
 	});
 });
 
+describe("getAllModesForCanvas", () => {
+	it("returns an empty array when there are no modes", () => {
+		expect(getAllModesForCanvas("room-1", [])).toEqual([]);
+	});
+
+	it("marks a mode as connected with correct targetOn when it targets the room", () => {
+		const modes = [
+			mode({
+				id: "m1",
+				name: "Morning",
+				targets: [{ roomId: "room-1", roomName: "Room 1", targetOn: true }],
+			}),
+		];
+		expect(getAllModesForCanvas("room-1", modes)).toEqual([
+			{
+				id: "m1",
+				name: "Morning",
+				daysOfWeek: null,
+				fireHour: null,
+				fireMinute: null,
+				isConnected: true,
+				targetOn: true,
+			},
+		]);
+	});
+
+	it("marks a mode as unconnected with targetOn null when it does not target the room", () => {
+		const modes = [
+			mode({
+				id: "m1",
+				name: "Morning",
+				targets: [{ roomId: "other-room", roomName: "Other", targetOn: true }],
+			}),
+		];
+		expect(getAllModesForCanvas("room-1", modes)).toEqual([
+			{
+				id: "m1",
+				name: "Morning",
+				daysOfWeek: null,
+				fireHour: null,
+				fireMinute: null,
+				isConnected: false,
+				targetOn: null,
+			},
+		]);
+	});
+
+	it("returns all modes regardless of connection, with correct states for each", () => {
+		const modes = [
+			mode({
+				id: "m1",
+				name: "Connected",
+				targets: [{ roomId: "room-1", roomName: "Room 1", targetOn: false }],
+			}),
+			mode({
+				id: "m2",
+				name: "Unconnected",
+				targets: [{ roomId: "other-room", roomName: "Other", targetOn: true }],
+			}),
+		];
+		const result = getAllModesForCanvas("room-1", modes);
+		expect(result).toHaveLength(2);
+		expect(result[0]).toMatchObject({
+			id: "m1",
+			isConnected: true,
+			targetOn: false,
+		});
+		expect(result[1]).toMatchObject({
+			id: "m2",
+			isConnected: false,
+			targetOn: null,
+		});
+	});
+});
+
 describe("formatModeSchedule", () => {
 	it("returns the manual-trigger label when there is no schedule", () => {
 		expect(
 			formatModeSchedule({
-				id: "m1",
-				name: "Mode",
-				targetOn: true,
 				daysOfWeek: null,
 				fireHour: null,
 				fireMinute: null,
@@ -111,14 +187,7 @@ describe("formatModeSchedule", () => {
 
 	it("formats sorted days and zero-padded time", () => {
 		expect(
-			formatModeSchedule({
-				id: "m1",
-				name: "Mode",
-				targetOn: true,
-				daysOfWeek: [5, 1, 3],
-				fireHour: 6,
-				fireMinute: 5,
-			}),
+			formatModeSchedule({ daysOfWeek: [5, 1, 3], fireHour: 6, fireMinute: 5 }),
 		).toBe("Mon Wed Fri · 06:05");
 	});
 });

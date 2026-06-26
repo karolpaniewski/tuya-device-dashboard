@@ -11,6 +11,16 @@ export interface ModeTargetingRoom {
 	fireMinute: number | null;
 }
 
+export interface ModeCanvasData {
+	id: string;
+	name: string;
+	daysOfWeek: number[] | null;
+	fireHour: number | null;
+	fireMinute: number | null;
+	isConnected: boolean;
+	targetOn: boolean | null;
+}
+
 /**
  * Returns the modes that target `roomId`, each annotated with that room's
  * specific `targetOn` value — a mode's `targets` array can target multiple
@@ -37,10 +47,36 @@ export function getModesForRoom(
 	return result;
 }
 
+/**
+ * Returns all modes for the canvas, each annotated with whether it targets
+ * `roomId` and what its `targetOn` value is for that room (null if unconnected).
+ */
+export function getAllModesForCanvas(
+	roomId: string,
+	modes: Mode[],
+): ModeCanvasData[] {
+	return modes.map((mode) => {
+		const target = mode.targets.find((t) => t.roomId === roomId);
+		return {
+			id: mode.id,
+			name: mode.name,
+			daysOfWeek: mode.daysOfWeek,
+			fireHour: mode.fireHour,
+			fireMinute: mode.fireMinute,
+			isConnected: target !== undefined,
+			targetOn: target?.targetOn ?? null,
+		};
+	});
+}
+
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /** Matches mode-manager.tsx's scheduleSummary formatting for a room-targeting mode. */
-export function formatModeSchedule(mode: ModeTargetingRoom): string {
+export function formatModeSchedule(mode: {
+	daysOfWeek: number[] | null;
+	fireHour: number | null;
+	fireMinute: number | null;
+}): string {
 	if (
 		mode.daysOfWeek === null ||
 		mode.fireHour === null ||
