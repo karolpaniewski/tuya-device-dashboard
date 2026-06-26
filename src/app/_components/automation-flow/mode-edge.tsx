@@ -36,7 +36,13 @@ export function ModeEdge({
 
 	return (
 		<>
-			<BaseEdge id={id} markerEnd={markerEnd} path={edgePath} style={style} />
+			<BaseEdge
+				id={id}
+				interactionWidth={20}
+				markerEnd={markerEnd}
+				path={edgePath}
+				style={style}
+			/>
 			{label && (
 				<EdgeLabelRenderer>
 					<div

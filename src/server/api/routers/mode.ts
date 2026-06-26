@@ -20,7 +20,13 @@ const targetInput = z.object({
 
 const scheduleInput = z
 	.object({
-		daysOfWeek: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+		daysOfWeek: z
+			.array(z.number().int().min(0).max(6))
+			.min(1)
+			.max(7)
+			.refine((days) => new Set(days).size === days.length, {
+				message: "Days of week must be unique",
+			}),
 		fireHour: z.number().int().min(0).max(23),
 		fireMinute: z.number().int().min(0).max(59),
 	})
@@ -162,7 +168,7 @@ export const modeRouter = createTRPCRouter({
 					: null,
 				fireHour: mode.fireHour,
 				fireMinute: mode.fireMinute,
-				targets: targetRows
+				targets: scopedRows
 					.filter((r) => r.modeId === mode.id)
 					.map((r) => ({
 						roomId: r.roomId,
@@ -291,6 +297,63 @@ export const modeRouter = createTRPCRouter({
 	addTarget: protectedProcedure
 		.input(z.object({ modeId: z.string(), roomId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
+			const [existingMode] = await ctx.db
+				.select({ id: automationModes.id })
+				.from(automationModes)
+				.where(eq(automationModes.id, input.modeId));
+
+			if (!existingMode) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Mode not found" });
+			}
+
+			const [room] = await ctx.db
+				.select({ id: rooms.id, siteId: rooms.siteId })
+				.from(rooms)
+				.where(eq(rooms.id, input.roomId));
+
+			if (!room) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
+			}
+
+			const existingTargetRooms = await ctx.db
+				.select({ siteId: rooms.siteId })
+				.from(automationModeTargets)
+				.innerJoin(rooms, eq(rooms.id, automationModeTargets.roomId))
+				.where(eq(automationModeTargets.modeId, input.modeId));
+
+			const existingSiteIds = new Set(existingTargetRooms.map((r) => r.siteId));
+			if (existingSiteIds.size > 0 && !existingSiteIds.has(room.siteId)) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "CROSS_SITE_TARGETS",
+				});
+			}
+
+			try {
+				await ctx.db.insert(automationModeTargets).values({
+					modeId: input.modeId,
+					roomId: input.roomId,
+					targetOn: true,
+				});
+			} catch (e) {
+				if (
+					e instanceof Error &&
+					e.message.includes("UNIQUE constraint failed")
+				) {
+					throw new TRPCError({
+						code: "CONFLICT",
+						message: "MODE_ALREADY_CONNECTED",
+					});
+				}
+				throw e;
+			}
+
+			return { success: true as const };
+		}),
+
+	removeTarget: protectedProcedure
+		.input(z.object({ modeId: z.string(), roomId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
 			const [existing] = await ctx.db
 				.select({ id: automationModes.id })
 				.from(automationModes)
@@ -300,18 +363,6 @@ export const modeRouter = createTRPCRouter({
 				throw new TRPCError({ code: "NOT_FOUND", message: "Mode not found" });
 			}
 
-			await ctx.db.insert(automationModeTargets).values({
-				modeId: input.modeId,
-				roomId: input.roomId,
-				targetOn: true,
-			});
-
-			return { success: true as const };
-		}),
-
-	removeTarget: protectedProcedure
-		.input(z.object({ modeId: z.string(), roomId: z.string() }))
-		.mutation(async ({ ctx, input }) => {
 			await ctx.db
 				.delete(automationModeTargets)
 				.where(

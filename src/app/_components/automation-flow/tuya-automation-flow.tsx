@@ -55,12 +55,6 @@ const edgeTypes: EdgeTypes = {
 };
 
 const AUTOMATION_EDGE_STYLE = { stroke: "#a3a3a3", strokeWidth: 1.5 };
-const AUTOMATION_EDGE_LABEL_STYLE = {
-	fill: "#525252",
-	fontSize: 11,
-	fontWeight: 500,
-};
-const AUTOMATION_EDGE_LABEL_BG_STYLE = { fill: "#ffffff", fillOpacity: 0.92 };
 const AUTOMATION_EDGE_MARKER = {
 	color: "#a3a3a3",
 	height: 16,
@@ -157,6 +151,10 @@ function TuyaAutomationFlowCanvas() {
 	);
 	const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 	const prevRoomIdRef = useRef<string | null>(null);
+	const viewedRoomIdRef = useRef(viewedRoomId);
+	viewedRoomIdRef.current = viewedRoomId;
+	const edgesRef = useRef(edges);
+	edgesRef.current = edges;
 
 	const { mutate: addTarget } = api.mode.addTarget.useMutation();
 	const { mutate: removeTarget } = api.mode.removeTarget.useMutation();
@@ -164,6 +162,7 @@ function TuyaAutomationFlowCanvas() {
 	const handleDetach = useCallback(
 		(modeId: string, roomId: string) => {
 			const edgeId = `e-mode-${modeId}-room`;
+			const snapshotRoomId = viewedRoomIdRef.current;
 			let removedEdge: Edge | undefined;
 			setEdges((current) => {
 				removedEdge = current.find((e) => e.id === edgeId);
@@ -174,6 +173,7 @@ function TuyaAutomationFlowCanvas() {
 				{
 					onSuccess: () => void utils.mode.list.invalidate(),
 					onError: () => {
+						if (viewedRoomIdRef.current !== snapshotRoomId) return;
 						const edge = removedEdge;
 						if (edge) setEdges((current) => [...current, edge]);
 						toast.error("Couldn't detach room — try again");
@@ -194,7 +194,8 @@ function TuyaAutomationFlowCanvas() {
 			const roomId = viewedRoom.roomId;
 			const edgeId = `e-mode-${modeId}-room`;
 
-			if (allModesForCanvas.find((m) => m.id === modeId)?.isConnected) return;
+			if (edgesRef.current.some((e) => e.id === edgeId)) return;
+
 			const modeName =
 				allModesForCanvas.find((m) => m.id === modeId)?.name ?? modeId;
 
@@ -205,14 +206,10 @@ function TuyaAutomationFlowCanvas() {
 						data: { onDelete: () => handleDetach(modeId, roomId) },
 						id: edgeId,
 						label: `${modeName} → ${viewedRoom.roomName}`,
-						labelBgBorderRadius: 6,
-						labelBgPadding: [6, 3],
-						labelBgStyle: AUTOMATION_EDGE_LABEL_BG_STYLE,
-						labelStyle: AUTOMATION_EDGE_LABEL_STYLE,
 						markerEnd: AUTOMATION_EDGE_MARKER,
-						source: connection.source ?? "",
+						source: connection.source,
 						style: AUTOMATION_EDGE_STYLE,
-						target: connection.target ?? `room-${roomId}`,
+						target: connection.target,
 						type: "modeEdge",
 					},
 					current,
@@ -223,7 +220,12 @@ function TuyaAutomationFlowCanvas() {
 				{ modeId, roomId },
 				{
 					onSuccess: () => void utils.mode.list.invalidate(),
-					onError: () => {
+					onError: (error) => {
+						if (
+							"data" in error &&
+							(error as { data?: { code?: string } }).data?.code === "CONFLICT"
+						)
+							return;
 						setEdges((current) => current.filter((e) => e.id !== edgeId));
 						toast.error("Couldn't connect mode to room — try again");
 					},
@@ -240,10 +242,6 @@ function TuyaAutomationFlowCanvas() {
 			data: { onDelete: () => handleDetach(mode.id, viewedRoom.roomId) },
 			id: `e-mode-${mode.id}-room`,
 			label: `${mode.name} → ${viewedRoom.roomName}`,
-			labelBgBorderRadius: 6,
-			labelBgPadding: [6, 3],
-			labelBgStyle: AUTOMATION_EDGE_LABEL_BG_STYLE,
-			labelStyle: AUTOMATION_EDGE_LABEL_STYLE,
 			markerEnd: AUTOMATION_EDGE_MARKER,
 			source: `mode-${mode.id}`,
 			style: AUTOMATION_EDGE_STYLE,
@@ -279,7 +277,14 @@ function TuyaAutomationFlowCanvas() {
 	}, [computedNodes, viewedRoomId, setNodes]);
 
 	useEffect(() => {
-		setEdges(computedEdges);
+		setEdges((current) => {
+			const selectedIds = new Set(
+				current.filter((e) => e.selected).map((e) => e.id),
+			);
+			return computedEdges.map((e) =>
+				selectedIds.has(e.id) ? { ...e, selected: true } : e,
+			);
+		});
 	}, [computedEdges, setEdges]);
 
 	const onNodeClick = useCallback<NodeMouseHandler<AutomationFlowNode>>(
@@ -354,6 +359,7 @@ function TuyaAutomationFlowCanvas() {
 
 			<div className="h-[560px] w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50">
 				<ReactFlow
+					deleteKeyCode={null}
 					edges={edges}
 					edgeTypes={edgeTypes}
 					fitView

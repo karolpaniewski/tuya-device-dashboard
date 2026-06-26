@@ -79,6 +79,63 @@ describe("mode.list", () => {
 		]);
 	});
 
+	it("scopes the targets array to the requested site — a mode targeting rooms in two sites only returns the in-scope rooms", async () => {
+		const mockDb = {
+			select: vi
+				.fn()
+				// First query: all targetRows (mode-1 targets rooms in site-1 AND site-2)
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						innerJoin: vi.fn().mockResolvedValue([
+							{
+								modeId: "mode-1",
+								roomId: "room-a",
+								targetOn: true,
+								roomName: "Room A",
+								roomSiteId: "site-1",
+							},
+							{
+								modeId: "mode-1",
+								roomId: "room-b",
+								targetOn: false,
+								roomName: "Room B",
+								roomSiteId: "site-2",
+							},
+						]),
+					}),
+				})
+				// Second query: mode rows
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockReturnValue({
+							orderBy: vi.fn().mockResolvedValue([
+								{
+									id: "mode-1",
+									name: "Cross-site mode",
+									daysOfWeek: null,
+									fireHour: null,
+									fireMinute: null,
+								},
+							]),
+						}),
+					}),
+				}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.mode.list({ siteId: "site-1" });
+
+		expect(result).toHaveLength(1);
+		// targets must only include the site-1 room, not room-b from site-2
+		expect(result[0]?.targets).toEqual([
+			{ roomId: "room-a", roomName: "Room A", targetOn: true },
+		]);
+	});
+
 	it("returns an empty array when no mode targets a room in scope", async () => {
 		const mockDb = {
 			select: vi.fn().mockReturnValueOnce({
@@ -362,17 +419,65 @@ describe("mode.delete", () => {
 });
 
 describe("mode.addTarget", () => {
-	it("happy path: inserts a target row with targetOn true and returns success", async () => {
-		const insertValuesMock = vi.fn().mockResolvedValue(undefined);
+	function addTargetDb(overrides?: {
+		modeExists?: boolean;
+		roomExists?: boolean;
+		existingTargetSiteIds?: string[];
+		insertError?: Error;
+	}) {
+		const {
+			modeExists = true,
+			roomExists = true,
+			existingTargetSiteIds = ["s1"],
+			insertError,
+		} = overrides ?? {};
+
+		const insertValuesMock = insertError
+			? vi.fn().mockRejectedValue(insertError)
+			: vi.fn().mockResolvedValue(undefined);
 		const insertMock = vi.fn().mockReturnValue({ values: insertValuesMock });
+
 		const mockDb = {
-			select: vi.fn().mockReturnValueOnce({
-				from: vi.fn().mockReturnValue({
-					where: vi.fn().mockResolvedValue([{ id: "mode-1" }]),
+			select: vi
+				.fn()
+				// 1. mode existence
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi
+							.fn()
+							.mockResolvedValue(modeExists ? [{ id: "mode-1" }] : []),
+					}),
+				})
+				// 2. room lookup
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi
+							.fn()
+							.mockResolvedValue(
+								roomExists ? [{ id: "room-1", siteId: "s1" }] : [],
+							),
+					}),
+				})
+				// 3. cross-site check (existing target rooms)
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						innerJoin: vi.fn().mockReturnValue({
+							where: vi
+								.fn()
+								.mockResolvedValue(
+									existingTargetSiteIds.map((siteId) => ({ siteId })),
+								),
+						}),
+					}),
 				}),
-			}),
 			insert: insertMock,
 		};
+
+		return { mockDb, insertMock, insertValuesMock };
+	}
+
+	it("happy path: inserts a target row with targetOn true and returns success", async () => {
+		const { mockDb, insertMock, insertValuesMock } = addTargetDb();
 		const caller = createCaller({
 			db: mockDb as never,
 			session,
@@ -394,13 +499,7 @@ describe("mode.addTarget", () => {
 	});
 
 	it("throws NOT_FOUND when the mode does not exist", async () => {
-		const mockDb = {
-			select: vi.fn().mockReturnValueOnce({
-				from: vi.fn().mockReturnValue({
-					where: vi.fn().mockResolvedValue([]),
-				}),
-			}),
-		};
+		const { mockDb } = addTargetDb({ modeExists: false });
 		const caller = createCaller({
 			db: mockDb as never,
 			session,
@@ -409,21 +508,46 @@ describe("mode.addTarget", () => {
 
 		await expect(
 			caller.mode.addTarget({ modeId: "mode-missing", roomId: "room-1" }),
-		).rejects.toMatchObject({ code: "NOT_FOUND" });
+		).rejects.toMatchObject({ code: "NOT_FOUND", message: "Mode not found" });
 	});
 
-	it("propagates error when the (modeId, roomId) pair already exists", async () => {
-		const insertValuesMock = vi
-			.fn()
-			.mockRejectedValue(new Error("UNIQUE constraint failed"));
-		const insertMock = vi.fn().mockReturnValue({ values: insertValuesMock });
+	it("throws NOT_FOUND when the room does not exist", async () => {
+		const { mockDb } = addTargetDb({ roomExists: false });
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.mode.addTarget({ modeId: "mode-1", roomId: "room-missing" }),
+		).rejects.toMatchObject({ code: "NOT_FOUND", message: "Room not found" });
+	});
+
+	it("throws BAD_REQUEST when the room belongs to a different site than existing targets", async () => {
 		const mockDb = {
-			select: vi.fn().mockReturnValueOnce({
-				from: vi.fn().mockReturnValue({
-					where: vi.fn().mockResolvedValue([{ id: "mode-1" }]),
+			select: vi
+				.fn()
+				// mode exists
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "mode-1" }]),
+					}),
+				})
+				// room from site-2
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						where: vi.fn().mockResolvedValue([{ id: "room-2", siteId: "s2" }]),
+					}),
+				})
+				// existing target in site-1
+				.mockReturnValueOnce({
+					from: vi.fn().mockReturnValue({
+						innerJoin: vi.fn().mockReturnValue({
+							where: vi.fn().mockResolvedValue([{ siteId: "s1" }]),
+						}),
+					}),
 				}),
-			}),
-			insert: insertMock,
 		};
 		const caller = createCaller({
 			db: mockDb as never,
@@ -432,8 +556,29 @@ describe("mode.addTarget", () => {
 		});
 
 		await expect(
+			caller.mode.addTarget({ modeId: "mode-1", roomId: "room-2" }),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+			message: "CROSS_SITE_TARGETS",
+		});
+	});
+
+	it("throws CONFLICT when the (modeId, roomId) pair already exists", async () => {
+		const { mockDb } = addTargetDb({
+			insertError: new Error("UNIQUE constraint failed"),
+		});
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
 			caller.mode.addTarget({ modeId: "mode-1", roomId: "room-1" }),
-		).rejects.toThrow("UNIQUE constraint failed");
+		).rejects.toMatchObject({
+			code: "CONFLICT",
+			message: "MODE_ALREADY_CONNECTED",
+		});
 	});
 });
 
@@ -443,6 +588,11 @@ describe("mode.removeTarget", () => {
 			.fn()
 			.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
 		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ id: "mode-1" }]),
+				}),
+			}),
 			delete: deleteMock,
 		};
 		const caller = createCaller({
@@ -460,11 +610,35 @@ describe("mode.removeTarget", () => {
 		expect(deleteMock).toHaveBeenCalled();
 	});
 
-	it("returns success when the (modeId, roomId) pair does not exist (idempotent)", async () => {
+	it("throws NOT_FOUND when the mode does not exist", async () => {
+		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([]),
+				}),
+			}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.mode.removeTarget({ modeId: "mode-missing", roomId: "room-1" }),
+		).rejects.toMatchObject({ code: "NOT_FOUND" });
+	});
+
+	it("returns success when the mode exists but the target pair does not (idempotent delete)", async () => {
 		const deleteMock = vi
 			.fn()
 			.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
 		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ id: "mode-1" }]),
+				}),
+			}),
 			delete: deleteMock,
 		};
 		const caller = createCaller({
@@ -474,8 +648,8 @@ describe("mode.removeTarget", () => {
 		});
 
 		const result = await caller.mode.removeTarget({
-			modeId: "mode-missing",
-			roomId: "room-missing",
+			modeId: "mode-1",
+			roomId: "room-nonexistent",
 		});
 
 		expect(result).toEqual({ success: true });

@@ -37,6 +37,7 @@ export function RoomNode({ data, selected }: NodeProps<RoomFlowNode>) {
 			</div>
 			<Handle
 				className="!h-2 !w-2 !border-neutral-300 !bg-white"
+				isConnectable={false}
 				position={Position.Right}
 				type="source"
 			/>

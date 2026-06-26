@@ -25,7 +25,7 @@ const TYPE_ACCENT: Record<keyof typeof TYPE_ICON, string> = {
 export function DeviceNode({ data, selected }: NodeProps<DeviceFlowNode>) {
 	const { device } = data;
 	const deviceType = device.deviceType as keyof typeof TYPE_ICON;
-	const Icon = TYPE_ICON[deviceType];
+	const Icon = TYPE_ICON[deviceType] ?? Plug;
 
 	return (
 		<div
@@ -38,6 +38,7 @@ export function DeviceNode({ data, selected }: NodeProps<DeviceFlowNode>) {
 		>
 			<Handle
 				className="!h-2 !w-2 !border-neutral-300 !bg-white"
+				isConnectable={false}
 				position={Position.Left}
 				type="target"
 			/>
