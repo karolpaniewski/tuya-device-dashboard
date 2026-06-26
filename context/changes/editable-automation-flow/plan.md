@@ -437,31 +437,31 @@ The existing `mode.integration.test.ts` covers the trigger path which is unchang
 
 #### Automated
 
-- [x] 2.1 Type check passes: `npx tsc --noEmit`
-- [x] 2.2 Lint passes on automation-flow components and mode-targeting.ts
-- [x] 2.3 Existing tests still pass: `npm run test`
+- [x] 2.1 Type check passes: `npx tsc --noEmit` — b2c2870
+- [x] 2.2 Lint passes on automation-flow components and mode-targeting.ts — b2c2870
+- [x] 2.3 Existing tests still pass: `npm run test` — b2c2870
 
 #### Manual
 
-- [x] 2.4 All site modes appear in left column (connected + unconnected visual states)
-- [x] 2.5 Room selector updates connected/unconnected state correctly
-- [x] 2.6 Existing interactions (device modal, room modal, Setup navigation) unaffected
+- [x] 2.4 All site modes appear in left column (connected + unconnected visual states) — b2c2870
+- [x] 2.5 Room selector updates connected/unconnected state correctly — b2c2870
+- [x] 2.6 Existing interactions (device modal, room modal, Setup navigation) unaffected — b2c2870
 
 ### Phase 3: Edge Interactions — Connect + Detach
 
 #### Automated
 
-- [ ] 3.1 Type check passes: `npx tsc --noEmit`
-- [ ] 3.2 Lint passes on automation-flow components
-- [ ] 3.3 Full test suite still passes: `npm run test`
-- [ ] 3.4 Build succeeds: `npm run build`
+- [x] 3.1 Type check passes: `npx tsc --noEmit`
+- [x] 3.2 Lint passes on automation-flow components
+- [x] 3.3 Full test suite still passes: `npm run test`
+- [x] 3.4 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 3.5 Drag from floating mode node to room node — edge appears immediately
-- [ ] 3.6 Settings → Automations reflects the new connection without reload
-- [ ] 3.7 Click edge → × button appears → click × → edge removed immediately
-- [ ] 3.8 Settings confirms detach without reload
-- [ ] 3.9 No accidental detach on plain edge click (only × button triggers removal)
-- [ ] 3.10 Mutation failure reverts edge + shows toast
-- [ ] 3.11 30s background refetch does not disrupt edge state
+- [x] 3.5 Drag from floating mode node to room node — edge appears immediately
+- [x] 3.6 Settings → Automations reflects the new connection without reload
+- [x] 3.7 Click edge → × button appears → click × → edge removed immediately
+- [x] 3.8 Settings confirms detach without reload
+- [x] 3.9 No accidental detach on plain edge click (only × button triggers removal)
+- [x] 3.10 Mutation failure reverts edge + shows toast
+- [x] 3.11 30s background refetch does not disrupt edge state

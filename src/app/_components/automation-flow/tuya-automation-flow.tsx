@@ -1,9 +1,12 @@
 "use client";
 
 import {
+	addEdge,
 	Background,
+	type Connection,
 	Controls,
 	type Edge,
+	type EdgeTypes,
 	MarkerType,
 	type NodeMouseHandler,
 	type NodeTypes,
@@ -16,6 +19,7 @@ import "@xyflow/react/dist/style.css";
 import { Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useSiteContext } from "~/components/site-context";
 import { ErrorMessage } from "~/components/ui/error-message";
 import {
@@ -32,6 +36,7 @@ import { api, type RouterOutputs } from "~/trpc/react";
 import { DeviceModal } from "../device-modal";
 import { RoomModal } from "../room-modal";
 import { type DeviceFlowNode, DeviceNode } from "./device-node";
+import { ModeEdge } from "./mode-edge";
 import { type ModeFlowNode, ModeNode } from "./mode-node";
 import { type RoomFlowNode, RoomNode } from "./room-node";
 
@@ -43,6 +48,10 @@ const nodeTypes: NodeTypes = {
 	device: DeviceNode,
 	mode: ModeNode,
 	room: RoomNode,
+};
+
+const edgeTypes: EdgeTypes = {
+	modeEdge: ModeEdge,
 };
 
 const AUTOMATION_EDGE_STYLE = { stroke: "#a3a3a3", strokeWidth: 1.5 };
@@ -143,10 +152,90 @@ function TuyaAutomationFlowCanvas() {
 		return [...modeNodes, roomNode, ...deviceNodes];
 	}, [viewedRoom, allModesForCanvas, layout]);
 
+	const [nodes, setNodes, onNodesChange] = useNodesState<AutomationFlowNode>(
+		[],
+	);
+	const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+	const prevRoomIdRef = useRef<string | null>(null);
+
+	const { mutate: addTarget } = api.mode.addTarget.useMutation();
+	const { mutate: removeTarget } = api.mode.removeTarget.useMutation();
+
+	const handleDetach = useCallback(
+		(modeId: string, roomId: string) => {
+			const edgeId = `e-mode-${modeId}-room`;
+			let removedEdge: Edge | undefined;
+			setEdges((current) => {
+				removedEdge = current.find((e) => e.id === edgeId);
+				return removedEdge ? current.filter((e) => e.id !== edgeId) : current;
+			});
+			removeTarget(
+				{ modeId, roomId },
+				{
+					onSuccess: () => void utils.mode.list.invalidate(),
+					onError: () => {
+						const edge = removedEdge;
+						if (edge) setEdges((current) => [...current, edge]);
+						toast.error("Couldn't detach room — try again");
+					},
+				},
+			);
+		},
+		[removeTarget, setEdges, utils],
+	);
+
+	const handleConnect = useCallback(
+		(connection: Connection) => {
+			if (!viewedRoom) return;
+			if (!connection.source?.startsWith("mode-")) return;
+			if (connection.target !== `room-${viewedRoom.roomId}`) return;
+
+			const modeId = connection.source.slice("mode-".length);
+			const roomId = viewedRoom.roomId;
+			const edgeId = `e-mode-${modeId}-room`;
+			const modeName =
+				allModesForCanvas.find((m) => m.id === modeId)?.name ?? modeId;
+
+			setEdges((current) =>
+				addEdge(
+					{
+						animated: true,
+						data: { onDelete: () => handleDetach(modeId, roomId) },
+						id: edgeId,
+						label: `${modeName} → ${viewedRoom.roomName}`,
+						labelBgBorderRadius: 6,
+						labelBgPadding: [6, 3],
+						labelBgStyle: AUTOMATION_EDGE_LABEL_BG_STYLE,
+						labelStyle: AUTOMATION_EDGE_LABEL_STYLE,
+						markerEnd: AUTOMATION_EDGE_MARKER,
+						source: connection.source ?? "",
+						style: AUTOMATION_EDGE_STYLE,
+						target: connection.target ?? `room-${roomId}`,
+						type: "modeEdge",
+					},
+					current,
+				),
+			);
+
+			addTarget(
+				{ modeId, roomId },
+				{
+					onSuccess: () => void utils.mode.list.invalidate(),
+					onError: () => {
+						setEdges((current) => current.filter((e) => e.id !== edgeId));
+						toast.error("Couldn't connect mode to room — try again");
+					},
+				},
+			);
+		},
+		[viewedRoom, allModesForCanvas, addTarget, handleDetach, setEdges, utils],
+	);
+
 	const computedEdges = useMemo<Edge[]>(() => {
 		if (!viewedRoom) return [];
 		const modeEdges: Edge[] = modesForRoom.map((mode) => ({
 			animated: true,
+			data: { onDelete: () => handleDetach(mode.id, viewedRoom.roomId) },
 			id: `e-mode-${mode.id}-room`,
 			label: `${mode.name} → ${viewedRoom.roomName}`,
 			labelBgBorderRadius: 6,
@@ -157,7 +246,7 @@ function TuyaAutomationFlowCanvas() {
 			source: `mode-${mode.id}`,
 			style: AUTOMATION_EDGE_STYLE,
 			target: `room-${viewedRoom.roomId}`,
-			type: "smoothstep",
+			type: "modeEdge",
 		}));
 		const deviceEdges: Edge[] = viewedRoom.devices.map((device) => ({
 			animated: false,
@@ -168,13 +257,7 @@ function TuyaAutomationFlowCanvas() {
 			type: "smoothstep",
 		}));
 		return [...modeEdges, ...deviceEdges];
-	}, [viewedRoom, modesForRoom]);
-
-	const [nodes, setNodes, onNodesChange] = useNodesState<AutomationFlowNode>(
-		[],
-	);
-	const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-	const prevRoomIdRef = useRef<string | null>(null);
+	}, [viewedRoom, modesForRoom, handleDetach]);
 
 	// Merges freshly computed nodes into existing state on every refetch so an
 	// in-progress drag survives the 30s poll — only a room switch fully resets
@@ -270,10 +353,12 @@ function TuyaAutomationFlowCanvas() {
 			<div className="h-[560px] w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50">
 				<ReactFlow
 					edges={edges}
+					edgeTypes={edgeTypes}
 					fitView
 					fitViewOptions={{ padding: 0.3 }}
 					nodes={nodes}
 					nodeTypes={nodeTypes}
+					onConnect={handleConnect}
 					onEdgesChange={onEdgesChange}
 					onNodeClick={onNodeClick}
 					onNodesChange={onNodesChange}
