@@ -252,24 +252,24 @@ Verify that all existing usages of `ModeSummary` in `mode-manager.tsx` type-chec
 
 #### Automated
 
-- [x] 1.1 `npm test` completes without "no such table" errors after globalSetup is wired
-- [x] 1.2 `npm run typecheck` passes
+- [x] 1.1 `npm test` completes without "no such table" errors after globalSetup is wired — 0b37f82
+- [x] 1.2 `npm run typecheck` passes — 0b37f82
 
 #### Manual
 
-- [x] 1.3 Delete `test.db`, run `npm test` — file is recreated and tests pass
+- [x] 1.3 Delete `test.db`, run `npm test` — file is recreated and tests pass — 0b37f82
 
 ### Phase 2: Integration Test — mode.trigger Full Chain
 
 #### Automated
 
-- [ ] 2.1 `npx vitest run mode.integration` passes (1 test, green)
-- [ ] 2.2 `npm test` passes with no regressions
+- [x] 2.1 `npx vitest run mode.integration` passes (1 test, green)
+- [x] 2.2 `npm test` passes with no regressions
 
 #### Manual
 
-- [ ] 2.3 Verbose run confirms test name and assertion detail visible
-- [ ] 2.4 Argument-swap probe: swap `sendValveStateCommand` args in `mode-control.ts:57`, confirm test fails, revert
+- [x] 2.3 Verbose run confirms test name and assertion detail visible
+- [x] 2.4 Argument-swap probe: swap `sendValveStateCommand` args in `mode-control.ts:57`, confirm test fails, revert
 
 ### Phase 3: Branch Coverage — sendValveStateCommand Error Paths
 
