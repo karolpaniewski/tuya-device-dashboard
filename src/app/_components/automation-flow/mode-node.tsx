@@ -43,6 +43,7 @@ export function ModeNode({ data, selected }: NodeProps<ModeFlowNode>) {
 			</p>
 			<Handle
 				className="!h-2 !w-2 !border-neutral-300 !bg-white"
+				isConnectable={!connected}
 				position={Position.Right}
 				type="source"
 			/>

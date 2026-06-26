@@ -193,6 +193,8 @@ function TuyaAutomationFlowCanvas() {
 			const modeId = connection.source.slice("mode-".length);
 			const roomId = viewedRoom.roomId;
 			const edgeId = `e-mode-${modeId}-room`;
+
+			if (allModesForCanvas.find((m) => m.id === modeId)?.isConnected) return;
 			const modeName =
 				allModesForCanvas.find((m) => m.id === modeId)?.name ?? modeId;
 
