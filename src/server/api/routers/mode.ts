@@ -288,6 +288,42 @@ export const modeRouter = createTRPCRouter({
 			return { success: true as const };
 		}),
 
+	addTarget: protectedProcedure
+		.input(z.object({ modeId: z.string(), roomId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const [existing] = await ctx.db
+				.select({ id: automationModes.id })
+				.from(automationModes)
+				.where(eq(automationModes.id, input.modeId));
+
+			if (!existing) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Mode not found" });
+			}
+
+			await ctx.db.insert(automationModeTargets).values({
+				modeId: input.modeId,
+				roomId: input.roomId,
+				targetOn: true,
+			});
+
+			return { success: true as const };
+		}),
+
+	removeTarget: protectedProcedure
+		.input(z.object({ modeId: z.string(), roomId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			await ctx.db
+				.delete(automationModeTargets)
+				.where(
+					and(
+						eq(automationModeTargets.modeId, input.modeId),
+						eq(automationModeTargets.roomId, input.roomId),
+					),
+				);
+
+			return { success: true as const };
+		}),
+
 	trigger: protectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {

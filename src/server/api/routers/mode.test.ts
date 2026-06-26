@@ -361,6 +361,128 @@ describe("mode.delete", () => {
 	});
 });
 
+describe("mode.addTarget", () => {
+	it("happy path: inserts a target row with targetOn true and returns success", async () => {
+		const insertValuesMock = vi.fn().mockResolvedValue(undefined);
+		const insertMock = vi.fn().mockReturnValue({ values: insertValuesMock });
+		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ id: "mode-1" }]),
+				}),
+			}),
+			insert: insertMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.mode.addTarget({
+			modeId: "mode-1",
+			roomId: "room-1",
+		});
+
+		expect(result).toEqual({ success: true });
+		expect(insertMock).toHaveBeenCalled();
+		expect(insertValuesMock).toHaveBeenCalledWith({
+			modeId: "mode-1",
+			roomId: "room-1",
+			targetOn: true,
+		});
+	});
+
+	it("throws NOT_FOUND when the mode does not exist", async () => {
+		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([]),
+				}),
+			}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.mode.addTarget({ modeId: "mode-missing", roomId: "room-1" }),
+		).rejects.toMatchObject({ code: "NOT_FOUND" });
+	});
+
+	it("propagates error when the (modeId, roomId) pair already exists", async () => {
+		const insertValuesMock = vi
+			.fn()
+			.mockRejectedValue(new Error("UNIQUE constraint failed"));
+		const insertMock = vi.fn().mockReturnValue({ values: insertValuesMock });
+		const mockDb = {
+			select: vi.fn().mockReturnValueOnce({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockResolvedValue([{ id: "mode-1" }]),
+				}),
+			}),
+			insert: insertMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.mode.addTarget({ modeId: "mode-1", roomId: "room-1" }),
+		).rejects.toThrow("UNIQUE constraint failed");
+	});
+});
+
+describe("mode.removeTarget", () => {
+	it("happy path: deletes the target row and returns success", async () => {
+		const deleteMock = vi
+			.fn()
+			.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const mockDb = {
+			delete: deleteMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.mode.removeTarget({
+			modeId: "mode-1",
+			roomId: "room-1",
+		});
+
+		expect(result).toEqual({ success: true });
+		expect(deleteMock).toHaveBeenCalled();
+	});
+
+	it("returns success when the (modeId, roomId) pair does not exist (idempotent)", async () => {
+		const deleteMock = vi
+			.fn()
+			.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+		const mockDb = {
+			delete: deleteMock,
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.mode.removeTarget({
+			modeId: "mode-missing",
+			roomId: "room-missing",
+		});
+
+		expect(result).toEqual({ success: true });
+		expect(deleteMock).toHaveBeenCalled();
+	});
+});
+
 describe("mode.trigger", () => {
 	it("throws NOT_FOUND when the mode does not exist", async () => {
 		const mockDb = {
