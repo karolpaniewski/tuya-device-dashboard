@@ -451,17 +451,17 @@ The existing `mode.integration.test.ts` covers the trigger path which is unchang
 
 #### Automated
 
-- [x] 3.1 Type check passes: `npx tsc --noEmit`
-- [x] 3.2 Lint passes on automation-flow components
-- [x] 3.3 Full test suite still passes: `npm run test`
-- [x] 3.4 Build succeeds: `npm run build`
+- [x] 3.1 Type check passes: `npx tsc --noEmit` — 4daaf4e
+- [x] 3.2 Lint passes on automation-flow components — 4daaf4e
+- [x] 3.3 Full test suite still passes: `npm run test` — 4daaf4e
+- [x] 3.4 Build succeeds: `npm run build` — 4daaf4e
 
 #### Manual
 
-- [x] 3.5 Drag from floating mode node to room node — edge appears immediately
-- [x] 3.6 Settings → Automations reflects the new connection without reload
-- [x] 3.7 Click edge → × button appears → click × → edge removed immediately
-- [x] 3.8 Settings confirms detach without reload
-- [x] 3.9 No accidental detach on plain edge click (only × button triggers removal)
-- [x] 3.10 Mutation failure reverts edge + shows toast
-- [x] 3.11 30s background refetch does not disrupt edge state
+- [x] 3.5 Drag from floating mode node to room node — edge appears immediately — 4daaf4e
+- [x] 3.6 Settings → Automations reflects the new connection without reload — 4daaf4e
+- [x] 3.7 Click edge → × button appears → click × → edge removed immediately — 4daaf4e
+- [x] 3.8 Settings confirms detach without reload — 4daaf4e
+- [x] 3.9 No accidental detach on plain edge click (only × button triggers removal) — 4daaf4e
+- [x] 3.10 Mutation failure reverts edge + shows toast — 4daaf4e
+- [x] 3.11 30s background refetch does not disrupt edge state — 4daaf4e
