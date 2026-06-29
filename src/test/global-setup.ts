@@ -6,7 +6,7 @@ import { migrate } from "drizzle-orm/libsql/migrator";
 // Applies pending Drizzle migrations to test.db so integration tests
 // find a current schema on a fresh checkout or CI environment.
 export async function setup() {
-	process.env.DATABASE_URL ??= "file:test.db";
+	process.env.DATABASE_URL = "file:test.db";
 	const client = createClient({ url: process.env.DATABASE_URL });
 	const db = drizzle(client);
 	await migrate(db, { migrationsFolder: "./drizzle" });
