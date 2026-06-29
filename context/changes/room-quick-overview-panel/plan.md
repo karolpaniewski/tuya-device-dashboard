@@ -269,9 +269,9 @@ No new pure functions are introduced by this change — all logic is JSX composi
 
 #### Automated
 
-- [x] 1.1 npm run lint passes (room-group.tsx + heat-toggle.tsx)
-- [x] 1.2 npm run typecheck passes
-- [x] 1.3 src/components/ui/sheet.tsx exists after shadcn install
+- [x] 1.1 npm run lint passes (room-group.tsx + heat-toggle.tsx) — 0cd8a91
+- [x] 1.2 npm run typecheck passes — 0cd8a91
+- [x] 1.3 src/components/ui/sheet.tsx exists after shadcn install — 0cd8a91
 
 #### Manual
 
@@ -281,8 +281,8 @@ No new pure functions are introduced by this change — all logic is JSX composi
 
 #### Automated
 
-- [ ] 2.1 npm run typecheck passes
-- [ ] 2.2 npm run lint passes
+- [x] 2.1 npm run typecheck passes
+- [x] 2.2 npm run lint passes
 
 #### Manual
 
