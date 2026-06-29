@@ -21,9 +21,9 @@ export default async function AutomationFlowPage() {
 							Automation Flow
 						</h1>
 						<p className="text-[var(--s-text-muted)] text-sm">
-							Pick a room to see its devices and the automation modes targeting
-							it. Drag devices to rearrange; click a device, room, or mode for
-							details.
+							Drag from a mode's handle to connect it to a room. Double-click a
+							mode to activate it, then shift-click rooms to bulk-connect or
+							disconnect. Click a room for details.
 						</p>
 					</div>
 					<TuyaAutomationFlow />

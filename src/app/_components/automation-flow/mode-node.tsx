@@ -9,30 +9,24 @@ export type ModeFlowNode = Node<{ mode: ModeCanvasData }, "mode">;
 
 export function ModeNode({ data, selected }: NodeProps<ModeFlowNode>) {
 	const { mode } = data;
-	const connected = mode.isConnected;
+	const { isActive } = mode;
 
 	return (
 		<div
 			className={cn(
 				"w-56 rounded-xl border bg-white/90 px-4 py-3.5 shadow-sm backdrop-blur-md transition-all duration-150 hover:shadow-md",
-				selected
-					? "border-neutral-400 ring-1 ring-neutral-300"
-					: connected
-						? "border-neutral-200"
-						: "border-neutral-200 border-dashed",
+				isActive
+					? "border-blue-400 ring-2 ring-blue-400"
+					: selected
+						? "border-neutral-400 ring-1 ring-neutral-300"
+						: "border-neutral-200",
 			)}
-			title={connected ? undefined : "Drag to connect"}
 		>
 			<div className="flex items-center justify-between gap-2">
-				<p
-					className={cn(
-						"truncate font-medium text-[13.5px]",
-						connected ? "text-neutral-900" : "text-neutral-400",
-					)}
-				>
+				<p className="truncate font-medium text-[13.5px] text-neutral-900">
 					{mode.name}
 				</p>
-				{connected && (
+				{mode.targetOn !== null && (
 					<Badge variant={mode.targetOn === true ? "default" : "outline"}>
 						{mode.targetOn === true ? "ON" : "OFF"}
 					</Badge>
@@ -43,7 +37,7 @@ export function ModeNode({ data, selected }: NodeProps<ModeFlowNode>) {
 			</p>
 			<Handle
 				className="!h-2 !w-2 !border-neutral-300 !bg-white"
-				isConnectable={!connected}
+				isConnectable={true}
 				position={Position.Right}
 				type="source"
 			/>

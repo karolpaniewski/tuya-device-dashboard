@@ -19,6 +19,7 @@ export interface ModeCanvasData {
 	fireMinute: number | null;
 	isConnected: boolean;
 	targetOn: boolean | null;
+	isActive?: boolean;
 }
 
 /**

@@ -1,14 +1,14 @@
 ---
-project: "Tuya Device Dashboard — Editable Automation Flow"
+project: "Tuya Device Dashboard — Automation Flow Bulk-Connect"
 version: 1
 status: draft
-created: 2026-06-26
+created: 2026-06-29
 context_type: brownfield
 product_type: web-app
 target_scale:
   users: small
 timeline_budget:
-  delivery_weeks: 3
+  delivery_weeks: 1
   hard_deadline: null
   after_hours_only: true
 ---
@@ -16,154 +16,161 @@ timeline_budget:
 ## Current System Overview
 
 The Tuya Device Dashboard is a LAN-only web dashboard for small facility teams
-(2–5 people, single flat role) that replaces one-by-one Tuya mobile-app device
-management. It provides: a dashboard grid (KPI summary, per-room panels,
-drag-and-drop widget reordering), a device list grouped by room, a floor-plan
-map view, a drag-to-rotate thermostat dial, a persistent polling worker that
-keeps device state current, and a Settings / Automations area for managing
-modes with room-level scheduling.
+(2–5 people, single flat admin role) that replaces one-by-one device management
+in the Tuya mobile app. It provides a live device overview grouped by room,
+per-room health status and comfort-threshold configuration, a floor-plan map
+view, a drag-to-rotate thermostat dial, and an automation modes system (named
+modes with room-level targeting and day/time scheduling).
 
-**Tech stack:** Next.js 15 + React 19, tRPC v11, Drizzle ORM + libsql (SQLite),
-Tailwind CSS, NextAuth — persistent polling worker alongside the Next.js server.
+The `/automation-flow` page renders a flow-chart visualization of mode → room →
+device connections. The most recent change (editable-automation-flow) made this
+chart interactive: users drag from a mode node's connection point to a room node
+to create a connection (one at a time), and click any connection edge to remove
+it (one at a time).
 
-**User base:** Facility manager / office administrator — single flat role, 2–5
-person org.
+**Tech stack:** Next.js 15 + React 19, @xyflow/react v12, tRPC v11, Drizzle ORM
++ libsql (SQLite).
 
-**Core functionality:** Manage and monitor Tuya smart devices (valves, sensors)
-grouped by room and site; define automation modes (name, schedule by day/time,
-list of target rooms) that trigger valve states on a schedule; view a flow-chart
-visualization of how modes connect to rooms and devices.
+**User base:** facility manager / office administrator — single flat role, one
+seeded account, 2–5 person org.
 
 ## Problem Statement & Motivation
 
-The automation flow visualization shows the mode → room → device graph clearly,
-but editing that graph requires leaving the visualization entirely. To add or
-remove a room from a mode, a user must navigate to Settings → Automations, find
-the mode, open its edit form, change the room targets, and save — then navigate
-back to the visualization to see the result.
+When configuring a mode that applies to multiple rooms, the user must repeat the
+drag-to-connect gesture once per room. For a mode covering 6–10 rooms, this
+means 6–10 sequential drag gestures with no batch shortcut. The
+single-connection constraint was an acceptable starting point for the first
+interactive version; it becomes noticeable friction once configuring many rooms
+at once is the primary use case.
 
-**Why now:** The flow-chart visualization was just added as a read-only viewer.
-The node and edge data structures are in place; the gap is interaction alone.
-Extending the existing viewer to support editing is the natural next step while
-the graph infrastructure is fresh.
+**Why now:** the multi-node selection building block is already present in the
+flow-chart canvas component, requiring no additional dependencies. The room-
+connection data model is in place. The gap is interaction design only — extending
+the existing editor to support bulk selection and batch connect/disconnect is the
+natural next step while the interaction model is still fresh.
 
-**Current workaround cost:** Context-switch away from the visualization, hunt
-for the mode in the Settings list, edit it, then navigate back. Every attach or
-detach requires this full round-trip.
+**Current workaround cost:** N drag gestures for N rooms; no batch path exists.
 
 ## User & Persona
 
-**Primary:** Facility manager / office administrator — unchanged from the rest
-of the system. Single flat role, 2–5 person org, uses the dashboard to monitor
-and manage smart building devices and schedule automation modes. No new persona
-is introduced by this change.
+**Primary:** facility manager / office administrator — unchanged from the rest of
+the system. Single flat role, 2–5 person org. Uses the automation flow chart to
+define which rooms each mode controls.
+
+**What changes for them:** the same person, performing the same task (assigning
+rooms to a mode), can now select many rooms at once and connect or disconnect
+them all in one action, instead of repeating the drag gesture per room.
 
 ## Success Criteria
 
 ### Primary
-1. A user can drag an edge from a mode node to a room node in the automation
-   flow chart — the connection appears immediately and the room is added to the
-   mode's targets.
-2. A user can click a mode→room edge in the flow chart — the edge is removed
-   immediately and the room is detached from the mode.
-3. Changes made in the flow chart are reflected in the Settings → Automations
-   editor without a page reload.
+
+The smallest end-to-end slice proving the change works:
+
+User opens `/automation-flow`, clicks a mode node ("Night Mode" becomes
+visually active), shift-clicks three room nodes that are not yet connected to
+Night Mode, clicks "Connect 3" in the context toolbar — three connection edges
+appear on the canvas and a confirmation reads "Connected 3 rooms". Clicking
+"Connect 3" again on the same three rooms produces no change and no error
+(idempotent).
 
 ### Secondary
-- Node positions in the flow chart are draggable and the layout persists across
-  sessions (the user can arrange their own chart view).
+
+User selects a mixed set of rooms: two already connected to the active mode,
+three not connected. The context toolbar shows two independent actions —
+"Connect 3" and "Disconnect 2" — simultaneously. Clicking "Disconnect 2" removes
+two edges and shows "Disconnected 2 rooms". The three unconnected rooms remain
+unaffected.
 
 ### Guardrails
-- The Settings → Automations mode editor (name, schedule days/time, room list)
-  must not regress — it remains the surface for full mode configuration.
-- The must-have editing capability requires no schema change — it reuses the
-  existing mode-targeting data structure as-is.
+
+- Existing single drag-to-connect (mode connection point → room node) continues
+  to work without regression.
+- Existing single click-to-detach on any edge continues to work without
+  regression.
+- Settings → Automations editor is unaffected — no behavior changes on that
+  surface.
+- Bulk operations on up to 20 rooms complete within what the user perceives as
+  instant (< 500 ms p95 under typical local-deployment conditions).
+- Each bulk action ends with a visible confirmation naming the count of rooms
+  affected ("Connected N rooms" / "Disconnected M rooms").
+- The flow visualization updates immediately after a bulk action without visible
+  interruption or flicker.
 
 ## User Stories
 
-### US-01: Facility admin rewires a mode's room targets without leaving the flow chart
+### US-01: Bulk-connect rooms to a mode
 
-- **Given** the automation flow chart is open and at least one mode and one
-  room node are visible
-- **When** the admin drags an edge from a mode node and drops it on a room node
-- **Then** the connection appears immediately in the chart and the room is added
-  to the mode's targets — reflected in the Settings editor without a page reload
+**Given:** the user is on `/automation-flow` and the canvas shows mode nodes and
+room nodes
 
-### US-02: Facility admin removes a room from a mode by clicking its edge
+**When:** they click a mode node ("Night Mode" becomes active), then shift-click
+four room nodes (two are not yet connected to Night Mode, two already are), then
+click "Connect 2" in the context toolbar
 
-- **Given** a mode→room edge exists in the flow chart
-- **When** the admin clicks the edge
-- **Then** the edge is removed immediately and the room is no longer a target of
-  that mode
+**Then:** two new connection edges appear on the canvas between Night Mode and
+the previously unconnected rooms; a confirmation reads "Connected 2 rooms"; the
+two already-connected rooms are unchanged
+
+### US-02: Bulk-disconnect rooms from a mode
+
+**Given:** the user is on `/automation-flow` with a mode node active and three
+room nodes selected, all three currently connected to the active mode
+
+**When:** they click "Disconnect 3" in the context toolbar
+
+**Then:** three connection edges are removed from the canvas; a confirmation
+reads "Disconnected 3 rooms"
 
 ## Scope of Change
 
-- [new] User can drag an edge from a mode node to a room node to attach that
-  room to the mode. A visible drag handle on the mode node makes the gesture
-  discoverable.
-  > Socratic: Counter-argument: drag-to-connect has no obvious affordance —
-  > users may never discover it. Resolution: kept; implementation must add a
-  > visible drag handle or tooltip on mode nodes so the gesture is discoverable.
-- [new] User can click a mode→room edge to detach that room from the mode.
-  The detach takes effect immediately; recovery is re-dragging the edge.
-  > Socratic: Counter-argument: immediate deletion without undo means one
-  > misclick silently removes a mode target. Resolution: kept; recovery is
-  > re-dragging the edge (low cost). However, implementation should evaluate
-  > a brief undo affordance on the selected edge — flagged as Open Question 1.
-- [new, nice-to-have] User can drag nodes to reposition them in the flow chart,
-  with positions persisted across sessions. Requires new storage infrastructure
-  and must be implemented as a separate phase after the must-have items ship.
-  > Socratic: Counter-argument: persisting positions requires new storage
-  > (a DB column or table for node x/y per user/site) — this is a schema
-  > change hidden behind the "nice-to-have" label. Resolution: kept but
-  > reclassified as a separate implementation phase with its own schema change,
-  > not a zero-cost addition.
-- [preserved] The Settings → Automations mode editor (name, schedule, room list)
-  continues to work unchanged.
-- [preserved] The existing read-only flow-chart visualization behavior is
-  maintained as the fallback state.
+| Item | Change | Description |
+|---|---|---|
+| Mode-node activation | new | Clicking a mode node marks it as the active target for bulk operations; it receives a distinct visual state to distinguish it from passive nodes |
+| Room-node multi-select | new | Users can additively select room nodes by shift-clicking individual nodes or drawing a lasso selection across the canvas background |
+| Context toolbar | new | When a mode node is active and at least one room node is selected, a toolbar appears showing "Connect N" (count of unconnected rooms in the selection) and/or "Disconnect M" (count of connected rooms in the selection); both actions may appear simultaneously for mixed selections |
+| Bulk-connect | new | Connects all currently-unconnected selected rooms to the active mode in one action; rooms already connected are skipped silently |
+| Bulk-disconnect | new | Disconnects all currently-connected selected rooms from the active mode in one action; rooms with no connection are skipped silently |
+| Single drag-to-connect | preserved | Dragging from a mode node's connection point to a room node creates one connection — unchanged |
+| Single click-to-detach | preserved | Clicking an existing connection edge removes it — unchanged |
+| Settings → Automations editor | preserved | The existing editor for mode name, schedule, and room targets — no changes to this surface |
 
 ## Constraints & Compatibility
 
-- **No schema change for must-have capabilities:** the core attach/detach
-  feature reuses the existing mode-targeting data structure as-is — no schema
-  change is required for the must-have items.
-- **Node position persistence is an additive phase:** it requires new storage
-  infrastructure and must be scoped as a separate implementation phase after the
-  must-have capabilities ship. It must not block or be bundled with the
-  must-have items.
-- **Settings editor compatibility:** the flow chart and the Settings mode editor
-  write to the same underlying data; changes in either surface must be
-  immediately reflected in the other without a page reload.
-- **No external API consumers:** no external system touches this surface; no
-  backward-compatibility risk beyond the internal UI sync requirement above.
+- The room-connection data model is unchanged — this change requires no data
+  migrations.
+- The bulk-connect and bulk-disconnect operations use the same underlying data
+  operations as the existing single-connect and single-detach, composed in
+  batch; the data invariants are identical.
+- The Settings → Automations editor and the flow-chart canvas share the same
+  underlying data; both surfaces must reflect the same state after any operation
+  on either surface.
+- No external API consumers or integrations exist; backward compatibility is
+  scoped to this dashboard only.
 
 ## Business Logic Changes
 
-No domain logic change. This change adds a new editing surface for the existing
-mode-targeting rule — the rule ("a mode targets a set of rooms; triggering the
-mode fires the valves in those rooms") already exists and is unchanged. This
-change only adds drag/click interactions that create and delete mode-room
-associations previously managed exclusively via the Settings editor.
+No domain logic change. This is an interaction-layer extension. The rules
+governing which rooms a mode may target, how the scheduler executes modes, and
+how valve state commands are issued remain exactly as they are today.
+
+Idempotency is a behavioral requirement: connecting a room that is already
+connected to the active mode produces no change and no error. Disconnecting a
+room that has no connection to the active mode produces no change and no error.
+Both operations are safe to repeat.
 
 ## Access Control Changes
 
-No access control changes — current model preserved: email + password login,
-single flat role, all routes gated behind the existing auth session. The
-editable flow chart is available to any authenticated user under the same gate
-as the existing read-only visualization.
+No access control changes. Bulk operations use the same authorization model as
+the existing single-connect and single-detach operations (flat admin role, single
+seeded account).
 
 ## Non-Goals
 
-- Avoid: device-level mode targeting — modes target rooms (not individual
-  valves or sensors); the existing room-level mode-targeting data structure is
-  preserved as the single targeting unit.
-- Avoid: redesigning the Settings → Automations mode editor — it stays as-is;
-  the flow chart is an additive editing surface, not a replacement.
+- **No changes to the Settings → Automations editor** — schedule configuration,
+  mode naming, and attribute editing remain exclusively in that surface; the
+  flow-chart canvas is for connection topology only.
 
 ## Open Questions
 
-1. **Accidental detach risk (UX decision):** clicking a mode→room edge detaches
-   the room immediately with no undo path beyond re-dragging. Should a
-   confirmation step or brief undo notification be added before implementation?
-   — Owner: user. Block: yes for the UX decision; no for the FR itself.
+No open questions — all decisions were resolved during the shaping session.

@@ -351,6 +351,49 @@ export const modeRouter = createTRPCRouter({
 			return { success: true as const };
 		}),
 
+	addTargets: protectedProcedure
+		.input(
+			z.object({
+				modeId: z.string(),
+				roomIds: z.array(z.string()).min(1).max(20),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const [existingMode] = await ctx.db
+				.select({ id: automationModes.id })
+				.from(automationModes)
+				.where(eq(automationModes.id, input.modeId));
+			if (!existingMode) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Mode not found" });
+			}
+
+			await validateTargetsSameSite(ctx.db, input.roomIds);
+
+			const existing = await ctx.db
+				.select({ roomId: automationModeTargets.roomId })
+				.from(automationModeTargets)
+				.where(
+					and(
+						eq(automationModeTargets.modeId, input.modeId),
+						inArray(automationModeTargets.roomId, input.roomIds),
+					),
+				);
+			const existingSet = new Set(existing.map((r) => r.roomId));
+			const toInsert = input.roomIds.filter((id) => !existingSet.has(id));
+
+			if (toInsert.length === 0) return { added: 0 as const };
+
+			await ctx.db.insert(automationModeTargets).values(
+				toInsert.map((roomId) => ({
+					modeId: input.modeId,
+					roomId,
+					targetOn: true,
+				})),
+			);
+
+			return { added: toInsert.length };
+		}),
+
 	removeTarget: protectedProcedure
 		.input(z.object({ modeId: z.string(), roomId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
@@ -369,6 +412,34 @@ export const modeRouter = createTRPCRouter({
 					and(
 						eq(automationModeTargets.modeId, input.modeId),
 						eq(automationModeTargets.roomId, input.roomId),
+					),
+				);
+
+			return { success: true as const };
+		}),
+
+	removeTargets: protectedProcedure
+		.input(
+			z.object({
+				modeId: z.string(),
+				roomIds: z.array(z.string()).min(1).max(20),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			const [existing] = await ctx.db
+				.select({ id: automationModes.id })
+				.from(automationModes)
+				.where(eq(automationModes.id, input.modeId));
+			if (!existing) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Mode not found" });
+			}
+
+			await ctx.db
+				.delete(automationModeTargets)
+				.where(
+					and(
+						eq(automationModeTargets.modeId, input.modeId),
+						inArray(automationModeTargets.roomId, input.roomIds),
 					),
 				);
 

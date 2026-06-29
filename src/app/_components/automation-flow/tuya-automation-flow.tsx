@@ -10,6 +10,7 @@ import {
 	MarkerType,
 	type NodeMouseHandler,
 	type NodeTypes,
+	type OnSelectionChangeParams,
 	ReactFlow,
 	ReactFlowProvider,
 	useEdgesState,
@@ -22,30 +23,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSiteContext } from "~/components/site-context";
 import { ErrorMessage } from "~/components/ui/error-message";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "~/components/ui/select";
 import { Skeleton } from "~/components/ui/skeleton";
 import { computeAutomationFlowLayout } from "~/lib/automation-flow-layout";
-import { getAllModesForCanvas, getModesForRoom } from "~/lib/mode-targeting";
+import { getModesForRoom } from "~/lib/mode-targeting";
 import { api, type RouterOutputs } from "~/trpc/react";
-import { DeviceModal } from "../device-modal";
 import { RoomModal } from "../room-modal";
-import { type DeviceFlowNode, DeviceNode } from "./device-node";
+import { BulkConnectToolbar } from "./bulk-connect-toolbar";
 import { ModeEdge } from "./mode-edge";
 import { type ModeFlowNode, ModeNode } from "./mode-node";
 import { type RoomFlowNode, RoomNode } from "./room-node";
 
-type AutomationFlowNode = ModeFlowNode | RoomFlowNode | DeviceFlowNode;
+type AutomationFlowNode = ModeFlowNode | RoomFlowNode;
 type DeviceItem =
 	RouterOutputs["device"]["overview"]["rooms"][number]["devices"][number];
+type ActiveMode = { modeId: string; modeName: string } | null;
 
 const nodeTypes: NodeTypes = {
-	device: DeviceNode,
 	mode: ModeNode,
 	room: RoomNode,
 };
@@ -61,7 +54,6 @@ const AUTOMATION_EDGE_MARKER = {
 	type: MarkerType.ArrowClosed,
 	width: 16,
 };
-const CONTAINMENT_EDGE_STYLE = { stroke: "#d4d4d4", strokeWidth: 1 };
 
 function TuyaAutomationFlowCanvas() {
 	const { activeSiteId } = useSiteContext();
@@ -73,96 +65,88 @@ function TuyaAutomationFlowCanvas() {
 	);
 	const modeListQuery = api.mode.list.useQuery({ siteId: activeSiteId });
 	const roomsListQuery = api.room.list.useQuery({ siteId: activeSiteId });
-	const [selectedDevice, setSelectedDevice] = useState<DeviceItem | null>(null);
-	const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
 
-	const sortedRooms = useMemo(
-		() =>
-			[...(overviewQuery.data?.rooms ?? [])].sort((a, b) =>
-				a.roomName.localeCompare(b.roomName),
-			),
-		[overviewQuery.data],
-	);
+	const [modalRoomId, setModalRoomId] = useState<string | null>(null);
+	const [activeMode, setActiveMode] = useState<ActiveMode>(null);
+	const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
 
-	const [viewedRoomId, setViewedRoomId] = useState<string | null>(null);
-
-	useEffect(() => {
-		if (sortedRooms.length === 0) return;
-		if (viewedRoomId && sortedRooms.some((r) => r.roomId === viewedRoomId)) {
-			return;
+	const devicesByRoomId = useMemo(() => {
+		const map = new Map<string, DeviceItem[]>();
+		for (const room of overviewQuery.data?.rooms ?? []) {
+			map.set(room.roomId, room.devices);
 		}
-		setViewedRoomId(sortedRooms[0]?.roomId ?? null);
-	}, [sortedRooms, viewedRoomId]);
-
-	const viewedRoom = sortedRooms.find((r) => r.roomId === viewedRoomId) ?? null;
-
-	const modesForRoom = useMemo(
-		() =>
-			viewedRoom
-				? getModesForRoom(viewedRoom.roomId, modeListQuery.data ?? [])
-				: [],
-		[viewedRoom, modeListQuery.data],
-	);
+		return map;
+	}, [overviewQuery.data]);
 
 	const allModesForCanvas = useMemo(
-		() => getAllModesForCanvas(viewedRoomId ?? "", modeListQuery.data ?? []),
-		[viewedRoomId, modeListQuery.data],
+		() =>
+			(modeListQuery.data ?? []).map((mode) => ({
+				id: mode.id,
+				name: mode.name,
+				daysOfWeek: mode.daysOfWeek,
+				fireHour: mode.fireHour,
+				fireMinute: mode.fireMinute,
+				isConnected: mode.targets.length > 0,
+				targetOn: null as boolean | null,
+			})),
+		[modeListQuery.data],
 	);
 
 	const layout = useMemo(
 		() =>
 			computeAutomationFlowLayout(
 				allModesForCanvas.length,
-				viewedRoom?.devices.length ?? 0,
+				(roomsListQuery.data ?? []).length,
 			),
-		[allModesForCanvas.length, viewedRoom?.devices.length],
+		[allModesForCanvas.length, roomsListQuery.data],
 	);
 
 	const computedNodes = useMemo<AutomationFlowNode[]>(() => {
-		if (!viewedRoom) return [];
 		const modeNodes: ModeFlowNode[] = allModesForCanvas.map((mode, i) => ({
-			data: { mode },
+			data: { mode: { ...mode, isActive: mode.id === activeMode?.modeId } },
 			id: `mode-${mode.id}`,
 			position: layout.modes[i] ?? { x: 0, y: 0 },
-			type: "mode",
+			type: "mode" as const,
 		}));
-		const roomNode: RoomFlowNode = {
-			data: {
-				deviceCount: viewedRoom.devices.length,
-				roomName: viewedRoom.roomName,
-			},
-			id: `room-${viewedRoom.roomId}`,
-			position: layout.room,
-			type: "room",
-		};
-		const deviceNodes: DeviceFlowNode[] = viewedRoom.devices.map(
-			(device, i) => ({
-				data: { device },
-				id: `device-${device.id}`,
-				position: layout.devices[i] ?? { x: 0, y: 0 },
-				type: "device",
+		const roomNodes: RoomFlowNode[] = (roomsListQuery.data ?? []).map(
+			(room, i) => ({
+				data: { roomName: room.name, deviceCount: room.deviceCount },
+				id: `room-${room.id}`,
+				position: layout.rooms[i] ?? { x: 0, y: 0 },
+				type: "room" as const,
 			}),
 		);
-		return [...modeNodes, roomNode, ...deviceNodes];
-	}, [viewedRoom, allModesForCanvas, layout]);
+		return [...modeNodes, ...roomNodes];
+	}, [allModesForCanvas, roomsListQuery.data, layout, activeMode?.modeId]);
 
-	const [nodes, setNodes, onNodesChange] = useNodesState<AutomationFlowNode>(
-		[],
-	);
+	const [nodes, setNodes, onNodesChange] =
+		useNodesState<AutomationFlowNode>([]);
 	const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-	const prevRoomIdRef = useRef<string | null>(null);
-	const viewedRoomIdRef = useRef(viewedRoomId);
-	viewedRoomIdRef.current = viewedRoomId;
 	const edgesRef = useRef(edges);
 	edgesRef.current = edges;
 
 	const { mutate: addTarget } = api.mode.addTarget.useMutation();
 	const { mutate: removeTarget } = api.mode.removeTarget.useMutation();
+	const { mutate: addTargets, isPending: isAddingTargets } =
+		api.mode.addTargets.useMutation({
+			onSuccess: (data) => {
+				void utils.mode.list.invalidate();
+				if (data.added > 0) {
+					toast.success(
+						`Connected ${data.added} room${data.added === 1 ? "" : "s"}`,
+					);
+				}
+			},
+			onError: () => toast.error("Couldn't connect rooms — try again"),
+		});
+	const { mutate: removeTargets, isPending: isRemovingTargets } =
+		api.mode.removeTargets.useMutation({
+			onError: () => toast.error("Couldn't disconnect rooms — try again"),
+		});
 
 	const handleDetach = useCallback(
 		(modeId: string, roomId: string) => {
-			const edgeId = `e-mode-${modeId}-room`;
-			const snapshotRoomId = viewedRoomIdRef.current;
+			const edgeId = `e-mode-${modeId}-room-${roomId}`;
 			let removedEdge: Edge | undefined;
 			setEdges((current) => {
 				removedEdge = current.find((e) => e.id === edgeId);
@@ -173,7 +157,6 @@ function TuyaAutomationFlowCanvas() {
 				{
 					onSuccess: () => void utils.mode.list.invalidate(),
 					onError: () => {
-						if (viewedRoomIdRef.current !== snapshotRoomId) return;
 						const edge = removedEdge;
 						if (edge) setEdges((current) => [...current, edge]);
 						toast.error("Couldn't detach room — try again");
@@ -186,18 +169,20 @@ function TuyaAutomationFlowCanvas() {
 
 	const handleConnect = useCallback(
 		(connection: Connection) => {
-			if (!viewedRoom) return;
 			if (!connection.source?.startsWith("mode-")) return;
-			if (connection.target !== `room-${viewedRoom.roomId}`) return;
+			if (!connection.target?.startsWith("room-")) return;
 
 			const modeId = connection.source.slice("mode-".length);
-			const roomId = viewedRoom.roomId;
-			const edgeId = `e-mode-${modeId}-room`;
+			const roomId = connection.target.slice("room-".length);
+			const edgeId = `e-mode-${modeId}-room-${roomId}`;
 
 			if (edgesRef.current.some((e) => e.id === edgeId)) return;
 
 			const modeName =
 				allModesForCanvas.find((m) => m.id === modeId)?.name ?? modeId;
+			const roomName =
+				(roomsListQuery.data ?? []).find((r) => r.id === roomId)?.name ??
+				roomId;
 
 			setEdges((current) =>
 				addEdge(
@@ -205,7 +190,7 @@ function TuyaAutomationFlowCanvas() {
 						animated: true,
 						data: { onDelete: () => handleDetach(modeId, roomId) },
 						id: edgeId,
-						label: `${modeName} → ${viewedRoom.roomName}`,
+						label: `${modeName} → ${roomName}`,
 						markerEnd: AUTOMATION_EDGE_MARKER,
 						source: connection.source,
 						style: AUTOMATION_EDGE_STYLE,
@@ -232,49 +217,43 @@ function TuyaAutomationFlowCanvas() {
 				},
 			);
 		},
-		[viewedRoom, allModesForCanvas, addTarget, handleDetach, setEdges, utils],
+		[
+			allModesForCanvas,
+			roomsListQuery.data,
+			addTarget,
+			handleDetach,
+			setEdges,
+			utils,
+		],
 	);
 
-	const computedEdges = useMemo<Edge[]>(() => {
-		if (!viewedRoom) return [];
-		const modeEdges: Edge[] = modesForRoom.map((mode) => ({
-			animated: true,
-			data: { onDelete: () => handleDetach(mode.id, viewedRoom.roomId) },
-			id: `e-mode-${mode.id}-room`,
-			label: `${mode.name} → ${viewedRoom.roomName}`,
-			markerEnd: AUTOMATION_EDGE_MARKER,
-			source: `mode-${mode.id}`,
-			style: AUTOMATION_EDGE_STYLE,
-			target: `room-${viewedRoom.roomId}`,
-			type: "modeEdge",
-		}));
-		const deviceEdges: Edge[] = viewedRoom.devices.map((device) => ({
-			animated: false,
-			id: `e-room-device-${device.id}`,
-			source: `room-${viewedRoom.roomId}`,
-			style: CONTAINMENT_EDGE_STYLE,
-			target: `device-${device.id}`,
-			type: "smoothstep",
-		}));
-		return [...modeEdges, ...deviceEdges];
-	}, [viewedRoom, modesForRoom, handleDetach]);
+	const computedEdges = useMemo<Edge[]>(
+		() =>
+			(modeListQuery.data ?? []).flatMap((mode) =>
+				mode.targets.map((target) => ({
+					animated: true,
+					data: { onDelete: () => handleDetach(mode.id, target.roomId) },
+					id: `e-mode-${mode.id}-room-${target.roomId}`,
+					label: `${mode.name} → ${target.roomName}`,
+					markerEnd: AUTOMATION_EDGE_MARKER,
+					source: `mode-${mode.id}`,
+					style: AUTOMATION_EDGE_STYLE,
+					target: `room-${target.roomId}`,
+					type: "modeEdge",
+				})),
+			),
+		[modeListQuery.data, handleDetach],
+	);
 
-	// Merges freshly computed nodes into existing state on every refetch so an
-	// in-progress drag survives the 30s poll — only a room switch fully resets
-	// positions, since a previous room's layout has no meaning for a new one.
 	useEffect(() => {
-		const roomChanged = prevRoomIdRef.current !== viewedRoomId;
-		prevRoomIdRef.current = viewedRoomId;
-
 		setNodes((current) => {
-			if (roomChanged) return computedNodes;
 			const byId = new Map(current.map((n) => [n.id, n]));
 			return computedNodes.map((next) => {
 				const existing = byId.get(next.id);
 				return existing ? { ...next, position: existing.position } : next;
 			});
 		});
-	}, [computedNodes, viewedRoomId, setNodes]);
+	}, [computedNodes, setNodes]);
 
 	useEffect(() => {
 		setEdges((current) => {
@@ -287,14 +266,21 @@ function TuyaAutomationFlowCanvas() {
 		});
 	}, [computedEdges, setEdges]);
 
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				setActiveMode(null);
+				setSelectedRoomIds([]);
+			}
+		};
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, []);
+
 	const onNodeClick = useCallback<NodeMouseHandler<AutomationFlowNode>>(
 		(_event, node) => {
-			if (node.type === "device") {
-				setSelectedDevice(node.data.device);
-				return;
-			}
 			if (node.type === "room") {
-				setIsRoomModalOpen(true);
+				setModalRoomId(node.id.slice("room-".length));
 				return;
 			}
 			if (node.type === "mode") {
@@ -304,23 +290,83 @@ function TuyaAutomationFlowCanvas() {
 		[router],
 	);
 
-	const siteIsAll = activeSiteId === "all";
-	const roomItems = Object.fromEntries(
-		sortedRooms.map((r) => [
-			r.roomId,
-			siteIsAll ? `${r.roomName} — ${r.siteName}` : r.roomName,
-		]),
+	const onNodeDoubleClick = useCallback<NodeMouseHandler<AutomationFlowNode>>(
+		(_event, node) => {
+			if (node.type !== "mode") return;
+			const modeId = node.data.mode.id;
+			const modeName = node.data.mode.name;
+			setActiveMode((current) =>
+				current?.modeId === modeId ? null : { modeId, modeName },
+			);
+		},
+		[],
 	);
 
-	if (overviewQuery.isLoading) {
-		return <Skeleton className="h-[608px] w-full rounded-2xl" />;
+	const onPaneClick = useCallback(() => {
+		setActiveMode(null);
+		setSelectedRoomIds([]);
+	}, []);
+
+	const onSelectionChange = useCallback(
+		({ nodes: selected }: OnSelectionChangeParams) => {
+			const rooms = selected
+				.filter((n) => n.type === "room")
+				.map((n) => n.id.slice("room-".length));
+			setSelectedRoomIds(rooms);
+		},
+		[],
+	);
+
+	const activeModeData = useMemo(
+		() => modeListQuery.data?.find((m) => m.id === activeMode?.modeId),
+		[modeListQuery.data, activeMode?.modeId],
+	);
+
+	const connectedRoomIds = useMemo(
+		() => new Set((activeModeData?.targets ?? []).map((t) => t.roomId)),
+		[activeModeData],
+	);
+
+	const toConnect = useMemo(
+		() => selectedRoomIds.filter((id) => !connectedRoomIds.has(id)),
+		[selectedRoomIds, connectedRoomIds],
+	);
+	const toDisconnect = useMemo(
+		() => selectedRoomIds.filter((id) => connectedRoomIds.has(id)),
+		[selectedRoomIds, connectedRoomIds],
+	);
+
+	const handleBulkConnect = useCallback(() => {
+		if (!activeMode || toConnect.length === 0) return;
+		addTargets({ modeId: activeMode.modeId, roomIds: toConnect });
+	}, [activeMode, toConnect, addTargets]);
+
+	const handleBulkDisconnect = useCallback(() => {
+		if (!activeMode || toDisconnect.length === 0) return;
+		const count = toDisconnect.length;
+		const ids = [...toDisconnect];
+		removeTargets(
+			{ modeId: activeMode.modeId, roomIds: ids },
+			{
+				onSuccess: () => {
+					void utils.mode.list.invalidate();
+					toast.success(
+						`Disconnected ${count} room${count === 1 ? "" : "s"}`,
+					);
+				},
+			},
+		);
+	}, [activeMode, toDisconnect, removeTargets, utils]);
+
+	if (roomsListQuery.isLoading || modeListQuery.isLoading) {
+		return <Skeleton className="h-[560px] w-full rounded-2xl" />;
 	}
 
-	if (overviewQuery.error) {
-		return <ErrorMessage message="Failed to load devices." variant="inline" />;
+	if (roomsListQuery.error) {
+		return <ErrorMessage message="Failed to load rooms." variant="inline" />;
 	}
 
-	if (sortedRooms.length === 0) {
+	if ((roomsListQuery.data ?? []).length === 0) {
 		return (
 			<div className="flex h-[560px] w-full flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 text-center">
 				<Layers className="mb-4 text-neutral-400" size={48} />
@@ -334,80 +380,58 @@ function TuyaAutomationFlowCanvas() {
 		);
 	}
 
-	if (!viewedRoom) return null;
+	const modalRoom = modalRoomId
+		? (roomsListQuery.data ?? []).find((r) => r.id === modalRoomId)
+		: null;
 
 	return (
-		<div className="flex flex-col gap-3">
-			<Select
-				items={roomItems}
-				onValueChange={(v) => v && setViewedRoomId(v)}
-				value={viewedRoomId ?? ""}
-			>
-				<SelectTrigger className="w-full sm:w-64">
-					<SelectValue />
-				</SelectTrigger>
-				<SelectContent>
-					{sortedRooms.map((room) => (
-						<SelectItem key={room.roomId} value={room.roomId}>
-							{siteIsAll
-								? `${room.roomName} — ${room.siteName}`
-								: room.roomName}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
-
-			<div className="h-[560px] w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50">
-				<ReactFlow
-					deleteKeyCode={null}
-					edges={edges}
-					edgeTypes={edgeTypes}
-					fitView
-					fitViewOptions={{ padding: 0.3 }}
-					nodes={nodes}
-					nodeTypes={nodeTypes}
-					onConnect={handleConnect}
-					onEdgesChange={onEdgesChange}
-					onNodeClick={onNodeClick}
-					onNodesChange={onNodesChange}
-					proOptions={{ hideAttribution: true }}
-				>
-					<Background color="#e2e2e2" gap={28} size={1} />
-					<Controls showInteractive={false} />
-				</ReactFlow>
-			</div>
-
-			{selectedDevice && (
-				<DeviceModal
-					device={selectedDevice}
-					modesForRoom={getModesForRoom(
-						selectedDevice.roomId ?? "",
-						modeListQuery.data ?? [],
-					)}
-					onClose={() => setSelectedDevice(null)}
-					rooms={roomsListQuery.data ?? []}
-					utils={utils}
+		<div className="relative h-[560px] w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50">
+			{activeMode && (
+				<BulkConnectToolbar
+					activeModeName={activeMode.modeName}
+					isPending={isAddingTargets || isRemovingTargets}
+					onConnect={handleBulkConnect}
+					onDisconnect={handleBulkDisconnect}
+					toConnect={toConnect.length}
+					toDisconnect={toDisconnect.length}
 				/>
 			)}
-			{isRoomModalOpen && viewedRoom && (
+			<ReactFlow
+				deleteKeyCode={null}
+				edges={edges}
+				edgeTypes={edgeTypes}
+				fitView
+				fitViewOptions={{ padding: 0.3 }}
+				multiSelectionKeyCode="Shift"
+				nodes={nodes}
+				nodeTypes={nodeTypes}
+				onConnect={handleConnect}
+				onEdgesChange={onEdgesChange}
+				onNodeClick={onNodeClick}
+				onNodeDoubleClick={onNodeDoubleClick}
+				onNodesChange={onNodesChange}
+				onPaneClick={onPaneClick}
+				onSelectionChange={onSelectionChange}
+				panOnDrag={[1, 2]}
+				proOptions={{ hideAttribution: true }}
+				selectionOnDrag={true}
+			>
+				<Background color="#e2e2e2" gap={28} size={1} />
+				<Controls showInteractive={false} />
+			</ReactFlow>
+			{modalRoom && modalRoomId && (
 				<RoomModal
-					devices={viewedRoom.devices}
-					modesForRoom={modesForRoom}
-					onClose={() => setIsRoomModalOpen(false)}
-					roomId={viewedRoom.roomId}
-					roomName={viewedRoom.roomName}
+					devices={devicesByRoomId.get(modalRoomId) ?? []}
+					modesForRoom={getModesForRoom(modalRoomId, modeListQuery.data ?? [])}
+					onClose={() => setModalRoomId(null)}
+					roomId={modalRoomId}
+					roomName={modalRoom.name}
 				/>
 			)}
 		</div>
 	);
 }
 
-/**
- * Self-contained: reads the active site, fetches device.overview/mode.list
- * itself, and lets the user pick which room to diagram. No mock data —
- * see automation-visibility's mode-targeting.ts for the room-targeting logic
- * this reuses as-is.
- */
 export function TuyaAutomationFlow() {
 	return (
 		<ReactFlowProvider>
