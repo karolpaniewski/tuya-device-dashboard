@@ -33,11 +33,11 @@ jobs:
       - name: Run CI checks
         run: npm run ci
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL || 'file:ci.db' }}
-          ENCRYPTION_SECRET: ${{ secrets.ENCRYPTION_SECRET || '0000000000000000000000000000000000000000000000000000000000000000' }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'ci-placeholder-auth-secret-32-chars-min' }}
-          AUTH_ADMIN_EMAIL: ${{ secrets.AUTH_ADMIN_EMAIL || 'ci@example.com' }}
-          AUTH_ADMIN_PASSWORD: ${{ secrets.AUTH_ADMIN_PASSWORD || 'ci-placeholder-password' }}
+          DATABASE_URL: "file:ci.db"
+          ENCRYPTION_SECRET: "0000000000000000000000000000000000000000000000000000000000000000"
+          AUTH_SECRET: "ci-auth-secret-minimum-32-characters-long"
+          AUTH_ADMIN_EMAIL: "ci@example.com"
+          AUTH_ADMIN_PASSWORD: "ci-placeholder-password"
 
       - name: Upload build artifact
         if: github.ref == 'refs/heads/main' && success()
