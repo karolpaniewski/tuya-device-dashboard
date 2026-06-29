@@ -1,9 +1,10 @@
 ---
 id: room-quick-overview-panel
 title: Room Quick-Overview Panel
-status: impl_reviewed
+status: archived
 created: 2026-06-29
 updated: 2026-06-29
+archived_at: 2026-06-29T13:27:46Z
 prd: context/foundation/prd-v10.md
 ---
 
