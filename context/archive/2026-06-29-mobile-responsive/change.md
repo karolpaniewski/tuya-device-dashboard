@@ -1,6 +1,15 @@
-# S-08 — Mobile-Responsive Layout
+---
+change_id: mobile-responsive
+title: "Mobile-Responsive Layout"
+status: implemented
+created: 2026-06-29
+updated: 2026-06-29
+archived_at: 2026-06-29
+---
 
-Make the dashboard and setup pages usable on 375px mobile viewports without horizontal scroll, with critical interactive elements meeting 44px touch-target minimums.
+Make the dashboard and setup pages usable on 375px mobile viewports without
+horizontal scroll, with critical interactive elements meeting 44px touch-target
+minimums.
 
 ## Scope
 
