@@ -40,7 +40,7 @@ interface Props {
 function RoomPanelChart({ sensorId }: { sensorId: string }) {
 	const { data } = api.device.temperatureHistory.useQuery(
 		{ tuyaDeviceId: sensorId, range: "24h" },
-		{ enabled: true, staleTime: 60_000 },
+		{ staleTime: 60_000 },
 	);
 
 	const formatTs = (ts: number) =>
@@ -53,6 +53,14 @@ function RoomPanelChart({ sensorId }: { sensorId: string }) {
 		return (
 			<div className="flex h-[200px] items-center justify-center text-[var(--s-text-dim)] text-sm">
 				Loading…
+			</div>
+		);
+	}
+
+	if (data.length === 0) {
+		return (
+			<div className="flex h-[200px] items-center justify-center text-[var(--s-text-dim)] text-sm">
+				No data yet
 			</div>
 		);
 	}
@@ -138,7 +146,10 @@ export function RoomQuickOverviewPanel({
 
 	return (
 		<Sheet defaultOpen onOpenChange={(open) => !open && onClose()}>
-			<SheetContent className="w-[420px] overflow-y-auto p-0" side="right">
+			<SheetContent
+				className="w-full overflow-y-auto p-0 sm:w-[420px]"
+				side="right"
+			>
 				<SheetHeader className="border-[var(--s-border)] border-b px-5 py-4">
 					<SheetTitle>{room.roomName}</SheetTitle>
 					<div className="mt-1 flex items-center gap-2">

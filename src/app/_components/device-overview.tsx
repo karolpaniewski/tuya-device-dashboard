@@ -227,6 +227,7 @@ export function DeviceOverview() {
 				);
 			}
 		},
+		onError: () => toast.error("Failed to toggle heat."),
 	});
 	// Pending layout save — at most one `dashboardLayout.save` request is ever
 	// in flight; a newer call supersedes an older one still in flight instead
