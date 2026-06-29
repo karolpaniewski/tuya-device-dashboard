@@ -56,6 +56,8 @@ A small facility management team (2–5 people) cannot monitor or control their 
 | S-23  | automation-rework      | replace per-device temperature+time automation rules (S-11) with room-targeted on/off "modes" (schedule-driven or manually triggered), opening/closing valves directly instead of writing setpoints | S-11, S-20 | user-requested v2 | done |
 | S-24  | floor-plan-map-view    | upload a floor-plan image, drag-and-drop devices onto it, and control any placed device from the map — a spatial alternative to the existing list/table view | S-01, S-02, S-05, S-16 | PRD (v7): FR-001–FR-013, US-01 | done |
 | S-25  | thermostat-dial        | adjust a valve's setpoint via a drag-to-rotate circular dial (replacing +/− buttons and the linear slider) that also expands the card into the detail modal via a shared-layout transition | S-04, S-16 | PRD: US-01 | done |
+| S-26  | editable-automation-flow | /automation-flow canvas made interactive: all site modes appear as nodes; drag from mode handle to room node to create a connection; click a connected edge to reveal × button for one-click detach | S-23 | user-requested v2 | done |
+| S-27  | automation-flow-bulk-connect | canvas switched from single-room to all-rooms-at-once view (modes × rooms, no device column); double-click a mode to activate it, then shift-click or lasso-select rooms, click "Connect N" / "Disconnect M" to batch-connect or disconnect | S-26 | user-requested v2 | done |
 
 ## Streams
 
@@ -397,6 +399,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-23       | automation-rework      | Feature: room-targeted on/off modes replacing per-device automation rules | done             | —                                                                      |
 | S-24       | floor-plan-map-view    | Feature: upload floor plan, drag devices onto it, control from the map | done             | —                                                                      |
 | S-25       | thermostat-dial        | Feature: drag-to-rotate setpoint dial + card↔modal shared-layout transition | done       | —                                                                      |
+| S-26       | editable-automation-flow | Feature: interactive automation flow — drag-to-connect, click-to-detach    | done       | —                                                                      |
+| S-27       | automation-flow-bulk-connect | Feature: all-rooms canvas + double-click mode activation + bulk connect/disconnect | done | —                                                                 |
 
 ## Open Roadmap Questions
 
@@ -435,3 +439,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-10       | external-notifications | 2026-06-24  |
 | S-24       | floor-plan-map-view    | 2026-06-24  |
 | S-25       | thermostat-dial        | 2026-06-25  |
+| S-26       | editable-automation-flow | 2026-06-29  |
+| S-27       | automation-flow-bulk-connect | 2026-06-29  |
