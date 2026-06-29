@@ -7,7 +7,7 @@
 		"clientKind": "git"
 	},
 	"files": {
-		"includes": ["**", "!Claude Design"]
+		"includes": ["**", "!Claude Design/**"]
 	},
 	"assist": {
 		"enabled": true,

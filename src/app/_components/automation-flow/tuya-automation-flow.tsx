@@ -119,8 +119,9 @@ function TuyaAutomationFlowCanvas() {
 		return [...modeNodes, ...roomNodes];
 	}, [allModesForCanvas, roomsListQuery.data, layout, activeMode?.modeId]);
 
-	const [nodes, setNodes, onNodesChange] =
-		useNodesState<AutomationFlowNode>([]);
+	const [nodes, setNodes, onNodesChange] = useNodesState<AutomationFlowNode>(
+		[],
+	);
 	const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 	const edgesRef = useRef(edges);
 	edgesRef.current = edges;
@@ -350,9 +351,7 @@ function TuyaAutomationFlowCanvas() {
 			{
 				onSuccess: () => {
 					void utils.mode.list.invalidate();
-					toast.success(
-						`Disconnected ${count} room${count === 1 ? "" : "s"}`,
-					);
+					toast.success(`Disconnected ${count} room${count === 1 ? "" : "s"}`);
 				},
 			},
 		);
