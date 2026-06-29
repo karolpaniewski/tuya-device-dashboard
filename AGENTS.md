@@ -64,6 +64,29 @@ or existing-infra approach covers the MVP's basic file-type/size validation
 need; don't reach for a hosted storage service unless the requirement
 genuinely needs it.
 
+## Flow chart (@xyflow/react)
+
+The installed package is `@xyflow/react` (v12), NOT the old `reactflow` package.
+Always use:
+
+```ts
+import { ReactFlow, useNodesState, useEdgesState, addEdge } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+```
+
+Never import from `reactflow` — it is not installed.
+
+Key API for the editable automation flow:
+- `onConnect: (connection) => void` — fired when the user draws a new edge;
+  call the tRPC mutation to create an `automationModeTargets` row here.
+- `onEdgesDelete: (edges) => void` — fired when an edge is deleted (click +
+  delete key, or backspace); call the tRPC mutation to delete the row here.
+- Custom nodes: register in `nodeTypes` (object defined OUTSIDE the component
+  to avoid re-renders). Source handles use `<Handle type="source" />`;
+  target handles use `<Handle type="target" />`.
+- The `ReactFlowProvider` wrapper is required when calling hooks like
+  `useReactFlow()` outside the `<ReactFlow>` component itself.
+
 ## Security & Configuration Tips
 
 - Copy `@.env.example` to `.env`; never commit `.env` (already gitignored).

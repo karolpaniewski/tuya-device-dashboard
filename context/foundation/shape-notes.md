@@ -1,218 +1,189 @@
 ---
-project: Tuya Device Dashboard
+project: Tuya Device Dashboard — Editable Automation Flow
 context_type: brownfield
-created: 2026-06-25
-updated: 2026-06-25
+created: 2026-06-26
+updated: 2026-06-26
+
+## Quality cross-check
+
+All elements present — no gaps:
+- Access Control: present (no changes; current model preserved)
+- Business Logic: present (infrastructure-only; no domain rule change)
+- Project artifacts: present
+- Timeline-cost ack: present (3 weeks, within budget)
+- Non-Goals: present (device-level targeting explicitly excluded)
+- Preserved behavior: present (Setup editor, data model, schema-change-free must-haves)
 product_type: web-app
 target_scale:
   users: small
-timeline_budget:
-  delivery_weeks: 3
-  hard_deadline: null
-  after_hours_only: true
 checkpoint:
   current_phase: 8
   phases_completed: [1, 2, 3, 4, 5, 6, 7]
-  gray_areas_resolved:
-    - topic: change category
-      decision: significant feature — new per-device interaction model layered on existing data/control plumbing; dashboard grid and Setup untouched
-    - topic: insight
-      decision: drag-and-drop already proven elsewhere (floor plan, dial, widget reorder); past polish passes (UX polish, visual/dark-mode redesign, design-system pass) stayed inside the existing list/modal layout without rethinking the device-view interaction model
-    - topic: primary persona scope
-      decision: unchanged — same facility manager/admin persona, 2-5 person org, single flat role
-    - topic: device-card automation edit depth
-      decision: read-only mode-targeting view on the device card, with a link/shortcut into the existing mode editor — no new room-wide mutation surface added at the device level
-    - topic: card-open gesture
-      decision: normal click-to-expand is fine for this slice — premium feel comes from the info shown and visual polish, not a drag/gesture open mechanic
   frs_drafted: 3
+  timeline_budget:
+    delivery_weeks: 3
+    hard_deadline: null
+    after_hours_only: true
+  gray_areas_resolved:
+    - topic: granularity
+      decision: room-level — modes target rooms (not individual devices); reuses automationModeTargets.roomId; no schema change
+    - topic: interaction model
+      decision: drag to connect — user drags an edge from a mode node to a room node to create a connection; clicks an edge to remove it
+    - topic: coexistence with Setup editor
+      decision: both surfaces coexist — flow chart handles quick attach/detach; Setup editor handles schedule (days/time) and mode name
+  frs_drafted: 0
   quality_check_status: accepted
 ---
 
-> Seed idea (verbatim): "premium tuya dashboard" — open-ended, not yet defined
+> Seed idea (verbatim): "Automation flow should be editable. You could attach and unattach devices to make your own chart"
 
 ## Current System
 
-The Tuya Device Dashboard is a LAN-only web dashboard replacing one-by-one
-Tuya mobile-app device management for a small facility team. It already
-has: a dashboard grid (KPI summary row, per-room temperature panels,
-drag-and-drop widget/room reordering), a device list/table grouped by
-room, a floor-plan map view (drag devices onto a floor-plan image), a
-drag-to-rotate thermostat dial replacing +/- setpoint buttons, and a
-Settings area covering Rooms/Devices/Automations/Sites CRUD plus
-display/threshold preferences.
+The Tuya Device Dashboard is a LAN-only web dashboard for small facility teams
+(2–5 people, single flat role). It already has: a read-only automation flow
+visualization (flow chart showing Mode → Room → Device connections, added
+recently), a Setup / Automations screen where automation modes are created and
+edited (name, schedule days/time, and which rooms the mode targets), and a
+`automationModeTargets` table linking each mode to a room by roomId.
 
-**Tech stack:** Next.js 15 + React 19, tRPC v11, Drizzle ORM + libsql
-(SQLite), Tailwind CSS, NextAuth — a persistent polling worker process
-runs alongside the Next.js server, not serverless.
+**Tech stack:** Next.js 15 + React 19, tRPC v11, Drizzle ORM + libsql (SQLite),
+Tailwind CSS, NextAuth — persistent polling worker alongside the Next.js server.
 
-**Users:** Facility manager / office administrator — single flat role,
-2–5 person org.
+**Users:** Facility manager / office administrator — single flat role, 2–5 person org.
 
-**Pain / gap:** despite several past visual-polish passes (UX polish,
-visual/dark-mode redesign, a design-system pass), the app still reads as
-a generic "stub site" rather than premium. The deeper gap is the
-interaction model on the per-device surface (device card + device
-detail/history view): it's still primarily list-click-driven, while
-drag/gesture-based direct manipulation already exists and works well
-elsewhere in the app (floor-plan placement, the thermostat dial, widget
-reordering) — it was never extended to the device view itself.
+**Pain / gap:** The automation flow visualization shows the mode → room → device
+connections clearly, but all editing must happen in the Setup screen. To add or
+remove a room from a mode you must leave the visualization, find the mode in
+the Setup list, open its edit form, change the room targets, and save. The
+visualization gives context without control — the editing surface is elsewhere.
 
 **Must preserve:**
-- The dashboard grid layout and overall site look — confirmed fine as-is,
-  out of scope for this change.
-- The Setup/Settings screens — confirmed fine as-is, out of scope for
-  this change.
+- The existing Setup → Automations mode editor (schedule days/time, name
+  editing remain there — flow chart is additive, not a replacement).
+- The existing read-only automation flow visualization behavior.
+- The existing `automationModeTargets` data model (no schema changes).
 
 ## Vision & Problem Statement
 
-**Change:** Redesign the per-device interaction surface — the device
-card and its detail/history view — to feel premium: visual polish plus a
-drag/gesture-first interaction model, replacing list-click-based actions
-where direct manipulation is more natural. This is scoped narrowly to the
-device view; the dashboard grid and Setup screens are explicitly
-untouched.
+**Change:** Make the automation flow chart interactive — users can drag an edge
+from a mode node to a room node to attach that room to the mode, and click an
+existing edge to detach it. Persistence is immediate (writes to
+`automationModeTargets`). The Setup editor coexists and remains the surface
+for schedule and name editing.
 
-**Insight:** Drag-and-drop interaction patterns already exist and work
-well elsewhere in this app — floor-plan device placement, the
-drag-to-rotate thermostat dial, and dashboard widget/room reordering all
-prove the pattern. Past visual-polish passes (UX polish, visual/dark-mode
-redesign, a design-system pass) improved colors, icons, and spacing but
-never questioned the underlying list-click interaction model for devices
-— extending the proven drag pattern to the device view is the natural
-next step, not a leap.
+**Insight:** The flow chart already renders the mode → room → device graph. The
+node and edge data structures are already in place. The gap is interaction:
+the chart is a viewer, not an editor. Switching from read-only to editable
+requires adding drag-handle interaction to the existing nodes and wiring the
+create/delete edge actions to existing tRPC mutations — the data layer and the
+visualization are already there.
 
 ## User & Persona
 
-**Role:** Facility manager / office administrator — same persona as the
-rest of the app. No new persona; no change to who uses the product or
-how they access it.
-
-## Access Control
-
-No changes planned — current model preserved: NextAuth email + password
-login, single flat role, all routes gated behind the auth session. This
-change touches only the per-device interaction surface; auth and roles
-are untouched.
+**Role:** Facility manager / office administrator — unchanged. Same persona, same
+single flat role. No new persona introduced by this change.
 
 ## Success Criteria
 
 ### Primary
-The smallest end-to-end slice, proving the whole thing works:
-1. User opens a device card and sees, read-only, which automation
-   mode(s) currently target this device's room (modes are room-scoped,
-   not device-scoped — `automationModeTargets.roomId`), plus current
-   temperature/state, with a link/shortcut into the existing mode editor
-   to actually change anything.
-2. User opens a Room card and sees an expanded view listing every device
-   in that room together with the same per-device info — mode targeting
-   and current temperature.
+1. User drags an edge from a mode node to a room node in the flow chart — the
+   connection appears immediately and the room is added to the mode
+   (`automationModeTargets` row created).
+2. User clicks an existing mode→room edge — the edge is removed immediately and
+   the room is detached from the mode (row deleted).
+3. Changes made in the flow chart are reflected in the Setup → Automations
+   editor without a page reload (shared data layer).
 
 ### Secondary
-A flow-chart-style visualization of the devices inside a room (how they
-relate — e.g. sensors/valves and the mode(s) acting on them) — nice to
-have, not required for the slice to prove itself.
+- Node positions in the flow chart are draggable and the layout persists (user
+  can physically arrange their own chart view).
 
 ### Guardrails
-- The dashboard grid layout and overall site look — confirmed fine,
-  out of scope.
-- The Setup/Settings screens — confirmed fine, out of scope.
-- The existing drag-to-rotate setpoint dial must keep working unchanged.
-- The existing drag-reorder-within-room (device card reordering) must
-  keep working unchanged.
+- The Setup → Automations mode editor (name, schedule days/time, room list)
+  must not regress — it remains the surface for full mode configuration.
 
-**Timeline:** within three weeks of after-hours work, confirmed
-deliverable at this scope.
+**Timeline:** 3 weeks of after-hours work, confirmed deliverable at this scope.
 
 ## Functional Requirements
 
-- FR-001: User can view, on a device's card, which automation mode(s)
-  target this device's room (read-only), plus a link into the existing
-  mode editor to make changes. Priority: must-have. Change: new.
-  > Socrates: Counter-argument considered: read-only plus a link-out
-  > could feel like a half-feature if the user has to leave the card
-  > anyway. Resolution: kept as-is — deliberate choice from Phase 3 to
-  > avoid a device card silently mutating room-wide mode state (modes
-  > target rooms, not single devices), not an oversight.
-- FR-002: User can open a Room card to see every device in that room
-  together with its mode-targeting status and current temperature.
-  Priority: must-have. Change: new.
-  > Socrates: Counter-argument considered: an expanded room view is
-  > still list-shaped, which doesn't obviously move away from the
-  > list-click pattern that motivated this change. Resolution: kept —
-  > the original pain was hopping to a separate screen to see this
-  > info; an in-context expansion (even if list-shaped) still removes
-  > that navigation, which is the actual win being targeted.
-- FR-003: User can view a flow-chart-style visualization of a room's
-  devices and the mode(s) acting on them. Priority: nice-to-have.
-  Change: new.
-  > Socrates: Counter-argument considered: a real diagram feature
-  > (layout, edges, interactivity) could balloon past the 3-week budget.
-  > Resolution: kept, scope-bounded — a simple static grouping/list
-  > render of devices + the modes acting on them, not an interactive
-  > diagram editor.
-
-The existing drag-to-rotate setpoint dial and drag-reorder-within-room
-device ordering must keep working unchanged — captured as Guardrails
-above, not restated as separate FRs (would be pure duplication within
-this document).
+- FR-001: User can drag from a mode node to a room node in the automation flow
+  chart to attach that room to the mode. Priority: must-have. Change: new.
+  > Socrates: Counter-argument: drag-to-connect has no obvious affordance —
+  > users may never discover it. Resolution: kept; implementation must add a
+  > visible drag handle or tooltip on mode nodes so the gesture is discoverable.
+- FR-002: User can click a mode→room edge in the flow chart to detach that room
+  from the mode. Priority: must-have. Change: new.
+  > Socrates: Counter-argument: immediate deletion without undo means one
+  > misclick silently removes a mode target. Resolution: kept; recovery is
+  > re-dragging the edge (low cost). However, implementation should evaluate
+  > a brief undo toast or a confirm affordance on the selected edge — flagged
+  > as an open question for downstream planning.
+- FR-003: User can drag nodes to reposition them in the flow chart, with
+  positions persisted across sessions. Priority: nice-to-have. Change: new.
+  > Socrates: Counter-argument: persisting positions requires new storage
+  > (a DB column or table for node x/y per user/site) — this is a schema
+  > change hidden behind the "nice-to-have" label. Resolution: kept but
+  > reclassified as a separate implementation phase; it must not block
+  > the must-have FRs. Implementation should treat position persistence as
+  > an additive phase with its own migration, not a zero-cost addition.
 
 ## Business Logic
 
-**No domain logic change.** This change only surfaces existing
-mode-targeting relationships (which mode(s) target a device's room) in
-new places — the device card and the room card. No new decision is
-computed for the user that doesn't already exist in the mode/room data
-model.
+No domain logic change. This is a new editing surface for the existing
+mode-targeting rule — the rule ("a mode targets a set of rooms; triggering
+the mode fires the valves in those rooms") already exists and is unchanged.
+This change only adds a drag/click interaction model to create and delete
+`automationModeTargets` rows that were previously managed exclusively via
+the Setup editor.
 
 ## Non-Functional Requirements
 
-- Opening a device card or room card to view mode-targeting and
-  temperature info feels instant — no visible loading spinner/delay,
-  since the underlying data is already in memory/cached by the existing
-  polling and mode-query paths.
+- Attaching or detaching a room in the flow chart is perceived as instant —
+  no visible loading state between the user's drag/click and the chart
+  reflecting the change. Confirmation of the DB write is a background concern.
 
 ## Constraints & Preserved Behavior
 
-- **No schema or migration needed:** this change reuses existing data
-  (`automationModeTargets`, room, and device tables) — it's new read
-  queries and UI surfacing existing relationships, not a new data
-  contract.
-- **No backward-compatibility risk:** no existing external API consumer
-  touches this surface.
-- The dashboard grid layout, overall site look, and Setup/Settings
-  screens (already named in Guardrails) must not regress.
-- The existing drag-to-rotate setpoint dial and drag-reorder-within-room
-  ordering (already named in Guardrails) must not regress.
-
-## Non-Goals
-
-- No change to product type (web app) or user base/scale (small,
-  2–5 person org).
-- Avoid: editing mode membership from the device card — matches the
-  read-only + link-out decision (FR-001); no inline room-wide mutation
-  surface at the device level.
-- Avoid: redesigning the dashboard grid or Setup/Settings screens —
-  both confirmed fine as-is; explicit lock so this work doesn't creep
-  into them.
-
-## Quality cross-check
-
-All elements present — no gaps to record:
-- Access Control: present (no changes; current model preserved)
-- Business Logic: present (one-sentence rule: no domain logic change)
-- Project artifacts: present
-- Timeline-cost ack: present (3 weeks, within the 3-week budget — no
-  acknowledgment block needed)
-- Non-Goals: present (3 entries)
-- Preserved behavior: present (dashboard grid, Setup screens, setpoint
-  dial, and drag-reorder named explicitly as must-not-break)
+- **No schema change for must-have FRs:** FR-001 and FR-002 reuse
+  `automationModeTargets` as-is — no migration needed for the core feature.
+- **FR-003 (node positions) is an additive phase:** it requires a new DB
+  column or table; it must be implemented as a separate scope after the
+  must-have FRs ship, not bundled with them.
+- **The existing Setup → Automations editor must not regress:** name, schedule,
+  and room list editing there continue to work unchanged. The flow chart
+  writes to the same data, so changes in either surface are reflected in both.
+- **No backward-compatibility risk:** no external API consumer touches this
+  surface.
 
 ## User Stories
 
-### US-01: Facility admin checks a device's automation without leaving the device card
+### US-01: Facility admin rewires a mode's room targets without leaving the flow chart
 
-- **Given** a device belongs to a room that one or more modes target
-- **When** the admin opens that device's card
-- **Then** they see which mode(s) target the room and the device's
-  current temperature/state, with a link to the mode editor if they want
-  to change anything — without navigating away to a separate screen first
+- **Given** the automation flow chart is open and at least one mode and one
+  room node are visible
+- **When** the admin drags an edge from a mode node and drops it on a room node
+- **Then** the connection appears immediately in the chart and the room is
+  added to the mode's targets — reflected in the Setup editor without reload
+
+### US-02: Facility admin removes a room from a mode by clicking its edge
+
+- **Given** a mode→room edge exists in the flow chart
+- **When** the admin clicks the edge
+- **Then** the edge is removed immediately and the room is no longer a target
+  of that mode
+
+## Non-Goals
+
+- Avoid: device-level mode targeting — modes target rooms (not individual
+  valves or sensors); no new device-scoped target table introduced.
+  The room-level `automationModeTargets` model is preserved as the
+  single targeting unit.
+- Avoid: redesigning the Setup → Automations mode editor — it stays as-is;
+  the flow chart is an additive editing surface, not a replacement.
+
+## Access Control
+
+No changes planned — current model preserved: NextAuth email + password login,
+single flat role, all routes gated behind the auth session. The editable flow
+chart is available to any authenticated user — same gate as the existing
+read-only visualization.
