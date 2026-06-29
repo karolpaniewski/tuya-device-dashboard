@@ -2,20 +2,14 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
-import { Flame, Mail } from "lucide-react";
-import { useState } from "react";
+import { Mail } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer, YAxis } from "recharts";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "~/components/ui/popover";
 import { ROOM_STATUS_BADGE_CLASSES } from "~/lib/room-status-colors";
 import { downsampleAverage } from "~/lib/sparkline-data";
 import { cn } from "~/lib/utils";
 import { api, type RouterOutputs } from "~/trpc/react";
+import { HeatToggle } from "./heat-toggle";
 import { SortableDeviceCard } from "./sortable-device-card";
 
 type DeviceItem =
@@ -54,73 +48,6 @@ function RoomSparkline({ deviceId }: { deviceId: string }) {
 				</LineChart>
 			</ResponsiveContainer>
 		</div>
-	);
-}
-
-interface HeatToggleProps {
-	isPending?: boolean;
-	onToggleHeat: (pinnedOff: boolean) => void;
-	pinnedOff: boolean;
-}
-
-function HeatToggle({ isPending, onToggleHeat, pinnedOff }: HeatToggleProps) {
-	const [confirmOpen, setConfirmOpen] = useState(false);
-
-	if (pinnedOff) {
-		return (
-			<Button
-				aria-label="Turn heat back on"
-				disabled={isPending}
-				onClick={() => onToggleHeat(false)}
-				size="sm"
-				variant="outline"
-			>
-				<Flame size={14} />
-				Turn heat on
-			</Button>
-		);
-	}
-
-	return (
-		<Popover onOpenChange={setConfirmOpen} open={confirmOpen}>
-			<PopoverTrigger
-				render={
-					<Button
-						aria-label="Turn heat off"
-						disabled={isPending}
-						size="sm"
-						variant="outline"
-					>
-						<Flame size={14} />
-						Turn heat off
-					</Button>
-				}
-			/>
-			<PopoverContent>
-				<p className="mb-3 text-foreground text-sm">
-					Turn off heat in this room?
-				</p>
-				<div className="flex justify-end gap-2">
-					<Button
-						onClick={() => setConfirmOpen(false)}
-						size="sm"
-						variant="ghost"
-					>
-						Cancel
-					</Button>
-					<Button
-						onClick={() => {
-							setConfirmOpen(false);
-							onToggleHeat(true);
-						}}
-						size="sm"
-						variant="destructive"
-					>
-						Confirm
-					</Button>
-				</div>
-			</PopoverContent>
-		</Popover>
 	);
 }
 
