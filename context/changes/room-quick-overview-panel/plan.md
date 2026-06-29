@@ -281,8 +281,8 @@ No new pure functions are introduced by this change — all logic is JSX composi
 
 #### Automated
 
-- [x] 2.1 npm run typecheck passes
-- [x] 2.2 npm run lint passes
+- [x] 2.1 npm run typecheck passes — 0f18dcd
+- [x] 2.2 npm run lint passes — 0f18dcd
 
 #### Manual
 
@@ -292,9 +292,9 @@ No new pure functions are introduced by this change — all logic is JSX composi
 
 #### Automated
 
-- [ ] 3.1 npm run typecheck passes (no unused RoomModal import)
-- [ ] 3.2 npm run lint passes
-- [ ] 3.3 npm run ci passes end-to-end
+- [x] 3.1 npm run typecheck passes (no unused RoomModal import)
+- [x] 3.2 npm run lint passes
+- [x] 3.3 npm run ci passes end-to-end
 
 #### Manual
 

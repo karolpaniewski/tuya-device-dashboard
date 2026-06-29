@@ -49,7 +49,7 @@ import { DeviceCard } from "./device-card";
 import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
 import { RoomGroup } from "./room-group";
-import { RoomModal } from "./room-modal";
+import { RoomQuickOverviewPanel } from "./room-quick-overview-panel";
 import { RoomSidebar } from "./room-sidebar";
 import { SortableRoomGroup } from "./sortable-room-group";
 import { SortableWidget } from "./sortable-widget";
@@ -1161,15 +1161,17 @@ export function DeviceOverview() {
 					const room = data?.rooms.find((r) => r.roomId === selectedRoomId);
 					if (!room) return null;
 					return (
-						<RoomModal
-							devices={room.devices}
+						<RoomQuickOverviewPanel
+							isToggleHeatPending={toggleHeatMutation.isPending}
 							modesForRoom={getModesForRoom(
 								room.roomId,
 								modeListQuery.data ?? [],
 							)}
 							onClose={() => setSelectedRoomId(null)}
-							roomId={room.roomId}
-							roomName={room.roomName}
+							onToggleHeat={(pinnedOff) =>
+								toggleHeatMutation.mutate({ roomId: selectedRoomId, pinnedOff })
+							}
+							room={room}
 						/>
 					);
 				})()}
