@@ -94,6 +94,7 @@
 	--s-bg-alt: oklch(0.97 0 0);
 	--s-bg-card: oklch(1 0 0);
 	--s-bg-card-hov: oklch(0.97 0 0);
+	--s-bg-modal: oklch(1 0 0);
 	--s-bg-off: oklch(0.97 0 0);
 	--s-bg-spark: oklch(0.97 0 0);
 	--s-bg-dim: oklch(0.963 0 0);
@@ -164,6 +165,7 @@
 	--s-bg-alt: oklch(1 0 0 / 5%);
 	--s-bg-card: oklch(1 0 0 / 13%);
 	--s-bg-card-hov: oklch(1 0 0 / 18%);
+	--s-bg-modal: oklch(0.18 0 0);
 	--s-bg-off: oklch(1 0 0 / 4%);
 	--s-bg-spark: oklch(1 0 0 / 2%);
 	--s-bg-dim: oklch(1 0 0 / 10%);

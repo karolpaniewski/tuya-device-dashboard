@@ -62,7 +62,7 @@ function DialogContent({
 								className={cn(
 									"relative w-full overflow-hidden",
 									size === "wide" ? "max-w-4xl" : "max-w-lg",
-									"rounded-2xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] shadow-2xl",
+									"rounded-2xl border border-[var(--s-border-card)] bg-[var(--s-bg-modal)] shadow-2xl",
 									className,
 								)}
 								key={layoutId}
@@ -84,7 +84,7 @@ function DialogContent({
 				className={cn(
 					"fixed top-1/2 left-1/2 z-[60] w-full -translate-x-1/2 -translate-y-1/2",
 					size === "wide" ? "max-w-4xl" : "max-w-lg",
-					"rounded-2xl border border-[var(--s-border-card)] bg-[var(--s-bg-card)] shadow-2xl",
+					"rounded-2xl border border-[var(--s-border-card)] bg-[var(--s-bg-modal)] shadow-2xl",
 					"transition-all data-[ending-style]:scale-95 data-[ending-style]:opacity-0",
 					className,
 				)}
