@@ -275,7 +275,7 @@ No new pure functions are introduced by this change — all logic is JSX composi
 
 #### Manual
 
-- [ ] 1.4 Room group heat toggle still works (confirm popover for turn-off)
+- [x] 1.4 Room group heat toggle still works (confirm popover for turn-off)
 
 ### Phase 2: Build RoomQuickOverviewPanel
 
@@ -286,32 +286,32 @@ No new pure functions are introduced by this change — all logic is JSX composi
 
 #### Manual
 
-- [ ] 2.3 Sheet opens, sections render correctly, X / Esc / overlay closes it
+- [x] 2.3 Sheet opens, sections render correctly, X / Esc / overlay closes it
 
 ### Phase 3: Wire into device-overview.tsx
 
 #### Automated
 
-- [x] 3.1 npm run typecheck passes (no unused RoomModal import)
-- [x] 3.2 npm run lint passes
-- [x] 3.3 npm run ci passes end-to-end
+- [x] 3.1 npm run typecheck passes (no unused RoomModal import) — 687a8ff
+- [x] 3.2 npm run lint passes — 687a8ff
+- [x] 3.3 npm run ci passes end-to-end — 687a8ff
 
 #### Manual
 
-- [ ] 3.4 Dashboard: click room name → slide-in panel opens from right
-- [ ] 3.5 Panel shows temp, badge, heat toggle, chart (if sensor), devices, modes
-- [ ] 3.6 X / Esc / overlay closes panel
-- [ ] 3.7 Automation-flow canvas: room node click still opens centered dialog
-- [ ] 3.8 Heat toggle from panel fires mutation; badge updates on room group header
-- [ ] 3.9 Room without sensor: chart section absent
+- [x] 3.4 Dashboard: click room name → slide-in panel opens from right
+- [x] 3.5 Panel shows temp, badge, heat toggle, chart (if sensor), devices, modes
+- [x] 3.6 X / Esc / overlay closes panel
+- [x] 3.7 Automation-flow canvas: room node click still opens centered dialog
+- [x] 3.8 Heat toggle from panel fires mutation; badge updates on room group header
+- [x] 3.9 Room without sensor: chart section absent
 
 ### Phase 4: Verification & Cleanup
 
 #### Automated
 
-- [ ] 4.1 npm run ci passes (lint + typecheck + test suite)
+- [x] 4.1 npm run ci passes (lint + typecheck + test suite)
 
 #### Manual
 
-- [ ] 4.2 Full regression: device modal, heat toggle in room headers, automation-flow canvas
-- [ ] 4.3 Edge cases: 0-device room, offline sensor, all rooms pinnedOff
+- [x] 4.2 Full regression: device modal, heat toggle in room headers, automation-flow canvas
+- [x] 4.3 Edge cases: 0-device room, offline sensor, all rooms pinnedOff

@@ -1,7 +1,7 @@
 ---
 id: room-quick-overview-panel
 title: Room Quick-Overview Panel
-status: implementing
+status: implemented
 created: 2026-06-29
 updated: 2026-06-29
 prd: context/foundation/prd-v10.md
