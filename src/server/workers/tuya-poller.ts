@@ -3,6 +3,7 @@ import { db } from "~/server/db";
 import {
 	devices,
 	deviceTemperatureReadings,
+	eventLog,
 	gateways,
 } from "~/server/db/schema";
 import { detectAndDispatchAlerts } from "~/server/lib/alert-control";
@@ -74,6 +75,7 @@ export async function pollOnce(): Promise<void> {
 						gatewayDevices,
 					);
 					for (const reading of readings) {
+						const prevState = deviceStateStore.get(reading.tuyaDeviceId);
 						deviceStateStore.set(reading.tuyaDeviceId, {
 							isOnline: reading.isOnline,
 							temperatureC: reading.temperatureC,
@@ -82,6 +84,20 @@ export async function pollOnce(): Promise<void> {
 							isOn: reading.isOn,
 							lastPolledAt: new Date(),
 						});
+						if (
+							prevState !== undefined &&
+							prevState.isOnline !== reading.isOnline
+						) {
+							try {
+								await db.insert(eventLog).values({
+									eventType: "connectivity_change",
+									deviceId: reading.tuyaDeviceId,
+									payload: JSON.stringify({ isOnline: reading.isOnline }),
+								});
+							} catch {
+								/* swallow */
+							}
+						}
 						if (reading.temperatureC !== null || reading.setpointC !== null) {
 							readingBatch.push({
 								tuyaDeviceId: reading.tuyaDeviceId,

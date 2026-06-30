@@ -6,6 +6,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
 	deviceRoomAssignments,
 	devices,
+	eventLog,
 	gateways,
 	roomHeatState,
 	rooms,
@@ -372,6 +373,16 @@ export const roomRouter = createTRPCRouter({
 						releasedAt: input.pinnedOff ? null : now,
 					},
 				});
+
+			try {
+				await ctx.db.insert(eventLog).values({
+					eventType: "toggle_heat",
+					roomId: input.roomId,
+					payload: JSON.stringify({ pinnedOff: input.pinnedOff }),
+				});
+			} catch {
+				/* swallow */
+			}
 
 			const results = await Promise.allSettled(
 				valveDevices.map((d) =>

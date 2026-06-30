@@ -5,6 +5,7 @@ import {
 	defaultThresholds,
 	deviceRoomAssignments,
 	devices,
+	eventLog,
 	notificationContacts,
 	roomAlertState,
 	rooms,
@@ -132,6 +133,15 @@ export async function detectAndDispatchAlerts(): Promise<void> {
 						notifiedAt: null,
 					});
 				}
+				try {
+					await db.insert(eventLog).values({
+						eventType: "threshold_breach",
+						roomId,
+						payload: JSON.stringify({ badge: newBadge }),
+					});
+				} catch {
+					/* swallow */
+				}
 				violations.push({ roomId, roomName: data.roomName, badge: newBadge });
 			} else {
 				// Episode already in progress — record a Cold<->Hot flip without re-alerting.
@@ -140,6 +150,15 @@ export async function detectAndDispatchAlerts(): Promise<void> {
 						.update(roomAlertState)
 						.set({ lastBadge: newBadge })
 						.where(eq(roomAlertState.id, existing.id));
+					try {
+						await db.insert(eventLog).values({
+							eventType: "threshold_breach",
+							roomId,
+							payload: JSON.stringify({ badge: newBadge }),
+						});
+					} catch {
+						/* swallow */
+					}
 				}
 				if (existing.notifiedAt == null) {
 					violations.push({ roomId, roomName: data.roomName, badge: newBadge });
@@ -159,6 +178,14 @@ export async function detectAndDispatchAlerts(): Promise<void> {
 
 	try {
 		await getEmailClient().sendAlertEmail({ violations });
+		try {
+			await db.insert(eventLog).values({
+				eventType: "alert_sent",
+				payload: JSON.stringify({ count: violations.length }),
+			});
+		} catch {
+			/* swallow */
+		}
 		await db
 			.update(roomAlertState)
 			.set({ notifiedAt: new Date() })
