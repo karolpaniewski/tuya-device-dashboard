@@ -33,6 +33,21 @@ export async function purgeOldReadings(): Promise<void> {
 	}
 }
 
+export async function purgeOldEvents(): Promise<void> {
+	const cutoff = new Date(Date.now() - RETENTION_MS);
+	try {
+		const result = await db
+			.delete(eventLog)
+			.where(lt(eventLog.createdAt, cutoff));
+		getLogger().info(
+			{ rowsDeleted: result.rowsAffected },
+			"tuya-poller.event-purge-complete",
+		);
+	} catch (err) {
+		getLogger().error({ err }, "Error purging old events");
+	}
+}
+
 export async function pollOnce(): Promise<void> {
 	let allGateways: (typeof gateways.$inferSelect)[];
 	try {
@@ -133,6 +148,7 @@ export async function pollOnce(): Promise<void> {
 	pollCounter++;
 	if (pollCounter % PURGE_EVERY_N_POLLS === 0) {
 		await purgeOldReadings();
+		await purgeOldEvents();
 	}
 
 	getLogger().info(

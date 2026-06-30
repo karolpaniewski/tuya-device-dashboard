@@ -21,12 +21,16 @@ vi.mock("~/server/lib/log-context", async (importOriginal) => {
 
 import { lt } from "drizzle-orm";
 import { db } from "~/server/db";
-import { deviceTemperatureReadings } from "~/server/db/schema";
+import { deviceTemperatureReadings, eventLog } from "~/server/db/schema";
 import { detectAndDispatchAlerts } from "~/server/lib/alert-control";
 import { deviceStateStore } from "~/server/lib/device-state-store";
 import { getLogger } from "~/server/lib/log-context";
 import { getTuyaClient } from "~/server/lib/tuya";
-import { pollOnce, purgeOldReadings } from "~/server/workers/tuya-poller";
+import {
+	pollOnce,
+	purgeOldEvents,
+	purgeOldReadings,
+} from "~/server/workers/tuya-poller";
 
 const GATEWAY = {
 	id: "gw-db-1",
@@ -310,6 +314,74 @@ describe("purgeOldReadings", () => {
 		vi.mocked(getLogger).mockReturnValue(mockLogger as never);
 
 		await expect(purgeOldReadings()).resolves.toBeUndefined();
+
+		expect(mockLogger.info).not.toHaveBeenCalled();
+		expect(mockLogger.error).toHaveBeenCalledOnce();
+	});
+});
+
+describe("purgeOldEvents", () => {
+	const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+	const NOW = new Date("2026-06-25T00:00:00.000Z").getTime();
+
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(NOW);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	function stubDelete(outcome: { rowsAffected: number } | Error) {
+		const mockWhere =
+			outcome instanceof Error
+				? vi.fn().mockRejectedValue(outcome)
+				: vi.fn().mockResolvedValue(outcome);
+		vi.mocked(db).delete = vi
+			.fn()
+			.mockReturnValue({ where: mockWhere }) as never;
+		return mockWhere;
+	}
+
+	it("deletes with a strict less-than cutoff exactly 30 days before now", async () => {
+		const mockWhere = stubDelete({ rowsAffected: 0 });
+
+		await purgeOldEvents();
+
+		const cutoff = new Date(NOW - RETENTION_MS);
+		const actualCondition = mockWhere.mock.calls[0]?.[0];
+		expect(actualCondition).toEqual(lt(eventLog.createdAt, cutoff));
+
+		expect(new Date(cutoff.getTime() - 1).getTime() < cutoff.getTime()).toBe(
+			true,
+		);
+		expect(new Date(cutoff.getTime() + 1).getTime() < cutoff.getTime()).toBe(
+			false,
+		);
+		const boundaryReading = new Date(cutoff.getTime());
+		expect(boundaryReading.getTime() < cutoff.getTime()).toBe(false);
+	});
+
+	it("logs the purge outcome with the deleted row count on success", async () => {
+		stubDelete({ rowsAffected: 7 });
+		const mockLogger = { info: vi.fn(), error: vi.fn(), debug: vi.fn() };
+		vi.mocked(getLogger).mockReturnValue(mockLogger as never);
+
+		await purgeOldEvents();
+
+		expect(mockLogger.info).toHaveBeenCalledWith(
+			{ rowsDeleted: 7 },
+			"tuya-poller.event-purge-complete",
+		);
+	});
+
+	it("catches a thrown error from db.delete and does not propagate", async () => {
+		stubDelete(new Error("SQLITE_ERROR"));
+		const mockLogger = { info: vi.fn(), error: vi.fn(), debug: vi.fn() };
+		vi.mocked(getLogger).mockReturnValue(mockLogger as never);
+
+		await expect(purgeOldEvents()).resolves.toBeUndefined();
 
 		expect(mockLogger.info).not.toHaveBeenCalled();
 		expect(mockLogger.error).toHaveBeenCalledOnce();
