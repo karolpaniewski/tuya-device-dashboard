@@ -3,7 +3,7 @@ project: Tuya Device Dashboard
 version: 1
 status: draft
 created: 2026-06-08
-updated: 2026-06-25
+updated: 2026-06-30
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -269,7 +269,6 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:** Schema and retention policy inherit from S-11 and S-09 decisions.
 - **Risk:** Scope is narrow — this is a read-only log view on top of whatever S-11 writes. No independent risk beyond the S-11 dependency.
 - **Status:** obsolete (2026-06-23) — its data source (`automation_execution_log`) was dropped by S-23. The mode equivalent (`automationModeActivationLogs`) exists but has no viewing UI by design (S-23 Non-Goal); re-scope against modes via `/10x-shape` if this is still wanted.
-- **Status:** needs-shaping
 
 ### S-13: Multi-site support
 
@@ -393,9 +392,9 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-12       | automation-history     | Feature: log of automation rule executions                        | no                    | Obsolete — data source deleted by S-23; re-scope against modes if wanted |
 | S-13       | multi-site             | Feature: multiple office locations in one dashboard               | done                  | —                                                                     |
 | S-19       | dashboard-personalization | Feature: drag-and-drop widget reorder/hide + room reorder, persisted layout | done | —                                                                      |
-| S-20       | room-heat-toggle       | Feature: one-click room heat-off quick action (valve close, not setpoint)| no                    | Run `/10x-frame` first — toggle granularity, undo semantics            |
+| S-20       | room-heat-toggle       | Feature: one-click room heat-off quick action (valve close, not setpoint)| done                  | —                                                                     |
 | S-21       | dashboard-ux-redesign  | Feature: visual design-system pass (finish S-17, fix primitive consistency) | done           | —                                                                      |
-| S-22       | setup-to-settings      | Feature: Setup page content/IA reorganized to read as Settings       | no                    | Run `/10x-shape` or `/10x-frame` first — what belongs in Settings is still open |
+| S-22       | setup-to-settings      | Feature: Setup page content/IA reorganized to read as Settings       | done                  | —                                                                     |
 | S-23       | automation-rework      | Feature: room-targeted on/off modes replacing per-device automation rules | done             | —                                                                      |
 | S-24       | floor-plan-map-view    | Feature: upload floor plan, drag devices onto it, control from the map | done             | —                                                                      |
 | S-25       | thermostat-dial        | Feature: drag-to-rotate setpoint dial + card↔modal shared-layout transition | done       | —                                                                      |
@@ -428,6 +427,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-04       | valve-setpoint-control | 2026-06-11  |
 | S-09       | temperature-history    | 2026-06-11  |
 | S-06       | cicd-pipeline          | 2026-06-12  |
+| S-07       | observability          | 2026-06-12  |
 | S-15       | dashboard-redesign     | 2026-06-13  |
 | S-16       | device-dnd-modal       | 2026-06-14  |
 | S-17       | visual-ux-redesign     | 2026-06-15  |
@@ -440,4 +440,6 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-24       | floor-plan-map-view    | 2026-06-24  |
 | S-25       | thermostat-dial        | 2026-06-25  |
 | S-26       | editable-automation-flow | 2026-06-29  |
+| S-21       | dashboard-ux-redesign  | 2026-06-30  |
+| S-22       | setup-to-settings      | 2026-06-30  |
 | S-27       | automation-flow-bulk-connect | 2026-06-29  |
