@@ -408,8 +408,8 @@ The `event_log` table is queried only on the `/events` page — not on the dashb
 
 #### Automated
 
-- [x] 4.1 `npm run ci` passes (biome + tsc + vitest + next build)
-- [x] 4.2 `npm run typecheck` passes
+- [x] 4.1 `npm run ci` passes (biome + tsc + vitest + next build) — 798d4d8
+- [x] 4.2 `npm run typecheck` passes — 798d4d8
 
 #### Manual
 

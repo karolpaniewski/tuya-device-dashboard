@@ -1,7 +1,7 @@
 ---
 change_id: event-log
 title: Event log
-status: implementing
+status: implemented
 created: 2026-06-30
 updated: 2026-06-30
 archived_at: null
