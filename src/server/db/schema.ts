@@ -420,3 +420,19 @@ export const dashboardLayout = createTable("dashboard_layout", (d) => ({
 	roomOrder: d.text("room_order").notNull().default("[]"),
 	updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
 }));
+
+export const eventLog = createTable(
+	"event_log",
+	(d) => ({
+		id: d.integer("id").primaryKey({ autoIncrement: true }),
+		createdAt: d
+			.integer("created_at", { mode: "timestamp" })
+			.notNull()
+			.default(sql`(unixepoch())`),
+		eventType: d.text("event_type").notNull(),
+		roomId: d.text("room_id", { length: 255 }),
+		deviceId: d.text("device_id", { length: 255 }),
+		payload: d.text("payload").notNull(),
+	}),
+	(t) => [index("event_log_created_at_idx").on(t.createdAt)],
+);

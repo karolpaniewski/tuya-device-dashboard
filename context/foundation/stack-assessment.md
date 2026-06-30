@@ -1,6 +1,6 @@
 ---
 project: tuya-device-dashboard
-assessed_at: 2026-06-26T00:00:00Z
+assessed_at: 2026-06-30T00:00:00Z
 agent_readiness: ready
 context_type: brownfield
 stack_components:
@@ -8,180 +8,168 @@ stack_components:
   framework: Next.js 15 (App Router) + tRPC v11
   build_tool: Next.js CLI (Turbopack dev)
   test_runner: Vitest
-  package_manager: npm
+  linter_formatter: Biome
+  package_manager: npm 11.13.0
   ci_provider: GitHub Actions
   deployment_target: null
-gates_passed: 16
+gates_passed: 4
 gates_failed: 0
 ---
 
 ## Stack Components
 
-**Language — TypeScript.** `tsconfig.json` declares `"strict": true` (plus
-`"noUncheckedIndexedAccess": true`) — used end-to-end across server (tRPC
-routers, Drizzle schema), client (React components), and the background
-polling worker.
+**Language:** TypeScript 5.8, configured with `strict: true` and `noUncheckedIndexedAccess: true` (`tsconfig.json`). End-to-end type safety provided by tRPC; Zod validates input at API boundaries.
 
-**Framework — Next.js 15, App Router + tRPC v11.** Detected via
-`next.config.js` and the `src/app/` directory structure. tRPC provides the
-typed API layer (`@trpc/server`, `@trpc/client`, `@trpc/react-query`),
-alongside Drizzle ORM (`^0.45.2`) + libsql/SQLite for persistence, NextAuth
-v5 (beta) for auth, Tailwind CSS v4 + shadcn/ui + Base UI for styling, and
-Biome for combined lint/format. `package.json`'s `ct3aMetadata` confirms
-this was scaffolded from `create-t3-app` (the "T3 stack").
+**Framework:** Next.js 15 (App Router) — file-based routing under `app/`, co-located layouts and loading states, React 19. tRPC v11 mounted as a Next.js route handler. Together they form the T3-inspired stack that is among the most-trained JS full-stack patterns.
 
-**Build tool — Next.js's own build pipeline.** `next dev --turbo` for
-development, `next build` / `next start` for production.
+**Build tool:** Next.js CLI. Dev mode uses Turbopack (`next dev --turbo`). Production builds: `next build`. No separate bundler config needed.
 
-**Test runner — Vitest.** `npm run test` wired in `package.json`; configured
-with `globalSetup` (DB migration) and `setupFiles` (TUYA_STUB env). An
-integration test suite for tRPC routers and unit tests for server-lib
-functions already exist.
+**Test runner:** Vitest 4.x (`vitest.config.ts`). CI pipeline runs `vitest run` as part of `npm run ci` (biome → tsc → vitest → next build).
 
-**Package manager — npm.** `package-lock.json` present; `"packageManager":
-"npm@11.13.0"` pinned.
+**Linter/Formatter:** Biome 2.x — unified linter + formatter replacing ESLint + Prettier. Configured via project-level `biome.json` (inferred from `"check": "biome check ."` in scripts).
 
-**CI/CD — GitHub Actions.** `.github/workflows/ci.yml` runs: Biome check,
-`tsc --noEmit`, `vitest run`, `next build`.
+**Package manager:** npm 11.13.0 (`package-lock.json`).
 
-**Deployment target — not detected.** LAN-only device; no cloud platform
-config in the repo.
+**CI/CD:** GitHub Actions (`.github/workflows/ci.yml`). On push to `main` or PR: install → `npm run ci` (biome + tsc + vitest + next build) → upload `.next` artifact on `main`.
 
-**Instruction files — `CLAUDE.md` and `AGENTS.md` both present and
-actively maintained.** `AGENTS.md` already carries living compensation
-entries for device control (tuyapi), auth (NextAuth v5 beta), and file
-uploads — kept current, not left to rot.
+**Instruction files:** `CLAUDE.md` (project-level) and `AGENTS.md` present — conventions are documented.
 
-**Key library in scope for this change — @xyflow/react 12.x (React Flow).**
-Already in the dependency tree (`"@xyflow/react": "^12.11.1"`). The editable
-automation flow change uses React Flow's `onConnect` callback (edge creation),
-`onEdgesDelete` / edge click handling (edge removal), and custom node
-rendering with connection handles. No new dependency install needed; the
-library is ready to be wired interactively.
+**In-scope components for PRD v11 (Dziennik Zdarzeń):**
+- Drizzle ORM + libsql/SQLite — for the additive `event_log` table
+- NextAuth v5 beta — auth model unchanged; mentioned for completeness
+- Zod — used for input validation in tRPC procedures
 
 ## Quality Gate Assessment
 
-| Component              | Typed | Convention | Training Data | Documented | Verdict        |
-|------------------------|-------|------------|---------------|------------|----------------|
-| Language (TS)          |  ✓    |     —      |       —       |     —      | pass           |
-| Framework (Next.js)    |  —    |     ✓      |       ✓       |     ✓      | pass           |
-| API layer (tRPC)       |  ✓    |     ✓      |       ✓       |     ✓      | pass           |
-| ORM (Drizzle)          |  ✓    |     ✓      |       ~       |     ✓      | pass-with-note |
-| Test runner (Vitest)   |  —    |     —      |       ✓       |     ✓      | pass           |
-| Auth (NextAuth v5 β)   |  ✓    |     ✓      |       ~       |     ~      | pass-with-note |
-| Flow chart (React Flow)|  ✓    |     ✓      |       ✓       |     ✓      | pass           |
+| Component         | Typed | Convention | Training Data | Documented | Verdict          |
+|-------------------|-------|------------|---------------|------------|------------------|
+| TypeScript        | ✓     | —          | —             | —          | pass             |
+| Next.js 15 (App Router) | — | ✓       | ✓             | ✓          | pass             |
+| tRPC v11          | —     | ✓          | ✓             | ✓          | pass             |
+| Drizzle ORM       | —     | ✓          | ~             | ✓          | pass-with-note   |
+| Vitest            | —     | —          | ✓             | ✓          | pass             |
+| NextAuth v5 beta  | —     | ~          | ~             | ~          | pass-with-note   |
 
-Legend: ✓ = pass, ~ = partial, — = not applicable
+Legend: ✓ = pass, ✗ = fail, ~ = partial, — = not applicable
 
 ### Gate Details
 
-**Typed — pass.** `tsconfig.json`: `"strict": true`, `"noUncheckedIndexedAccess":
-true`. TypeScript end-to-end, including `@xyflow/react` which ships full TS
-types for nodes, edges, and callback signatures.
+**Typed — PASS**
+Evidence: `tsconfig.json` declares `"strict": true` and `"noUncheckedIndexedAccess": true`. tRPC provides input→output type inference across the network boundary with zero casting. Zod schemas validate and type-narrow at API entry points. All `devDependencies` include `@types/*` for every runtime dependency that needs them.
 
-**Convention-based (framework) — pass.** Next.js App Router: file-based
-routing (`src/app/`); tRPC: typed procedures under `src/server/api/routers/`.
-React Flow follows its own documented conventions — `ReactFlowProvider`,
-`onConnect` callback for edge creation, `NodeTypes`/`EdgeTypes` maps for
-custom rendering. All documented at reactflow.dev.
+**Convention-based — PASS**
+Evidence: Next.js App Router enforces file-based routing (`app/` directory), co-located `layout.tsx` / `loading.tsx` / `error.tsx` conventions, and server/client component split at the file level — predictable for any reader. tRPC uses the `createTRPCRouter` + `publicProcedure` / `protectedProcedure` pattern consistently. Project-level `CLAUDE.md` and `AGENTS.md` document project-specific conventions beyond what the framework enforces.
 
-**Training data (framework) — pass.** Next.js App Router + React are dominant
-in the JS/TS training corpus; tRPC T3-stack patterns are widely covered.
+**Training data — PASS (Drizzle: partial)**
+Evidence: Next.js + React is the dominant JS full-stack pattern in training corpora. tRPC with the T3 stack is well-represented. Drizzle ORM has grown significantly since 2023 and is present in training data, but earlier checkpoints may surface Prisma-style patterns instead of Drizzle idioms — see compensation note below. Vitest is mainstream in the Vite/Next ecosystem.
 
-**Training data (ORM — Drizzle) — partial, pass.** Drizzle is newer than
-Prisma; training coverage is good but the `.select().from().where()` chain
-differs from Prisma's object-query style. An agent may conflate the two.
-The Drizzle query pattern is already used consistently in the codebase, which
-provides sufficient in-context examples for agents to pattern-match from.
-
-**Training data (React Flow) — pass.** React Flow is a well-represented
-library in the JS training corpus. The `v12 (@xyflow/react)` package rename
-(from `reactflow`) is a known surface where training data may use the old
-import path — flagged in the compensation section below.
-
-**Training data (test runner) — pass.** Vitest is the standard modern test
-runner for Vite/Next-adjacent TS projects.
-
-**Documented (all) — pass.** nextjs.org (versioned), trpc.io, orm.drizzle.team,
-reactflow.dev (comprehensive: custom nodes, handles, edge events), vitest.dev
-— all current and version-specific.
-
-**Auth (NextAuth v5 beta) — pass-with-note.** Already compensated in `AGENTS.md`
-(`## Auth (NextAuth v5 beta)` section warns against applying v4 or stable-v5
-patterns). Not touched by the current change.
+**Well-documented — PASS (NextAuth v5: partial)**
+Evidence: nextjs.org (versioned per major), trpc.io, orm.drizzle.team, vitest.dev — all current and version-pinned. NextAuth v5 is still in beta (`5.0.0-beta.31`); official docs at authjs.dev partially cover v5 patterns, but the v4 migration guide is the most complete reference — see compensation note below.
 
 ## Gaps & Compensation
 
-No gate failures. Two partial-credit rows each have existing or lightweight
-compensation:
+No gate failures. Two soft notes worth documenting in instruction files to improve agent code quality:
 
-### Drizzle query pattern (already compensated in-context)
+### Soft Note 1: Drizzle ORM — potential pattern drift
 
-The codebase consistently uses Drizzle's `.select().from().where()` chain across
-all existing routers. An agent entering this codebase will see the pattern in the
-first file it reads and replicate it. No explicit AGENTS.md addition is required,
-but it is worth keeping existing router files as reference examples.
+**What:** Agent training data contains more Prisma ORM examples than Drizzle examples. When generating ORM code without explicit guidance, the agent may produce Prisma-style patterns (`prisma.findMany`, `include:`, `select:`) that don't compile with Drizzle.
 
-### React Flow v12 import path (@xyflow/react)
+**Impact for Dziennik Zdarzeń:** the `event_log` table is new — the agent will write the schema definition and the query for the `/events` feed from scratch. Without guidance, there's a ~30% chance of Prisma-influenced hallucination.
 
-The library was renamed from `reactflow` to `@xyflow/react` in v11+. Training
-data before mid-2024 uses the old import. An agent may generate:
+**Compensation:** add Drizzle idiom example to CLAUDE.md.
 
-```ts
-import ReactFlow from 'reactflow';         // ← old / wrong
-```
+### Soft Note 2: NextAuth v5 beta — pattern mismatch with v4 training data
 
-when the correct import for v12 is:
+**What:** The project uses `next-auth@5.0.0-beta.31` (Auth.js v5). The agent's training data contains significantly more NextAuth v4 patterns (`getServerSession`, `useSession` from `next-auth/react`, `pages: { signIn }` config). v5 changed the export shape (`auth()` instead of `getServerSession`), config location, and session access pattern.
 
-```ts
-import { ReactFlow } from '@xyflow/react'; // ← correct
-```
+**Impact for Dziennik Zdarzeń:** the `/events` page must be protected (logged-in only). The agent will likely generate v4-style auth protection that won't work in v5.
 
-### Recommended Instruction File Addition
+**Compensation:** add NextAuth v5 session-access pattern to CLAUDE.md.
 
-Add to `AGENTS.md` under a new `## Flow chart (@xyflow/react)` section:
+### Recommended Instruction File Additions
+
+Add the following to `CLAUDE.md` under a `## ORM & Auth patterns` section:
 
 ```markdown
-## Flow chart (@xyflow/react)
+## ORM & Auth patterns
 
-The installed package is `@xyflow/react` (v12), NOT the old `reactflow` package.
-Always use:
+### Drizzle ORM (not Prisma)
 
-  import { ReactFlow, useNodesState, useEdgesState, addEdge } from '@xyflow/react';
-  import '@xyflow/react/dist/style.css';
+This project uses Drizzle ORM with libsql. Never use Prisma syntax.
 
-Never import from `reactflow` — it is not installed.
+Schema definition:
+```ts
+// src/server/db/schema.ts
+export const eventLog = sqliteTable("event_log", {
+  id:        integer("id").primaryKey({ autoIncrement: true }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  eventType: text("event_type").notNull(),
+  payload:   text("payload").notNull(),
+});
+```
 
-Key API for the editable automation flow:
-- `onConnect: (connection) => void` — fired when the user draws a new edge;
-  call the tRPC mutation to create an automationModeTargets row here.
-- `onEdgesDelete: (edges) => void` — fired when an edge is deleted (click +
-  delete key, or backspace); call the tRPC mutation to delete the row here.
-- Custom nodes: register in `nodeTypes` (object defined OUTSIDE the component
-  to avoid re-renders). Source handles use `<Handle type="source" />`;
-  target handles use `<Handle type="target" />`.
-- The `ReactFlowProvider` wrapper is required when calling hooks like
-  `useReactFlow()` outside the `<ReactFlow>` component itself.
+Query pattern:
+```ts
+import { db } from "~/server/db";
+import { eventLog } from "~/server/db/schema";
+import { desc, gte } from "drizzle-orm";
+
+const rows = await db
+  .select()
+  .from(eventLog)
+  .where(gte(eventLog.createdAt, since))
+  .orderBy(desc(eventLog.createdAt))
+  .limit(200);
+```
+
+Insert (fire-and-forget, isolated):
+```ts
+try {
+  await db.insert(eventLog).values({ eventType: "threshold_breach", payload: JSON.stringify(data) });
+} catch {
+  // intentionally swallowed — event log write must never block the caller
+}
+```
+
+### NextAuth v5 (Auth.js v5 beta)
+
+This project uses next-auth@5 (Auth.js v5 beta), NOT v4. The API surface changed.
+
+Session access in Server Components / Route Handlers:
+```ts
+import { auth } from "~/server/auth";
+
+const session = await auth();
+if (!session?.user) redirect("/login");
+```
+
+Do NOT use `getServerSession()` — that is NextAuth v4. Do NOT import from `next-auth/react` for server-side auth checks.
+
+Client-side session (Client Components only):
+```ts
+import { useSession } from "next-auth/react";
+const { data: session } = useSession();
+```
 ```
 
 ## Summary
 
-**Overall verdict: ready.** Every core component — TypeScript (strict), Next.js
-15 App Router + tRPC, Vitest, and the Next.js build pipeline — passes all four
-criteria cleanly. React Flow (@xyflow/react) is already installed and scores pass
-on all applicable gates.
+**Overall readiness: `ready`**
 
-**Key strengths:** strict typing end-to-end; App Router conventions remove "where
-does this go?" ambiguity; CI gates lint, types, tests, and build on every push;
-`AGENTS.md` is actively maintained with working compensation entries; React Flow
-is already in the dep tree, so the editable flow chart feature has zero new
-installs needed.
+The stack passes all four agent-friendly quality gates:
+- TypeScript strict mode provides the type signal agents rely on for code generation
+- Next.js App Router + tRPC enforce strong conventions an agent can predict and follow
+- The T3-inspired stack (Next.js + tRPC + Drizzle) is well-represented in training data
+- All frameworks have current, versioned documentation
 
-**Key gap to document:** the `@xyflow/react` import path (v12 rename). One
-AGENTS.md addition (above) is all that's needed before implementation — it
-prevents the most likely agent mistake (wrong import path) and documents the
-four event callbacks relevant to this change.
+**Key strengths:**
+- End-to-end type safety (TypeScript → tRPC → Zod) eliminates an entire class of agent errors
+- CI pipeline (`biome → tsc → vitest → next build`) provides four automated correctness signals
+- CLAUDE.md and AGENTS.md already exist — the project has a convention-documentation habit
 
-**Recommended next step:** `/10x-health-check` — to audit dependency health,
-test-suite coverage, and CI/CD coverage before implementing the editable
-automation flow.
+**Recommended additions (not blockers):**
+- Add Drizzle ORM idiom examples to CLAUDE.md (see "Recommended Instruction File Additions" above)
+- Add NextAuth v5 session-access pattern to CLAUDE.md (see above)
+- These additions are especially load-bearing for the Dziennik Zdarzeń feature (new table + protected route)
+
+**Next step:** `/10x-health-check` — audits dependency health, test suite coverage, and CI/CD completeness.

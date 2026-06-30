@@ -29,3 +29,70 @@ Two boundaries to keep straight:
   masks the bug; that failing-test-to-fix case is Lesson 5.
 
 <!-- END @przeprogramowani/10x-cli -->
+
+## ORM & Auth patterns
+
+### Drizzle ORM (not Prisma)
+
+This project uses Drizzle ORM with libsql. Never use Prisma syntax.
+
+Schema definition:
+```ts
+// src/server/db/schema.ts
+export const eventLog = sqliteTable("event_log", {
+  id:        integer("id").primaryKey({ autoIncrement: true }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+  eventType: text("event_type").notNull(),
+  payload:   text("payload").notNull(),
+});
+```
+
+Query pattern:
+```ts
+import { db } from "~/server/db";
+import { eventLog } from "~/server/db/schema";
+import { desc, gte } from "drizzle-orm";
+
+const rows = await db
+  .select()
+  .from(eventLog)
+  .where(gte(eventLog.createdAt, since))
+  .orderBy(desc(eventLog.createdAt))
+  .limit(200);
+```
+
+Insert (fire-and-forget, isolated):
+```ts
+try {
+  await db.insert(eventLog).values({ eventType: "threshold_breach", payload: JSON.stringify(data) });
+} catch {
+  // intentionally swallowed — event log write must never block the caller
+}
+```
+
+### NextAuth v5 (Auth.js v5 beta)
+
+This project uses next-auth@5 (Auth.js v5 beta), NOT v4. The API surface changed.
+
+Session access in Server Components / Route Handlers:
+```ts
+import { auth } from "~/server/auth";
+
+const session = await auth();
+if (!session?.user) redirect("/login");
+```
+
+Do NOT use `getServerSession()` — that is NextAuth v4. Do NOT import from `next-auth/react` for server-side auth checks.
+
+Client-side session (Client Components only):
+```ts
+import { useSession } from "next-auth/react";
+const { data: session } = useSession();
+```
+
+### Zod version pin
+
+This project uses **Zod v3** (`zod@3.x`). Do NOT use Zod v4 APIs.
+
+Zod v4 introduced breaking changes to error handling and type inference.
+Use only Zod v3 patterns: `z.object()`, `z.string()`, `.parse()`, `.safeParse()`, `z.infer<typeof schema>`.
