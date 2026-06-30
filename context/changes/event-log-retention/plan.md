@@ -163,11 +163,11 @@ Covered in Phase 1 change #3. Three tests in `describe("purgeOldEvents")`:
 
 #### Automated
 
-- [x] 1.1 npm run test -- --reporter=verbose tuya-poller (all tests pass incl. new describe block)
-- [x] 1.2 npm run typecheck (no type errors)
-- [x] 1.3 npx biome check tuya-poller.ts and tuya-poller.test.ts (no lint errors)
+- [x] 1.1 npm run test -- --reporter=verbose tuya-poller (all tests pass incl. new describe block) — 4e9e4c9
+- [x] 1.2 npm run typecheck (no type errors) — 4e9e4c9
+- [x] 1.3 npx biome check tuya-poller.ts and tuya-poller.test.ts (no lint errors) — 4e9e4c9
 
 #### Manual
 
-- [x] 1.4 purgeOldEvents exported and importable (no red underlines in test import)
-- [x] 1.5 gate block contains sequential calls to purgeOldReadings() and purgeOldEvents()
+- [x] 1.4 purgeOldEvents exported and importable (no red underlines in test import) — 4e9e4c9
+- [x] 1.5 gate block contains sequential calls to purgeOldReadings() and purgeOldEvents() — 4e9e4c9
