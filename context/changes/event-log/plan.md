@@ -372,9 +372,9 @@ The `event_log` table is queried only on the `/events` page — not on the dashb
 
 #### Automated
 
-- [x] 1.1 `npm run db:generate` exits 0 and produces `drizzle/0014_*.sql`
-- [x] 1.2 `npm run db:migrate` exits 0 against local DB
-- [x] 1.3 `npm run typecheck` passes with new table in scope
+- [x] 1.1 `npm run db:generate` exits 0 and produces `drizzle/0014_*.sql` — 39d3c6f
+- [x] 1.2 `npm run db:migrate` exits 0 against local DB — 39d3c6f
+- [x] 1.3 `npm run typecheck` passes with new table in scope — 39d3c6f
 
 #### Manual
 
@@ -384,8 +384,8 @@ The `event_log` table is queried only on the `/events` page — not on the dashb
 
 #### Automated
 
-- [ ] 2.1 `npm run typecheck` passes
-- [ ] 2.2 `npm run ci` passes (biome + tsc + vitest + build)
+- [x] 2.1 `npm run typecheck` passes
+- [x] 2.2 `npm run ci` passes (biome + tsc + vitest + build)
 
 #### Manual
 
