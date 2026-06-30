@@ -395,8 +395,8 @@ The `event_log` table is queried only on the `/events` page — not on the dashb
 
 #### Automated
 
-- [x] 3.1 `npm run typecheck` passes (four new inserts satisfy schema column types)
-- [x] 3.2 `npm run ci` passes (biome + tsc + vitest + existing test suite)
+- [x] 3.1 `npm run typecheck` passes (four new inserts satisfy schema column types) — c4d0077
+- [x] 3.2 `npm run ci` passes (biome + tsc + vitest + existing test suite) — c4d0077
 
 #### Manual
 
@@ -408,8 +408,8 @@ The `event_log` table is queried only on the `/events` page — not on the dashb
 
 #### Automated
 
-- [ ] 4.1 `npm run ci` passes (biome + tsc + vitest + next build)
-- [ ] 4.2 `npm run typecheck` passes
+- [x] 4.1 `npm run ci` passes (biome + tsc + vitest + next build)
+- [x] 4.2 `npm run typecheck` passes
 
 #### Manual
 
