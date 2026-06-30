@@ -1,29 +1,97 @@
-# Create T3 App
+# Tuya Device Dashboard
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A LAN-only web dashboard for small facility teams that replaces one-by-one device management in the Tuya mobile app. Provides a live device overview grouped by room, per-room temperature health monitoring, floor-plan map view, automation modes with scheduling, and a persistent event log.
 
-## What's next? How do I make an app with this?
+## What it does
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- **Live device overview** — polls Tuya gateways every 30 s over LAN; shows each room's temperature, setpoint, valve state, and health badge (OK / Too Cold / Too Hot)
+- **Temperature thresholds** — per-room min/max/anomaly configuration with a site-wide fallback; email alerts via Resend when a room enters a violation
+- **Automation modes** — named modes with room-level valve targeting, day-of-week scheduling, and a flow-chart editor for bulk room assignment
+- **Floor-plan map** — drag devices onto a site floor-plan image to see their physical placement
+- **Event log** — `/events` page showing the last 24 h of domain events (heat toggles, threshold breaches, connectivity changes, sent email alerts) with room/device filtering
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Tech stack
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+Next.js 15 · React 19 · tRPC v11 · Drizzle ORM + libsql (SQLite) · NextAuth v5 · Tailwind CSS · Biome · Vitest
 
-## Learn More
+## Getting started
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### 1. Install dependencies
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+```bash
+npm install
+```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+### 2. Configure environment
 
-## How do I deploy this?
+```bash
+cp .env.example .env
+```
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+Edit `.env` and set:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | yes | SQLite file path, e.g. `file:./db.sqlite` |
+| `AUTH_SECRET` | yes | Random 32-byte hex — run `openssl rand -hex 32` |
+| `AUTH_ADMIN_EMAIL` | yes | Login email for the seeded admin account |
+| `AUTH_ADMIN_PASSWORD` | yes | Login password for the seeded admin account |
+| `ENCRYPTION_SECRET` | yes | 64-char hex for AES-256-GCM local-key encryption — run `openssl rand -hex 32` |
+| `RESEND_API_KEY` | no | Resend API key for real alert emails |
+| `EMAIL_FROM` | no | Sender address, e.g. `alerts@yourdomain.com` |
+| `EMAIL_STUB` | no | Set `true` to log alert emails instead of sending them |
+| `APP_BASE_URL` | no | Base URL included in alert email links |
+
+### 3. Run migrations and seed
+
+```bash
+npm run db:migrate   # apply all schema migrations
+npm run db:seed      # create the admin account and a default site
+```
+
+### 4. Start the dev server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) — you will be redirected to `/login`.
+
+### Default credentials
+
+Use the values you set in `AUTH_ADMIN_EMAIL` / `AUTH_ADMIN_PASSWORD`. The defaults in `.env.example` are:
+
+```
+Email:    admin@company.local
+Password: change-me-on-first-login
+```
+
+## Available scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start dev server with Turbopack |
+| `npm run build` | Production build |
+| `npm run ci` | Full check — biome + tsc + vitest + next build |
+| `npm run db:migrate` | Apply pending migrations |
+| `npm run db:seed` | Seed admin account and default site |
+| `npm run db:seed:demo` | Seed demo devices (no real hardware needed) |
+| `npm run db:studio` | Open Drizzle Studio to browse the database |
+| `npm run test` | Run Vitest test suite |
+
+## Project structure
+
+```
+src/
+  app/                   # Next.js App Router pages
+    events/              # Event log page
+    automation-flow/     # Flow-chart mode editor
+    map/                 # Floor-plan map view
+    setup/               # Device/room/gateway configuration
+  server/
+    api/routers/         # tRPC procedures (room, device, event, mode, …)
+    db/                  # Drizzle schema + migrations
+    lib/                 # Business logic (scoring, alert-control, crypto, …)
+    workers/             # Tuya polling loop + automation scheduler
+context/foundation/      # PRD, test plan, roadmap, and shaping docs
+```
