@@ -153,12 +153,6 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 					label="Map View"
 				/>
 				<RailLink
-					active={pathname === "/setup"}
-					href="/setup"
-					icon={<Settings size={20} />}
-					label="Setup"
-				/>
-				<RailLink
 					active={pathname === "/events"}
 					href="/events"
 					icon={<ScrollText size={20} />}
@@ -169,6 +163,12 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 					href="/automation-flow"
 					icon={<Workflow size={20} />}
 					label="Automation Flow"
+				/>
+				<RailLink
+					active={pathname === "/setup"}
+					href="/setup"
+					icon={<Settings size={20} />}
+					label="Setup"
 				/>
 
 				<Popover>
