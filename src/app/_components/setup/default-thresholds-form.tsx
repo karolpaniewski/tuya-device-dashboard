@@ -54,6 +54,14 @@ export function DefaultThresholdsForm() {
 				const minVal = parseFloat(min);
 				const maxVal = parseFloat(max);
 				const gapVal = parseFloat(gap);
+				if (
+					Number.isNaN(minVal) ||
+					Number.isNaN(maxVal) ||
+					Number.isNaN(gapVal)
+				) {
+					setFormError("Enter valid numbers");
+					return;
+				}
 				if (minVal >= maxVal) {
 					setFormError("Min must be less than max");
 					return;
@@ -79,9 +87,9 @@ export function DefaultThresholdsForm() {
 					<Input
 						className="w-full sm:w-24"
 						id="default-threshold-min"
-						onChange={(e) => setMin(e.target.value)}
-						step="0.5"
-						type="number"
+						inputMode="decimal"
+						onChange={(e) => setMin(e.target.value.replace(",", "."))}
+						type="text"
 						value={min}
 					/>
 				</label>
@@ -93,9 +101,9 @@ export function DefaultThresholdsForm() {
 					<Input
 						className="w-full sm:w-24"
 						id="default-threshold-max"
-						onChange={(e) => setMax(e.target.value)}
-						step="0.5"
-						type="number"
+						inputMode="decimal"
+						onChange={(e) => setMax(e.target.value.replace(",", "."))}
+						type="text"
 						value={max}
 					/>
 				</label>
@@ -107,9 +115,9 @@ export function DefaultThresholdsForm() {
 					<Input
 						className="w-full sm:w-24"
 						id="default-threshold-gap"
-						onChange={(e) => setGap(e.target.value)}
-						step="0.5"
-						type="number"
+						inputMode="decimal"
+						onChange={(e) => setGap(e.target.value.replace(",", "."))}
+						type="text"
 						value={gap}
 					/>
 				</label>

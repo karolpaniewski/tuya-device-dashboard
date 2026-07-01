@@ -336,6 +336,15 @@ export const roomRouter = createTRPCRouter({
 	clearThreshold: protectedProcedure
 		.input(z.object({ roomId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
+			const [room] = await ctx.db
+				.select({ id: rooms.id })
+				.from(rooms)
+				.where(eq(rooms.id, input.roomId));
+
+			if (!room) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "Room not found" });
+			}
+
 			await ctx.db
 				.delete(roomThresholds)
 				.where(eq(roomThresholds.roomId, input.roomId));

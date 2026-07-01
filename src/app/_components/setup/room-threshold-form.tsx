@@ -56,6 +56,8 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 		},
 	});
 
+	const anyPending = mutation.isPending || clearMutation.isPending;
+
 	if (isLoading) {
 		return (
 			<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:gap-4">
@@ -75,6 +77,14 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 				const minVal = parseFloat(min);
 				const maxVal = parseFloat(max);
 				const gapVal = parseFloat(gap);
+				if (
+					Number.isNaN(minVal) ||
+					Number.isNaN(maxVal) ||
+					Number.isNaN(gapVal)
+				) {
+					setFormError("Enter valid numbers");
+					return;
+				}
 				if (minVal >= maxVal) {
 					setFormError("Min must be less than max");
 					return;
@@ -138,7 +148,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 			</div>
 			<ErrorMessage message={formError} variant="inline" />
 			<div className="flex gap-2">
-				<Button disabled={mutation.isPending} type="submit">
+				<Button disabled={anyPending} type="submit">
 					{mutation.isPending ? "Saving…" : "Save"}
 				</Button>
 				<Button onClick={onClose} type="button" variant="outline">
@@ -146,7 +156,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 				</Button>
 				{data !== null && (
 					<Button
-						disabled={clearMutation.isPending}
+						disabled={anyPending}
 						onClick={() => clearMutation.mutate({ roomId })}
 						type="button"
 						variant="outline"
