@@ -5,6 +5,7 @@ import {
 	LogOut,
 	Map as MapIcon,
 	Moon,
+	ScrollText,
 	Settings,
 	User,
 	Workflow,
@@ -156,6 +157,12 @@ function CommandCenterShellInner({ children }: { children: ReactNode }) {
 					href="/setup"
 					icon={<Settings size={20} />}
 					label="Setup"
+				/>
+				<RailLink
+					active={pathname === "/events"}
+					href="/events"
+					icon={<ScrollText size={20} />}
+					label="Event Log"
 				/>
 				<RailLink
 					active={pathname === "/automation-flow"}
