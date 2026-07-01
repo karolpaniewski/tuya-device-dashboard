@@ -1,7 +1,7 @@
 ---
 id: event-log-retention
 title: Event log retention purge
-status: implemented
+status: impl_reviewed
 created: 2026-06-30
 updated: 2026-06-30
 roadmap_id: ~
