@@ -15,6 +15,10 @@ import {
 	roomThresholds,
 	sites,
 } from "~/server/db/schema";
+import {
+	type ComplianceBucket,
+	computeRoomCompliance,
+} from "~/server/lib/comfort-compliance";
 import { ACTIVE_DEVICE_SOURCE } from "~/server/lib/device-source";
 import { deviceStateStore } from "~/server/lib/device-state-store";
 import { sendPlugCommand } from "~/server/lib/plug-control";
@@ -24,6 +28,10 @@ import {
 	scoreRoom,
 } from "~/server/lib/scoring";
 import { sendSetpointCommand } from "~/server/lib/valve-control";
+
+const SEVEN_DAYS_SECS = 604_800;
+const BUCKET_SIZE_SECS = 3600;
+const BUCKET_COUNT = SEVEN_DAYS_SECS / BUCKET_SIZE_SECS; // 168
 
 const STALE_THRESHOLD_MS = 60_000;
 
@@ -505,6 +513,151 @@ export const deviceRouter = createTRPCRouter({
 			});
 
 			return { rooms: scoredRooms, unassigned };
+		}),
+
+	comfortComplianceRanking: protectedProcedure
+		.input(z.object({ siteId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const roomRows =
+				input.siteId !== "all"
+					? await ctx.db
+							.select({ id: rooms.id, name: rooms.name })
+							.from(rooms)
+							.where(eq(rooms.siteId, input.siteId))
+					: await ctx.db.select({ id: rooms.id, name: rooms.name }).from(rooms);
+
+			if (roomRows.length === 0) return [];
+
+			const roomIds = roomRows.map((r) => r.id);
+			const sensorRoomRows = await ctx.db
+				.select({
+					tuyaDeviceId: devices.tuyaDeviceId,
+					roomId: deviceRoomAssignments.roomId,
+				})
+				.from(devices)
+				.innerJoin(
+					deviceRoomAssignments,
+					eq(deviceRoomAssignments.deviceId, devices.id),
+				)
+				.where(
+					and(
+						eq(devices.deviceType, "sensor"),
+						eq(devices.source, ACTIVE_DEVICE_SOURCE),
+						inArray(deviceRoomAssignments.roomId, roomIds),
+					),
+				);
+
+			const roomDeviceMap = new Map<string, string[]>();
+			for (const row of sensorRoomRows) {
+				const list = roomDeviceMap.get(row.roomId);
+				if (list) {
+					list.push(row.tuyaDeviceId);
+				} else {
+					roomDeviceMap.set(row.roomId, [row.tuyaDeviceId]);
+				}
+			}
+
+			const thresholdRows = await ctx.db.select().from(roomThresholds);
+			const thresholdMap = new Map(
+				thresholdRows.map((t) => [
+					t.roomId,
+					{ minTempC: t.minTempC ?? null, maxTempC: t.maxTempC ?? null },
+				]),
+			);
+
+			const [defaultThresholdRow] = await ctx.db
+				.select()
+				.from(defaultThresholds)
+				.where(eq(defaultThresholds.id, "default"));
+			const dbDefaultThresholds = defaultThresholdRow
+				? {
+						minTempC: defaultThresholdRow.minTempC,
+						maxTempC: defaultThresholdRow.maxTempC,
+					}
+				: {
+						minTempC: DEFAULT_THRESHOLDS.minTempC,
+						maxTempC: DEFAULT_THRESHOLDS.maxTempC,
+					};
+
+			const allTuyaDeviceIds = sensorRoomRows.map((r) => r.tuyaDeviceId);
+
+			const nowSeconds = Math.floor(Date.now() / 1000);
+			const nowBucketSecs =
+				Math.floor(nowSeconds / BUCKET_SIZE_SECS) * BUCKET_SIZE_SECS;
+			const fromBucketSecs = nowBucketSecs - BUCKET_COUNT * BUCKET_SIZE_SECS;
+			const fromTs = new Date(fromBucketSecs * 1000);
+
+			const deviceBucketMap = new Map<string, Map<number, number>>();
+			if (allTuyaDeviceIds.length > 0) {
+				const bucketExpr = sql<number>`(${deviceTemperatureReadings.recordedAt} / ${BUCKET_SIZE_SECS}) * ${BUCKET_SIZE_SECS}`;
+				const readingRows = await ctx.db
+					.select({
+						tuyaDeviceId: deviceTemperatureReadings.tuyaDeviceId,
+						bucket: bucketExpr,
+						temperatureC: sql<
+							string | null
+						>`AVG(${deviceTemperatureReadings.temperatureC})`,
+					})
+					.from(deviceTemperatureReadings)
+					.where(
+						and(
+							inArray(deviceTemperatureReadings.tuyaDeviceId, allTuyaDeviceIds),
+							gte(deviceTemperatureReadings.recordedAt, fromTs),
+						),
+					)
+					.groupBy(deviceTemperatureReadings.tuyaDeviceId, bucketExpr);
+
+				for (const row of readingRows) {
+					if (row.temperatureC === null) continue;
+					let bucketMap = deviceBucketMap.get(row.tuyaDeviceId);
+					if (!bucketMap) {
+						bucketMap = new Map();
+						deviceBucketMap.set(row.tuyaDeviceId, bucketMap);
+					}
+					bucketMap.set(row.bucket, Number(row.temperatureC));
+				}
+			}
+
+			const bucketStartsSecs = Array.from(
+				{ length: BUCKET_COUNT },
+				(_, i) => fromBucketSecs + i * BUCKET_SIZE_SECS,
+			);
+
+			const results = roomRows.map((room) => {
+				const tuyaDeviceIds = roomDeviceMap.get(room.id) ?? [];
+				const thresholds = thresholdMap.get(room.id) ?? dbDefaultThresholds;
+
+				const buckets: ComplianceBucket[] = bucketStartsSecs.map(
+					(bucketStartSecs) => {
+						let min: number | null = null;
+						for (const tuyaDeviceId of tuyaDeviceIds) {
+							const val = deviceBucketMap
+								.get(tuyaDeviceId)
+								?.get(bucketStartSecs);
+							if (val !== undefined && (min === null || val < min)) {
+								min = val;
+							}
+						}
+						return { bucketStartMs: bucketStartSecs * 1000, temperatureC: min };
+					},
+				);
+
+				const compliance = computeRoomCompliance(buckets, thresholds);
+				return {
+					roomId: room.id,
+					roomName: room.name,
+					...compliance,
+				};
+			});
+
+			return results.sort((a, b) => {
+				if (a.pctOutOfThreshold === null && b.pctOutOfThreshold === null) {
+					return 0;
+				}
+				if (a.pctOutOfThreshold === null) return 1;
+				if (b.pctOutOfThreshold === null) return -1;
+				return b.pctOutOfThreshold - a.pctOutOfThreshold;
+			});
 		}),
 });
 
