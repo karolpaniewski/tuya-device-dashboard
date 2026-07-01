@@ -2,7 +2,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("~/server/auth", () => ({ auth: vi.fn() }));
 vi.mock("~/server/db", () => ({ db: {} }));
+vi.mock("bcryptjs", () => ({
+	default: { compare: vi.fn(), hash: vi.fn() },
+}));
 
+import bcryptjs from "bcryptjs";
 import { createCaller } from "~/server/api/root";
 import { DEFAULT_THRESHOLDS } from "~/server/lib/scoring";
 
@@ -33,6 +37,15 @@ describe("settings — auth gate", () => {
 				minTempC: 18,
 				maxTempC: 24,
 				anomalyGapC: 3,
+			}),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+	});
+
+	it("settings.changePassword throws UNAUTHORIZED", async () => {
+		await expect(
+			caller.settings.changePassword({
+				currentPassword: "old",
+				newPassword: "newpass123",
 			}),
 		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
 	});
@@ -130,5 +143,74 @@ describe("settings.setDefaultThresholds", () => {
 				anomalyGapC: 3,
 			}),
 		).rejects.toMatchObject({ code: "BAD_REQUEST" });
+	});
+});
+
+// ─── settings.changePassword ─────────────────────────────────────────────────
+
+describe("settings.changePassword — wrong password", () => {
+	it("throws UNAUTHORIZED", async () => {
+		const mockDb = {
+			select: vi.fn().mockReturnValue({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						limit: vi
+							.fn()
+							.mockResolvedValue([{ id: "u1", passwordHash: "hashed" }]),
+					}),
+				}),
+			}),
+		};
+		vi.mocked(bcryptjs.compare).mockResolvedValue(false as never);
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.settings.changePassword({
+				currentPassword: "wrong",
+				newPassword: "newpass123",
+			}),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+	});
+});
+
+describe("settings.changePassword — success", () => {
+	it("returns { success: true } and writes the new hash", async () => {
+		const updateWhere = vi.fn().mockResolvedValue(undefined);
+		const mockDb = {
+			select: vi.fn().mockReturnValue({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						limit: vi
+							.fn()
+							.mockResolvedValue([{ id: "u1", passwordHash: "old-hash" }]),
+					}),
+				}),
+			}),
+			update: vi.fn().mockReturnValue({
+				set: vi.fn().mockReturnValue({
+					where: updateWhere,
+				}),
+			}),
+		};
+		vi.mocked(bcryptjs.compare).mockResolvedValue(true as never);
+		vi.mocked(bcryptjs.hash).mockResolvedValue("new-hash" as never);
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		const result = await caller.settings.changePassword({
+			currentPassword: "correct",
+			newPassword: "newpass123",
+		});
+
+		expect(result).toEqual({ success: true });
+		expect(bcryptjs.hash).toHaveBeenCalledWith("newpass123", 12);
+		expect(updateWhere).toHaveBeenCalled();
 	});
 });

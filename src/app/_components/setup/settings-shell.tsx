@@ -4,6 +4,7 @@ import {
 	Cpu,
 	Home,
 	Image,
+	Lock,
 	Mail,
 	MapPin,
 	Palette,
@@ -14,6 +15,7 @@ import { useSiteContext } from "~/components/site-context";
 import { ErrorMessage } from "~/components/ui/error-message";
 import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
+import { ChangePasswordForm } from "./change-password-form";
 import { DefaultThresholdsForm } from "./default-thresholds-form";
 import { DeviceTable } from "./device-table";
 import { DisplaySettings } from "./display-settings";
@@ -126,6 +128,14 @@ export function SettingsShell() {
 				title="Notification Contacts"
 			>
 				<NotificationContactsManager utils={utils} />
+			</SettingsCard>
+
+			<SettingsCard
+				description="Update your admin account password"
+				icon={Lock}
+				title="Account & Security"
+			>
+				<ChangePasswordForm />
 			</SettingsCard>
 		</div>
 	);
