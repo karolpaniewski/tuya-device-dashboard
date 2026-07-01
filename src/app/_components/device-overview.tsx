@@ -45,6 +45,7 @@ import { CcClimateOverview } from "./cc-climate-overview";
 import { CcDevicesByRoom } from "./cc-devices-by-room";
 import { CcKpiCard } from "./cc-kpi-card";
 import { CcModesWidget } from "./cc-modes-widget";
+import { ComfortComplianceRankingPanel } from "./comfort-compliance-ranking-panel";
 import { DeviceCard } from "./device-card";
 import { DeviceModal } from "./device-modal";
 import { FilterBar, type FilterState } from "./filter-bar";
@@ -765,6 +766,17 @@ export function DeviceOverview() {
 							value={
 								<span className={CC_KPI_BIG_NUM}>{scheduledModesCount}</span>
 							}
+						/>
+					),
+				},
+				{
+					className: "col-span-full",
+					id: "comfort-compliance-ranking",
+					label: "Comfort Compliance Ranking",
+					render: (
+						<ComfortComplianceRankingPanel
+							onRoomSelect={setSelectedRoomId}
+							siteId={activeSiteId}
 						/>
 					),
 				},

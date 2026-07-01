@@ -373,27 +373,27 @@ None — no schema changes, no data migrations.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npx vitest run src/server/lib/comfort-compliance.test.ts`
-- [x] 1.2 Full test suite passes: `npm run test`
-- [x] 1.3 Type checking passes: `npm run typecheck`
-- [x] 1.4 Linting passes: `npm run check`
+- [x] 1.1 Unit tests pass: `npx vitest run src/server/lib/comfort-compliance.test.ts` — dd58ecb
+- [x] 1.2 Full test suite passes: `npm run test` — dd58ecb
+- [x] 1.3 Type checking passes: `npm run typecheck` — dd58ecb
+- [x] 1.4 Linting passes: `npm run check` — dd58ecb
 
 #### Manual
 
-- [x] 1.5 Query the new procedure against seed/demo data and confirm returned percentages/coverage counts match hand-calculated expectations
+- [x] 1.5 Query the new procedure against seed/demo data and confirm returned percentages/coverage counts match hand-calculated expectations — dd58ecb
 
 ### Phase 2: Frontend — ranking panel and dashboard wiring
 
 #### Automated
 
-- [ ] 2.1 Full test suite passes: `npm run test`
-- [ ] 2.2 Type checking passes: `npm run typecheck`
-- [ ] 2.3 Linting passes: `npm run check`
-- [ ] 2.4 Build succeeds: `npm run build`
+- [x] 2.1 Full test suite passes: `npm run test`
+- [x] 2.2 Type checking passes: `npm run typecheck`
+- [x] 2.3 Linting passes: `npm run check`
+- [x] 2.4 Build succeeds: `npm run build`
 
 #### Manual
 
-- [ ] 2.5 Ranking, severity stat, "no data", and coverage note all render correctly against seed/demo data
-- [ ] 2.6 Drag/hide/reset-layout persistence verified
-- [ ] 2.7 Clicking a ranked room opens the existing detail sheet
-- [ ] 2.8 Existing threshold configuration and temperature-history views unaffected
+- [x] 2.5 Ranking, severity stat, "no data", and coverage note all render correctly against seed/demo data
+- [x] 2.6 Drag/hide/reset-layout persistence verified
+- [x] 2.7 Clicking a ranked room opens the existing detail sheet
+- [x] 2.8 Existing threshold configuration and temperature-history views unaffected

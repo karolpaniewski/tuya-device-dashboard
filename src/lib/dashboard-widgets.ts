@@ -12,6 +12,7 @@ export const DEFAULT_WIDGET_ORDER = [
 	"kpi-modes",
 	"kpi-by-room",
 	"room-temp-panel",
+	"comfort-compliance-ranking",
 ] as const;
 
 /**
