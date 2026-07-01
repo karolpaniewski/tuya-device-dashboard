@@ -148,6 +148,33 @@ describe("settings.setDefaultThresholds", () => {
 
 // ─── settings.changePassword ─────────────────────────────────────────────────
 
+describe("settings.changePassword — user not found", () => {
+	it("throws UNAUTHORIZED without calling bcryptjs.compare", async () => {
+		const mockDb = {
+			select: vi.fn().mockReturnValue({
+				from: vi.fn().mockReturnValue({
+					where: vi.fn().mockReturnValue({
+						limit: vi.fn().mockResolvedValue([]),
+					}),
+				}),
+			}),
+		};
+		const caller = createCaller({
+			db: mockDb as never,
+			session,
+			headers: new Headers(),
+		});
+
+		await expect(
+			caller.settings.changePassword({
+				currentPassword: "any",
+				newPassword: "newpass123",
+			}),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+		expect(bcryptjs.compare).not.toHaveBeenCalled();
+	});
+});
+
 describe("settings.changePassword — wrong password", () => {
 	it("throws UNAUTHORIZED", async () => {
 		const mockDb = {

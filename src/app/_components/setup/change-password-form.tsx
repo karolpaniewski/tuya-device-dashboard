@@ -29,6 +29,10 @@ export function ChangePasswordForm() {
 			className="flex flex-col gap-3 rounded-xl border p-3"
 			onSubmit={(e) => {
 				e.preventDefault();
+				if (newPassword.length < 8) {
+					setFormError("Password must be at least 8 characters");
+					return;
+				}
 				if (newPassword !== confirmPassword) {
 					setFormError("Passwords do not match");
 					return;

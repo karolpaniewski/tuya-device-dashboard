@@ -100,7 +100,7 @@ export const settingsRouter = createTRPCRouter({
 
 			await ctx.db
 				.update(users)
-				.set({ passwordHash: newHash })
+				.set({ passwordHash: newHash, updatedAt: new Date() })
 				.where(eq(users.id, ctx.session.user.id));
 
 			return { success: true as const };
