@@ -96,3 +96,11 @@ This project uses **Zod v3** (`zod@3.x`). Do NOT use Zod v4 APIs.
 
 Zod v4 introduced breaking changes to error handling and type inference.
 Use only Zod v3 patterns: `z.object()`, `z.string()`, `.parse()`, `.safeParse()`, `z.infer<typeof schema>`.
+
+## Git workflow
+
+`main` is branch-protected: a PR (0 approvals required, but the PR must exist)
+plus a passing `ci` status check are required to merge, and this is enforced
+for admins too — direct pushes to `main` are rejected outright, no bypass.
+
+Work on a feature branch and open a PR instead of pushing straight to `main`.
