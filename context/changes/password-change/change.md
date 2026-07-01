@@ -1,9 +1,9 @@
 ---
 id: password-change
 title: Password change (self-service)
-status: implementing
+status: implemented
 created: 2026-07-01
-updated: 2026-06-30
+updated: 2026-07-01
 roadmap_id: ~
 ---
 

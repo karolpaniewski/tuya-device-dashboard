@@ -212,14 +212,14 @@ All in `settings.test.ts`:
 
 #### Automated
 
-- [x] 1.1 vitest run settings.test.ts — all tests pass incl. new changePassword blocks
-- [x] 1.2 npm run typecheck — no type errors
-- [x] 1.3 biome check on 4 touched files — no lint errors
+- [x] 1.1 vitest run settings.test.ts — all tests pass incl. new changePassword blocks — 9d4fb17
+- [x] 1.2 npm run typecheck — no type errors — 9d4fb17
+- [x] 1.3 biome check on 4 touched files — no lint errors — 9d4fb17
 
 #### Manual
 
-- [x] 1.4 Account & Security card appears last in Settings grid
-- [x] 1.5 Wrong current password → inline form error (no toast)
-- [x] 1.6 Mismatched confirm → client-side inline error
-- [x] 1.7 Valid change → toast success + fields cleared
-- [x] 1.8 Login with new password succeeds; old password fails
+- [x] 1.4 Account & Security card appears last in Settings grid — 9d4fb17
+- [x] 1.5 Wrong current password → inline form error (no toast) — 9d4fb17
+- [x] 1.6 Mismatched confirm → client-side inline error — 9d4fb17
+- [x] 1.7 Valid change → toast success + fields cleared — 9d4fb17
+- [x] 1.8 Login with new password succeeds; old password fails — 9d4fb17
