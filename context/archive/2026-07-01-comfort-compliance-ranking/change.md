@@ -1,10 +1,10 @@
 ---
 change_id: comfort-compliance-ranking
 title: Comfort compliance ranking panel
-status: impl_reviewed
+status: archived
 created: 2026-07-01
 updated: 2026-07-01
-archived_at: null
+archived_at: 2026-07-01T13:07:36Z
 ---
 
 ## Notes
