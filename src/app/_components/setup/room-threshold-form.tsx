@@ -38,6 +38,15 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 		}
 	}, [data]);
 
+	const clearMutation = api.room.clearThreshold.useMutation({
+		onError: (e) => setFormError(e.message),
+		onSuccess: () => {
+			toast.success("Reset to global defaults");
+			void utils.device.overview.invalidate();
+			onClose();
+		},
+	});
+
 	const mutation = api.room.setThreshold.useMutation({
 		onError: (e) => setFormError(e.message),
 		onSuccess: () => {
@@ -92,9 +101,9 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 					<Input
 						className="w-full sm:w-24"
 						id="threshold-min"
-						onChange={(e) => setMin(e.target.value)}
-						step="0.5"
-						type="number"
+						inputMode="decimal"
+						onChange={(e) => setMin(e.target.value.replace(",", "."))}
+						type="text"
 						value={min}
 					/>
 				</label>
@@ -106,9 +115,9 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 					<Input
 						className="w-full sm:w-24"
 						id="threshold-max"
-						onChange={(e) => setMax(e.target.value)}
-						step="0.5"
-						type="number"
+						inputMode="decimal"
+						onChange={(e) => setMax(e.target.value.replace(",", "."))}
+						type="text"
 						value={max}
 					/>
 				</label>
@@ -120,9 +129,9 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 					<Input
 						className="w-full sm:w-24"
 						id="threshold-gap"
-						onChange={(e) => setGap(e.target.value)}
-						step="0.5"
-						type="number"
+						inputMode="decimal"
+						onChange={(e) => setGap(e.target.value.replace(",", "."))}
+						type="text"
 						value={gap}
 					/>
 				</label>
@@ -135,6 +144,16 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 				<Button onClick={onClose} type="button" variant="outline">
 					Cancel
 				</Button>
+				{data !== null && (
+					<Button
+						disabled={clearMutation.isPending}
+						onClick={() => clearMutation.mutate({ roomId })}
+						type="button"
+						variant="outline"
+					>
+						Reset to global
+					</Button>
+				)}
 			</div>
 		</form>
 	);

@@ -333,6 +333,16 @@ export const roomRouter = createTRPCRouter({
 			return { success: true as const };
 		}),
 
+	clearThreshold: protectedProcedure
+		.input(z.object({ roomId: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			await ctx.db
+				.delete(roomThresholds)
+				.where(eq(roomThresholds.roomId, input.roomId));
+
+			return { success: true as const };
+		}),
+
 	toggleHeat: protectedProcedure
 		.input(z.object({ roomId: z.string(), pinnedOff: z.boolean() }))
 		.mutation(async ({ ctx, input }) => {
