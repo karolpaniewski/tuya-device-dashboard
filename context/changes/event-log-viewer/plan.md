@@ -141,13 +141,13 @@ proceeding to the commit step.
 
 #### Automated
 
-- [x] 1.1 Type checking passes (pnpm typecheck)
-- [x] 1.2 Linting passes (pnpm lint)
-- [x] 1.3 Build succeeds (pnpm build)
+- [x] 1.1 Type checking passes (pnpm typecheck) — 17eb622
+- [x] 1.2 Linting passes (pnpm lint) — 17eb622
+- [x] 1.3 Build succeeds (pnpm build) — 17eb622
 
 #### Manual
 
-- [ ] 1.4 ScrollText icon appears between Setup and Automation Flow in nav rail
-- [ ] 1.5 Clicking icon navigates to /events and renders EventFeed
-- [ ] 1.6 Active state (cyan glow + left bar) works on /events
-- [ ] 1.7 Other rail links unaffected
+- [x] 1.4 ScrollText icon appears between Setup and Automation Flow in nav rail — 17eb622
+- [x] 1.5 Clicking icon navigates to /events and renders EventFeed — 17eb622
+- [x] 1.6 Active state (cyan glow + left bar) works on /events — 17eb622
+- [x] 1.7 Other rail links unaffected — 17eb622
