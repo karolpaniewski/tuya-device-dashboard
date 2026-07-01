@@ -386,14 +386,14 @@ None — no schema changes, no data migrations.
 
 #### Automated
 
-- [x] 2.1 Full test suite passes: `npm run test`
-- [x] 2.2 Type checking passes: `npm run typecheck`
-- [x] 2.3 Linting passes: `npm run check`
-- [x] 2.4 Build succeeds: `npm run build`
+- [x] 2.1 Full test suite passes: `npm run test` — 733c454
+- [x] 2.2 Type checking passes: `npm run typecheck` — 733c454
+- [x] 2.3 Linting passes: `npm run check` — 733c454
+- [x] 2.4 Build succeeds: `npm run build` — 733c454
 
 #### Manual
 
-- [x] 2.5 Ranking, severity stat, "no data", and coverage note all render correctly against seed/demo data
-- [x] 2.6 Drag/hide/reset-layout persistence verified
-- [x] 2.7 Clicking a ranked room opens the existing detail sheet
-- [x] 2.8 Existing threshold configuration and temperature-history views unaffected
+- [x] 2.5 Ranking, severity stat, "no data", and coverage note all render correctly against seed/demo data — 733c454
+- [x] 2.6 Drag/hide/reset-layout persistence verified — 733c454
+- [x] 2.7 Clicking a ranked room opens the existing detail sheet — 733c454
+- [x] 2.8 Existing threshold configuration and temperature-history views unaffected — 733c454
