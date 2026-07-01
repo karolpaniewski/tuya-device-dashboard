@@ -518,13 +518,38 @@ export const deviceRouter = createTRPCRouter({
 	comfortComplianceRanking: protectedProcedure
 		.input(z.object({ siteId: z.string() }))
 		.query(async ({ ctx, input }) => {
-			const roomRows =
+			const allRoomRows =
 				input.siteId !== "all"
 					? await ctx.db
 							.select({ id: rooms.id, name: rooms.name })
 							.from(rooms)
 							.where(eq(rooms.siteId, input.siteId))
 					: await ctx.db.select({ id: rooms.id, name: rooms.name }).from(rooms);
+
+			if (allRoomRows.length === 0) return [];
+
+			// Match `overview`'s room membership rule (a room only "exists" there
+			// once it has at least one assigned device) so every ranked row here
+			// is guaranteed to resolve when clicked through to the detail sheet.
+			const roomsWithDeviceRows = await ctx.db
+				.selectDistinct({ roomId: deviceRoomAssignments.roomId })
+				.from(devices)
+				.innerJoin(
+					deviceRoomAssignments,
+					eq(deviceRoomAssignments.deviceId, devices.id),
+				)
+				.where(
+					input.siteId !== "all"
+						? and(
+								eq(devices.siteId, input.siteId),
+								eq(devices.source, ACTIVE_DEVICE_SOURCE),
+							)
+						: eq(devices.source, ACTIVE_DEVICE_SOURCE),
+				);
+			const roomIdsWithDevices = new Set(
+				roomsWithDeviceRows.map((r) => r.roomId),
+			);
+			const roomRows = allRoomRows.filter((r) => roomIdsWithDevices.has(r.id));
 
 			if (roomRows.length === 0) return [];
 

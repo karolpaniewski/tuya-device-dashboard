@@ -43,6 +43,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 		onSuccess: () => {
 			toast.success("Reset to global defaults");
 			void utils.device.overview.invalidate();
+			void utils.device.comfortComplianceRanking.invalidate();
 			onClose();
 		},
 	});
@@ -52,6 +53,7 @@ export function RoomThresholdForm({ onClose, roomId, utils }: Props) {
 		onSuccess: () => {
 			toast.success("Thresholds saved");
 			void utils.device.overview.invalidate();
+			void utils.device.comfortComplianceRanking.invalidate();
 			onClose();
 		},
 	});
