@@ -1,7 +1,7 @@
 ---
 id: per-room-thresholds
 title: Per-room temperature threshold overrides
-status: implementing
+status: implemented
 created: 2026-07-01
 updated: 2026-07-01
 roadmap_id: ~

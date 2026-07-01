@@ -157,11 +157,11 @@ before the phase-end commit.
 
 #### Automated
 
-- [x] 1.1 Type checking passes: pnpm typecheck
-- [x] 1.2 Linting passes: pnpm lint
+- [x] 1.1 Type checking passes: pnpm typecheck — d3db326
+- [x] 1.2 Linting passes: pnpm lint — d3db326
 
 #### Manual
 
-- [ ] 1.3 Reset flow: set threshold, reopen, Reset to global → toast + close; reopen → defaults + button hidden
-- [ ] 1.4 Room with no override: Reset to global button absent
-- [ ] 1.5 Comma input normalizes: type 20,5 → becomes 20.5 on keystroke
+- [x] 1.3 Reset flow: set threshold, reopen, Reset to global → toast + close; reopen → defaults + button hidden
+- [x] 1.4 Room with no override: Reset to global button absent
+- [x] 1.5 Comma input normalizes: type 20,5 → becomes 20.5 on keystroke
