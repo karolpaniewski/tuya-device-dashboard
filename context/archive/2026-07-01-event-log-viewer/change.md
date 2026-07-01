@@ -1,9 +1,10 @@
 ---
 id: event-log-viewer
 title: Event log viewer — nav link
-status: impl_reviewed
+status: archived
 created: 2026-07-01
 updated: 2026-07-01
+archived_at: 2026-07-01T09:45:55Z
 roadmap_id: ~
 ---
 
